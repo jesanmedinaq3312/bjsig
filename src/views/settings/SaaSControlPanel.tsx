@@ -707,8 +707,17 @@ export function SaaSControlPanel() {
       }),
     [storageUsage, tenants],
   );
+  // Solo empresas vigentes: excluye registros huérfanos (empresa eliminada) y archivadas.
+  const visibleBranding = useMemo(() => {
+    const live = new Set(
+      tenants.filter((t) => t.tenant_status !== "cortada").map((t) => t.tenant_id),
+    );
+    return branding.filter((item) => live.has(item.tenant_id));
+  }, [branding, tenants]);
   const selectedBranding =
-    branding.find((item) => item.tenant_id === brandingTenantId) ?? branding[0] ?? null;
+    visibleBranding.find((item) => item.tenant_id === brandingTenantId) ??
+    visibleBranding[0] ??
+    null;
 
   const BACKUP_TABLES = [
     "workers",
@@ -3206,7 +3215,7 @@ export function SaaSControlPanel() {
                 </p>
               </div>
               <div className="divide-y divide-slate-100">
-                {branding.map((item) => (
+                {visibleBranding.map((item) => (
                   <button
                     key={item.tenant_id}
                     onClick={() => setBrandingTenantId(item.tenant_id)}
