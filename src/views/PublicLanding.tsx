@@ -508,7 +508,7 @@ export function PublicLanding() {
             →
           </button>
         </div>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           className={`${activeSection === 0 ? "" : "hidden"} relative isolate min-h-[calc(100vh-136px)] px-5 pb-20 pt-20 sm:pb-28 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32`}
         >
           <div className="landing-orb landing-orb-one" />
@@ -563,7 +563,7 @@ export function PublicLanding() {
             <DashboardPreview />
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           className={
             activeSection === 1
               ? "border-y border-white/10 bg-white/[0.035] px-5 py-12 lg:px-8 lg:py-14"
@@ -629,7 +629,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           id="modulos"
           className={
             activeSection === 2 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
@@ -660,7 +660,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           className={activeSection === 3 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
@@ -694,7 +694,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           className={
             activeSection === 4 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
           }
@@ -726,7 +726,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           id="seguridad"
           className={activeSection === 5 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
         >
@@ -761,7 +761,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing="" data-landing=""
+        <section data-landing=""
           className={
             activeSection === 6
               ? "landing-contact bg-gradient-to-br from-blue-700 to-slate-900 px-5 py-20 lg:px-8"
