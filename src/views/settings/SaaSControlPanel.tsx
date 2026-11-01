@@ -570,6 +570,11 @@ export function SaaSControlPanel() {
   const [communicationTenantId, setCommunicationTenantId] = useState("");
   const [onboardingForm, setOnboardingForm] = useState<OnboardingForm | null>(null);
 
+  // Empresas vigentes: las archivadas ("cortada") solo se ven en la papelera.
+  const liveTenants = useMemo(
+    () => tenants.filter((t) => t.tenant_status !== "cortada"),
+    [tenants],
+  );
   const selected = tenants.find((t) => t.tenant_id === selectedId) ?? null;
   const communicationTargetId = communicationTenantId || tenants[0]?.tenant_id || "";
   const unreadNotifications = internalNotifications.filter(
@@ -710,10 +715,10 @@ export function SaaSControlPanel() {
   // Solo empresas vigentes: excluye registros huérfanos (empresa eliminada) y archivadas.
   const visibleBranding = useMemo(() => {
     const live = new Set(
-      tenants.filter((t) => t.tenant_status !== "cortada").map((t) => t.tenant_id),
+      liveTenants.map((t) => t.tenant_id),
     );
     return branding.filter((item) => live.has(item.tenant_id));
-  }, [branding, tenants]);
+  }, [branding, liveTenants]);
   const selectedBranding =
     visibleBranding.find((item) => item.tenant_id === brandingTenantId) ??
     visibleBranding[0] ??
@@ -2556,7 +2561,7 @@ export function SaaSControlPanel() {
                       onChange={(event) => setCommunicationTenantId(event.target.value)}
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs"
                     >
-                      {tenants.map((tenant) => (
+                      {liveTenants.map((tenant) => (
                         <option key={tenant.tenant_id} value={tenant.tenant_id}>
                           {tenant.tenant_name}
                         </option>
@@ -2819,7 +2824,7 @@ export function SaaSControlPanel() {
 
         {activeSection === "governance" && (
           <DataGovernancePanel
-            tenants={tenants.map((tenant) => ({
+            tenants={liveTenants.map((tenant) => ({
               tenant_id: tenant.tenant_id,
               tenant_name: tenant.tenant_name,
               plan_name: tenant.plan_name,
@@ -2978,7 +2983,7 @@ export function SaaSControlPanel() {
                 </p>
               </div>
               <div className="divide-y divide-slate-100">
-                {tenants.map((tenant) => (
+                {liveTenants.map((tenant) => (
                   <button
                     key={tenant.tenant_id}
                     onClick={() => {
@@ -3159,7 +3164,7 @@ export function SaaSControlPanel() {
               </p>
             </div>
             <div className="divide-y divide-slate-100">
-              {tenants.map((tenant) => (
+              {liveTenants.map((tenant) => (
                 <div
                   key={tenant.tenant_id}
                   className={`flex flex-wrap items-center gap-3 px-5 py-4 ${selected?.tenant_id === tenant.tenant_id ? "bg-blue-50/50" : ""}`}
@@ -3454,7 +3459,7 @@ export function SaaSControlPanel() {
               </div>
             </div>
             <div className="divide-y divide-slate-100">
-              {tenants.map((tenant) => {
+              {liveTenants.map((tenant) => {
                 const expanded = expandedPortalTenants.has(tenant.tenant_id);
                 const workers = (portalWorkers[tenant.tenant_id] ?? []).filter((worker) =>
                   `${worker.full_name} ${worker.rut} ${worker.email ?? ""}`
@@ -3586,7 +3591,7 @@ export function SaaSControlPanel() {
                   className="rounded-xl border border-slate-200 px-3 py-2 text-xs"
                 >
                   <option value="all">Todas las empresas</option>
-                  {tenants.map((tenant) => (
+                  {liveTenants.map((tenant) => (
                     <option key={tenant.tenant_id} value={tenant.tenant_id}>
                       {tenant.tenant_name}
                     </option>
@@ -3986,7 +3991,7 @@ export function SaaSControlPanel() {
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs"
                   >
                     <option value="">Seleccionar empresa</option>
-                    {tenants.map((tenant) => (
+                    {liveTenants.map((tenant) => (
                       <option key={tenant.tenant_id} value={tenant.tenant_id}>
                         {tenant.tenant_name}
                       </option>
@@ -4345,7 +4350,7 @@ export function SaaSControlPanel() {
                       onClick={() =>
                         setDevTeamForm({
                           ...devTeamForm,
-                          tenant_ids: tenants.map((tenant) => tenant.tenant_id),
+                          tenant_ids: liveTenants.map((tenant) => tenant.tenant_id),
                         })
                       }
                     >
@@ -4361,7 +4366,7 @@ export function SaaSControlPanel() {
                   </div>
                 </div>
                 <div className="grid max-h-44 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
-                  {tenants.map((tenant) => (
+                  {liveTenants.map((tenant) => (
                     <label
                       key={tenant.tenant_id}
                       className="flex items-center gap-2 text-xs text-slate-700"
@@ -4393,7 +4398,7 @@ export function SaaSControlPanel() {
                     sin MFA; el usuario escaneará el QR una sola vez al iniciar su acceso protegido.
                   </span>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {tenants.map((tenant) => {
+                    {liveTenants.map((tenant) => {
                       const selectedTenantIds = Array.isArray(
                         devTeamForm.permissions.mfa_required_tenant_ids,
                       )
@@ -4537,7 +4542,7 @@ export function SaaSControlPanel() {
                     }
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                   >
-                    {tenants.map((tenant) => (
+                    {liveTenants.map((tenant) => (
                       <option key={tenant.tenant_id} value={tenant.tenant_id}>
                         {tenant.tenant_name}
                       </option>
