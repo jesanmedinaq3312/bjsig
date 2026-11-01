@@ -37,9 +37,6 @@ export function CookieConsent() {
       const t = window.setTimeout(() => setOpen(true), 700);
       return () => window.clearTimeout(t);
     }
-    const reopen = () => setOpen(true);
-    window.addEventListener("bjsig:open-cookie-settings", reopen);
-    return () => window.removeEventListener("bjsig:open-cookie-settings", reopen);
   }, []);
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { CookieConsent, openCookieSettings } from "@/components/CookieConsent";
 import {
   ArrowRight,
   BarChart3,
@@ -508,7 +509,7 @@ export function PublicLanding() {
           </button>
         </div>
         <section
-          className={`${activeSection === 0 ? "" : "hidden"} relative isolate min-h-[calc(100vh-136px)] px-5 pb-20 pt-20 sm:pb-28 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32`}
+          className={`landing-section ${activeSection === 0 ? "" : "hidden"} relative isolate min-h-[calc(100vh-136px)] px-5 pb-20 pt-20 sm:pb-28 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32`}
         >
           <div className="landing-orb landing-orb-one" />
           <div className="landing-orb landing-orb-two" />
@@ -807,6 +808,9 @@ export function PublicLanding() {
             <a href="/terminos" className="hover:text-white">
               Términos
             </a>
+            <button type="button" onClick={openCookieSettings} className="hover:text-white">
+              Cookies
+            </button>
             <a href="/admin" className="hover:text-white">
               Administradores
             </a>
@@ -822,6 +826,7 @@ export function PublicLanding() {
           </div>
         </div>
       </footer>
+      <CookieConsent />
     </div>
   );
 }
