@@ -1,3 +1,4 @@
+import { CookieConsent, openCookieSettings } from "@/components/CookieConsent";
 import {
   ArrowRight,
   BarChart3,
@@ -507,7 +508,7 @@ export function PublicLanding() {
             →
           </button>
         </div>
-        <section
+        <section data-landing=""
           className={`${activeSection === 0 ? "" : "hidden"} relative isolate min-h-[calc(100vh-136px)] px-5 pb-20 pt-20 sm:pb-28 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32`}
         >
           <div className="landing-orb landing-orb-one" />
@@ -520,7 +521,7 @@ export function PublicLanding() {
               </div>
               <h1 className="landing-title text-4xl font-black leading-[1.04] tracking-tight sm:text-6xl">
                 Personas, seguridad y{" "}
-                <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
+                <span className="landing-shimmer bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
                   cumplimiento
                 </span>{" "}
                 en una sola plataforma.
@@ -562,7 +563,7 @@ export function PublicLanding() {
             <DashboardPreview />
           </div>
         </section>
-        <section
+        <section data-landing=""
           className={
             activeSection === 1
               ? "border-y border-white/10 bg-white/[0.035] px-5 py-12 lg:px-8 lg:py-14"
@@ -628,7 +629,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section
+        <section data-landing=""
           id="modulos"
           className={
             activeSection === 2 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
@@ -659,7 +660,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section
+        <section data-landing=""
           className={activeSection === 3 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
@@ -693,7 +694,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section
+        <section data-landing=""
           className={
             activeSection === 4 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
           }
@@ -725,7 +726,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section
+        <section data-landing=""
           id="seguridad"
           className={activeSection === 5 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
         >
@@ -760,7 +761,7 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section
+        <section data-landing=""
           className={
             activeSection === 6
               ? "landing-contact bg-gradient-to-br from-blue-700 to-slate-900 px-5 py-20 lg:px-8"
@@ -807,6 +808,9 @@ export function PublicLanding() {
             <a href="/terminos" className="hover:text-white">
               Términos
             </a>
+            <button type="button" onClick={openCookieSettings} className="hover:text-white">
+              Cookies
+            </button>
             <a href="/admin" className="hover:text-white">
               Administradores
             </a>
@@ -822,6 +826,7 @@ export function PublicLanding() {
           </div>
         </div>
       </footer>
+      <CookieConsent />
     </div>
   );
 }
