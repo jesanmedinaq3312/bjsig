@@ -521,7 +521,7 @@ export function PublicLanding() {
               </div>
               <h1 className="landing-title text-4xl font-black leading-[1.04] tracking-tight sm:text-6xl">
                 Personas, seguridad y{" "}
-                <span className="bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
+                <span className="landing-shimmer bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
                   cumplimiento
                 </span>{" "}
                 en una sola plataforma.
