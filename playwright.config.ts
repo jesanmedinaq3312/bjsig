@@ -1,0 +1,32 @@
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: true,
+  reporter: [["list"], ["html", { outputFolder: "playwright-report", open: "never" }]],
+  use: {
+    baseURL: "http://127.0.0.1:4173",
+    browserName: "chromium",
+    launchOptions: { executablePath: "/usr/bin/chromium" },
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "off",
+  },
+  projects: [
+    { name: "chromium-desktop", use: { viewport: { width: 1440, height: 900 } } },
+    {
+      name: "chromium-mobile",
+      use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+    },
+    {
+      name: "chromium-tablet",
+      use: { viewport: { width: 768, height: 1024 }, isMobile: true, hasTouch: true },
+    },
+  ],
+  webServer: {
+    command: "npm run dev -- --host 127.0.0.1 --port 4173",
+    url: "http://127.0.0.1:4173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
+});

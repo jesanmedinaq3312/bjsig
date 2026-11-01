@@ -1,0 +1,3 @@
+# Referencia de cuota Supabase
+
+La documentación oficial consultada es https://supabase.com/docs/guides/platform/database-size y la página de precios https://supabase.com/pricing. La documentación indica que el plan Free entra en modo solo lectura al alcanzar la cuota de base de datos de 500 MB; el límite de disco incluido del proyecto puede ser distinto. BJSIG usa 500 MiB como límite operativo conservador de referencia para el catálogo interno, no como afirmación de facturación de Supabase. El consumo por empresa se calcula como bytes lógicos de filas tenant-scoped; el tamaño físico real de PostgreSQL sigue siendo global al proyecto.

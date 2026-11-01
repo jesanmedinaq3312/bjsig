@@ -1,0 +1,18 @@
+{
+  "routes": [
+    { "path": "/", "title": "BJSIGAPP — Gestión empresarial" },
+    { "path": "/privacidad", "title": "Política de privacidad" },
+    { "path": "/terminos", "title": "Términos y condiciones" },
+    { "path": "/contacto", "title": "Contacto" },
+    { "path": "/trabajador", "title": "Portal personal del trabajador" },
+    { "path": "/portal-trabajador", "title": "Portal personal del trabajador" },
+    { "path": "/:slug", "title": "Portal personal por empresa" },
+    { "path": "/admin", "title": "Acceso operativo" },
+    { "path": "/admin/:view", "title": "Panel operativo" },
+    { "path": "/:slug/admin", "title": "Acceso operativo de empresa" },
+    { "path": "/:slug/admin/:view", "title": "Panel de empresa" },
+    { "path": "/:slug/admin/:view/:section", "title": "Sección del panel de empresa" },
+    { "path": "/admin-saas", "title": "Control SaaS" },
+    { "path": "/admin-saas/:section", "title": "Sección de control SaaS" }
+  ]
+}
