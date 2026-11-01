@@ -160,6 +160,7 @@ const FormMessage = React.forwardRef<
 FormMessage.displayName = "FormMessage";
 
 export {
+  // eslint-disable-next-line react-refresh/only-export-components -- mixed component and stable API export is intentional here
   useFormField,
   Form,
   FormItem,
