@@ -383,9 +383,11 @@ export function PublicLanding() {
   const [activeSection, setActiveSection] = useState(0);
   const landingSections = [
     "Inicio",
+    "¿Te suena?",
     "Solución",
     "Módulos",
     "Capacidades",
+    "Cómo funciona",
     "Preguntas frecuentes",
     "Seguridad",
     "Contacto",
@@ -412,19 +414,19 @@ export function PublicLanding() {
             className="hidden items-center gap-7 text-sm text-white/65 lg:flex"
             aria-label="Navegación principal"
           >
-            <button type="button" onClick={() => goToSection(1)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(2)} className="hover:text-white">
               Solución
             </button>
-            <button type="button" onClick={() => goToSection(2)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(3)} className="hover:text-white">
               Módulos
             </button>
-            <button type="button" onClick={() => goToSection(4)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(6)} className="hover:text-white">
               Preguntas frecuentes
             </button>
-            <button type="button" onClick={() => goToSection(5)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(7)} className="hover:text-white">
               Seguridad
             </button>
-            <button type="button" onClick={() => goToSection(6)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(8)} className="hover:text-white">
               Contacto
             </button>
           </nav>
@@ -454,16 +456,16 @@ export function PublicLanding() {
         {menuOpen && (
           <div className="border-t border-white/10 bg-slate-950 px-5 py-4 lg:hidden">
             <div className="flex flex-col gap-3 text-sm">
-              <button type="button" onClick={() => goToSection(1)}>
+              <button type="button" onClick={() => goToSection(2)}>
                 Solución
               </button>
-              <button type="button" onClick={() => goToSection(2)}>
+              <button type="button" onClick={() => goToSection(3)}>
                 Módulos
               </button>
-              <button type="button" onClick={() => goToSection(4)}>
+              <button type="button" onClick={() => goToSection(6)}>
                 Preguntas frecuentes
               </button>
-              <button type="button" onClick={() => goToSection(5)}>
+              <button type="button" onClick={() => goToSection(7)}>
                 Seguridad
               </button>
               <a href="/trabajador">Ingresar como colaborador</a>
@@ -535,7 +537,7 @@ export function PublicLanding() {
                   href="#contacto"
                   onClick={(event) => {
                     event.preventDefault();
-                    goToSection(6);
+                    goToSection(8);
                   }}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3.5 text-sm font-bold shadow-xl shadow-blue-600/25 hover:-translate-y-0.5 hover:bg-blue-400"
                 >
@@ -550,7 +552,7 @@ export function PublicLanding() {
               </div>
               <button
                 type="button"
-                onClick={() => goToSection(4)}
+                onClick={() => goToSection(6)}
                 className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-cyan-200 underline decoration-cyan-300/40 underline-offset-4 hover:text-white"
               >
                 ¿Quieres saber cómo funciona? Consulta las preguntas frecuentes{" "}
@@ -565,7 +567,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           className={
-            activeSection === 1
+            activeSection === 2
               ? "border-y border-white/10 bg-white/[0.035] px-5 py-12 lg:px-8 lg:py-14"
               : "hidden"
           }
@@ -632,7 +634,7 @@ export function PublicLanding() {
         <section data-landing=""
           id="modulos"
           className={
-            activeSection === 2 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
+            activeSection === 3 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
           }
         >
           <div className="mx-auto max-w-7xl">
@@ -661,7 +663,7 @@ export function PublicLanding() {
           </div>
         </section>
         <section data-landing=""
-          className={activeSection === 3 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
+          className={activeSection === 4 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
@@ -696,7 +698,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           className={
-            activeSection === 4 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
+            activeSection === 6 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
           }
           id="preguntas-frecuentes"
         >
@@ -728,7 +730,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           id="seguridad"
-          className={activeSection === 5 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
+          className={activeSection === 7 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
         >
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
             <div>
@@ -763,7 +765,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           className={
-            activeSection === 6
+            activeSection === 8
               ? "landing-contact bg-gradient-to-br from-blue-700 to-slate-900 px-5 py-20 lg:px-8"
               : "hidden"
           }
