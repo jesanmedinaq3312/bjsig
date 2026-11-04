@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 const modules = [
   { icon: Users, label: "Personas y RR.HH.", accent: "from-sky-500/20 to-blue-500/5" },
@@ -160,6 +160,46 @@ const faqs = [
 
 const whatsappDemoUrl =
   "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
+
+const hooks = [
+  { tag: "Adiós al trabajo repetido", pain: "¿Planillas, carpetas y firmas a mano?", fix: "Asistencia, EPP y firmas se registran solos desde el celular." },
+  { tag: "Seguridad de tu empresa", pain: "¿Una fiscalización o un accidente te pillaría sin respaldo?", fix: "Evidencia ordenada, trazable y lista para mostrar." },
+  { tag: "Tu competencia ya avanzó", pain: "Las empresas líderes ya operan en digital.", fix: "Súmate y opera con el mismo nivel de control." },
+  { tag: "Innovación", pain: "¿Sigues dirigiendo con Excel?", fix: "Indicadores y alertas en tiempo real para decidir mejor." },
+  { tag: "Ahorro", pain: "Cada multa y cada hora perdida te quita margen.", fix: "Alertas de vencimientos antes de que se conviertan en multas." },
+  { tag: "Control total", pain: "¿Varias empresas, faenas y contratistas?", fix: "Multiempresa: todo en un solo panel, cada una con sus datos aislados." },
+];
+
+const beforeAfter = [
+  ["Asistencia", "Libro o planilla, revisión manual", "Marcación digital y reportes al instante"],
+  ["Entrega de EPP", "Papel firmado que se pierde", "Firma digital con historial por trabajador"],
+  ["Capacitaciones", "Correos y listas sueltas", "Asignación, registro y alertas de vencimiento"],
+  ["Documentos", "Carpetas y archivos dispersos", "Repositorio por empresa, siempre a mano"],
+  ["Denuncias / Ley Karin", "Proceso informal, sin trazabilidad", "Canal confidencial con seguimiento"],
+];
+
+function LeadForm() {
+  const [form, setForm] = useState({ name: "", company: "", contact: "", size: "" });
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const text = `Hola, quiero una demo de BJSIGAPP.\nNombre: ${form.name}\nEmpresa: ${form.company}\nContacto: ${form.contact}${form.size ? `\nTrabajadores: ${form.size}` : ""}`;
+    window.open(`https://wa.me/56941228089?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+  };
+  const input = "min-h-11 w-full rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50 outline-none focus:border-white/60";
+  return (
+    <form onSubmit={submit} className="grid w-full max-w-md gap-2">
+      <input required maxLength={80} placeholder="Tu nombre" value={form.name} onChange={set("name")} className={input} />
+      <input required maxLength={100} placeholder="Empresa" value={form.company} onChange={set("company")} className={input} />
+      <input required maxLength={100} placeholder="WhatsApp o correo" value={form.contact} onChange={set("contact")} className={input} />
+      <input maxLength={10} inputMode="numeric" placeholder="N.º de trabajadores (opcional)" value={form.size} onChange={set("size")} className={input} />
+      <button type="submit" className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-blue-800 hover:bg-blue-50">
+        Quiero mi demo gratis <ArrowRight size={16} />
+      </button>
+    </form>
+  );
+}
 
 const previewViews = [
   {
@@ -383,9 +423,11 @@ export function PublicLanding() {
   const [activeSection, setActiveSection] = useState(0);
   const landingSections = [
     "Inicio",
+    "¿Te suena?",
     "Solución",
     "Módulos",
     "Capacidades",
+    "Cómo funciona",
     "Preguntas frecuentes",
     "Seguridad",
     "Contacto",
@@ -395,7 +437,7 @@ export function PublicLanding() {
     setMenuOpen(false);
   };
   useEffect(() => {
-    document.title = "BJSIGAPP — Personas, Seguridad y Cumplimiento";
+    document.title = "BJSIGAPP — Controla todas tus empresas sin papeles";
   }, []);
 
   return (
@@ -412,19 +454,19 @@ export function PublicLanding() {
             className="hidden items-center gap-7 text-sm text-white/65 lg:flex"
             aria-label="Navegación principal"
           >
-            <button type="button" onClick={() => goToSection(1)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(2)} className="hover:text-white">
               Solución
             </button>
-            <button type="button" onClick={() => goToSection(2)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(3)} className="hover:text-white">
               Módulos
             </button>
-            <button type="button" onClick={() => goToSection(4)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(6)} className="hover:text-white">
               Preguntas frecuentes
             </button>
-            <button type="button" onClick={() => goToSection(5)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(7)} className="hover:text-white">
               Seguridad
             </button>
-            <button type="button" onClick={() => goToSection(6)} className="hover:text-white">
+            <button type="button" onClick={() => goToSection(8)} className="hover:text-white">
               Contacto
             </button>
           </nav>
@@ -454,16 +496,16 @@ export function PublicLanding() {
         {menuOpen && (
           <div className="border-t border-white/10 bg-slate-950 px-5 py-4 lg:hidden">
             <div className="flex flex-col gap-3 text-sm">
-              <button type="button" onClick={() => goToSection(1)}>
+              <button type="button" onClick={() => goToSection(2)}>
                 Solución
               </button>
-              <button type="button" onClick={() => goToSection(2)}>
+              <button type="button" onClick={() => goToSection(3)}>
                 Módulos
               </button>
-              <button type="button" onClick={() => goToSection(4)}>
+              <button type="button" onClick={() => goToSection(6)}>
                 Preguntas frecuentes
               </button>
-              <button type="button" onClick={() => goToSection(5)}>
+              <button type="button" onClick={() => goToSection(7)}>
                 Seguridad
               </button>
               <a href="/trabajador">Ingresar como colaborador</a>
@@ -520,26 +562,38 @@ export function PublicLanding() {
                 Gestión operacional para empresas
               </div>
               <h1 className="landing-title text-4xl font-black leading-[1.04] tracking-tight sm:text-6xl">
-                Personas, seguridad y{" "}
+                Deja de perseguir papeles.{" "}
                 <span className="landing-shimmer bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
-                  cumplimiento
+                  Controla todas tus empresas
                 </span>{" "}
-                en una sola plataforma.
+                desde un solo lugar.
               </h1>
               <p className="mt-7 max-w-lg text-base leading-7 text-white/60 sm:text-lg">
-                BJSIGAPP conecta la operación diaria de tu empresa con la prevención de riesgos, los
-                documentos y las decisiones que mantienen a tus equipos avanzando.
+                BJSIGAPP digitaliza asistencia, EPP, capacitaciones, documentos y Ley Karin. Tus
+                trabajadores firman y reportan desde el celular; tú ves todo en un panel.
               </p>
+              <div className="mt-6 grid max-w-lg grid-cols-3 gap-2">
+                {[
+                  ["-70%", "tiempo en papeleo"],
+                  ["24/7", "alertas de vencimientos"],
+                  ["Días", "no meses, para partir"],
+                ].map(([n, t]) => (
+                  <div key={t} className="landing-card rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <p className="text-xl font-black text-cyan-300">{n}</p>
+                    <p className="text-[11px] leading-4 text-white/55">{t}</p>
+                  </div>
+                ))}
+              </div>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#contacto"
                   onClick={(event) => {
                     event.preventDefault();
-                    goToSection(6);
+                    goToSection(8);
                   }}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3.5 text-sm font-bold shadow-xl shadow-blue-600/25 hover:-translate-y-0.5 hover:bg-blue-400"
                 >
-                  Solicitar una demo <ArrowRight size={16} />
+                  Quiero mi demo gratis <ArrowRight size={16} />
                 </a>
                 <a
                   href="/trabajador"
@@ -550,7 +604,7 @@ export function PublicLanding() {
               </div>
               <button
                 type="button"
-                onClick={() => goToSection(4)}
+                onClick={() => goToSection(6)}
                 className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-cyan-200 underline decoration-cyan-300/40 underline-offset-4 hover:text-white"
               >
                 ¿Quieres saber cómo funciona? Consulta las preguntas frecuentes{" "}
@@ -564,8 +618,32 @@ export function PublicLanding() {
           </div>
         </section>
         <section data-landing=""
+          className={activeSection === 1 ? "bg-slate-950 px-5 py-16 lg:px-8" : "hidden"}
+        >
+          <div className="mx-auto max-w-7xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">¿Te suena?</p>
+            <h2 className="mt-3 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl">
+              Si alguna de estas frases describe tu empresa, estás perdiendo tiempo y dinero.
+            </h2>
+            <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {hooks.map(({ tag, pain, fix }) => (
+                <article key={tag} className="landing-card rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/80">{tag}</p>
+                  <h3 className="mt-3 text-base font-black leading-6">{pain}</h3>
+                  <p className="mt-3 flex gap-2 text-xs leading-5 text-white/60">
+                    <CheckCircle2 size={16} className="shrink-0 text-emerald-300" /> {fix}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <button type="button" onClick={() => goToSection(8)} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-bold hover:bg-blue-400">
+              Quiero salir del Excel <ArrowRight size={16} />
+            </button>
+          </div>
+        </section>
+        <section data-landing=""
           className={
-            activeSection === 1
+            activeSection === 2
               ? "border-y border-white/10 bg-white/[0.035] px-5 py-12 lg:px-8 lg:py-14"
               : "hidden"
           }
@@ -577,7 +655,7 @@ export function PublicLanding() {
                 Mucho más que un software de RR. HH.
               </p>
               <h2 className="mt-3 max-w-md text-3xl font-black tracking-tight sm:text-4xl">
-                Más control. Menos riesgos. Mejores decisiones.
+                Recupera horas cada semana y duerme tranquilo ante cualquier fiscalización.
               </h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -632,7 +710,7 @@ export function PublicLanding() {
         <section data-landing=""
           id="modulos"
           className={
-            activeSection === 2 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
+            activeSection === 3 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
           }
         >
           <div className="mx-auto max-w-7xl">
@@ -641,7 +719,7 @@ export function PublicLanding() {
                 Todo lo que necesitas
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Una vista clara de cada frente de trabajo.
+                Todo lo que hoy haces en 10 planillas, en un solo lugar.
               </h2>
               <p className="mt-4 text-sm leading-6 text-slate-500">
                 Menos pestañas abiertas. Más continuidad entre personas, prevención y operación.
@@ -661,7 +739,7 @@ export function PublicLanding() {
           </div>
         </section>
         <section data-landing=""
-          className={activeSection === 3 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
+          className={activeSection === 4 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
@@ -670,7 +748,7 @@ export function PublicLanding() {
                   Una operación que trabaja mejor
                 </p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                  Menos trabajo repetido. Más tiempo para dirigir la empresa.
+                  Automatiza lo repetitivo. Dedica tu tiempo a dirigir.
                 </h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-500">
@@ -692,11 +770,52 @@ export function PublicLanding() {
                 </article>
               ))}
             </div>
+            <h3 className="mt-14 text-2xl font-black tracking-tight">Cómo te ahorras el tiempo</h3>
+            <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+              <div className="grid grid-cols-[1fr_1fr_1fr] bg-slate-900 text-xs font-bold text-white">
+                <p className="p-3">Tarea</p>
+                <p className="p-3 text-rose-200">Hoy (manual)</p>
+                <p className="p-3 text-emerald-200">Con BJSIGAPP</p>
+              </div>
+              {beforeAfter.map(([task, before, after]) => (
+                <div key={task} className="grid grid-cols-[1fr_1fr_1fr] border-t border-slate-200 text-xs">
+                  <p className="p-3 font-bold">{task}</p>
+                  <p className="p-3 text-slate-500">{before}</p>
+                  <p className="p-3 font-semibold text-blue-700">{after}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section data-landing=""
+          className={activeSection === 5 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"}
+        >
+          <div className="mx-auto max-w-7xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">Cómo funciona</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+              De la solicitud a tu operación digital en 3 pasos.
+            </h2>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {[
+                ["Solicitas", "Pides tu demo en 30 segundos, por formulario o WhatsApp."],
+                ["Configuramos", "Cargamos tu empresa, tus módulos, tus faenas y tu marca."],
+                ["Operas", "Tus trabajadores entran con su RUT y tú controlas todo desde el panel."],
+              ].map(([t, d], i) => (
+                <article key={t} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">{i + 1}</span>
+                  <h3 className="mt-5 text-lg font-black">{t}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">{d}</p>
+                </article>
+              ))}
+            </div>
+            <button type="button" onClick={() => goToSection(8)} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500">
+              Empezar el paso 1 <ArrowRight size={16} />
+            </button>
           </div>
         </section>
         <section data-landing=""
           className={
-            activeSection === 4 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
+            activeSection === 6 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
           }
           id="preguntas-frecuentes"
         >
@@ -706,7 +825,7 @@ export function PublicLanding() {
                 Preguntas frecuentes
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Una plataforma fácil de implementar y fácil de usar.
+                Partir es fácil. Usarlo, más todavía.
               </h2>
               <p className="mt-4 text-sm leading-6 text-slate-500">
                 Respuestas rápidas para entender cómo BJSIGAPP simplifica la operación diaria y
@@ -728,7 +847,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           id="seguridad"
-          className={activeSection === 5 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
+          className={activeSection === 7 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
         >
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
             <div>
@@ -736,7 +855,7 @@ export function PublicLanding() {
                 Diseñada para crecer contigo
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Cada empresa con su identidad, sus permisos y sus datos.
+                Tus datos protegidos. Cada empresa, blindada.
               </h2>
               <p className="mt-5 max-w-lg text-sm leading-7 text-white/55">
                 La experiencia se adapta a cada organización: branding por empresa, roles,
@@ -763,7 +882,7 @@ export function PublicLanding() {
         </section>
         <section data-landing=""
           className={
-            activeSection === 6
+            activeSection === 8
               ? "landing-contact bg-gradient-to-br from-blue-700 to-slate-900 px-5 py-20 lg:px-8"
               : "hidden"
           }
@@ -775,12 +894,13 @@ export function PublicLanding() {
                 Conversemos
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Lleva tu operación a un lugar más claro.
+                No te quedes atrás. Agenda tu demo hoy.
               </h2>
               <p className="mt-3 max-w-xl text-sm text-blue-100/75">
-                Solicita una demostración y revisemos qué módulos necesita tu empresa.
+                Déjanos tus datos y te respondemos por WhatsApp. Sin compromiso.
               </p>
             </div>
+            <LeadForm />
             <a
               href={whatsappDemoUrl}
               target="_blank"
@@ -793,6 +913,11 @@ export function PublicLanding() {
           </div>
         </section>
       </main>
+      {activeSection !== 8 && (
+        <button type="button" onClick={() => goToSection(8)} className="fixed inset-x-4 bottom-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 text-sm font-bold shadow-xl shadow-blue-600/30 sm:hidden">
+          Pedir demo <ArrowRight size={16} />
+        </button>
+      )}
       <footer className="border-t border-white/10 bg-slate-950 px-5 py-8 text-white/45 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 font-bold text-white/75">
