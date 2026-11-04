@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 const modules = [
   { icon: Users, label: "Personas y RR.HH.", accent: "from-sky-500/20 to-blue-500/5" },
@@ -180,9 +180,9 @@ const beforeAfter = [
 
 function LeadForm() {
   const [form, setForm] = useState({ name: "", company: "", contact: "", size: "" });
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
     const text = `Hola, quiero una demo de BJSIGAPP.\nNombre: ${form.name}\nEmpresa: ${form.company}\nContacto: ${form.contact}${form.size ? `\nTrabajadores: ${form.size}` : ""}`;
     window.open(`https://wa.me/56941228089?text=${encodeURIComponent(text)}`, "_blank", "noopener");
@@ -437,7 +437,7 @@ export function PublicLanding() {
     setMenuOpen(false);
   };
   useEffect(() => {
-    document.title = "BJSIGAPP — Personas, Seguridad y Cumplimiento";
+    document.title = "BJSIGAPP — Controla todas tus empresas sin papeles";
   }, []);
 
   return (
@@ -655,7 +655,7 @@ export function PublicLanding() {
                 Mucho más que un software de RR. HH.
               </p>
               <h2 className="mt-3 max-w-md text-3xl font-black tracking-tight sm:text-4xl">
-                Más control. Menos riesgos. Mejores decisiones.
+                Recupera horas cada semana y duerme tranquilo ante cualquier fiscalización.
               </h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -719,7 +719,7 @@ export function PublicLanding() {
                 Todo lo que necesitas
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Una vista clara de cada frente de trabajo.
+                Todo lo que hoy haces en 10 planillas, en un solo lugar.
               </h2>
               <p className="mt-4 text-sm leading-6 text-slate-500">
                 Menos pestañas abiertas. Más continuidad entre personas, prevención y operación.
@@ -748,7 +748,7 @@ export function PublicLanding() {
                   Una operación que trabaja mejor
                 </p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                  Menos trabajo repetido. Más tiempo para dirigir la empresa.
+                  Automatiza lo repetitivo. Dedica tu tiempo a dirigir.
                 </h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-500">
@@ -825,7 +825,7 @@ export function PublicLanding() {
                 Preguntas frecuentes
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Una plataforma fácil de implementar y fácil de usar.
+                Partir es fácil. Usarlo, más todavía.
               </h2>
               <p className="mt-4 text-sm leading-6 text-slate-500">
                 Respuestas rápidas para entender cómo BJSIGAPP simplifica la operación diaria y
@@ -855,7 +855,7 @@ export function PublicLanding() {
                 Diseñada para crecer contigo
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Cada empresa con su identidad, sus permisos y sus datos.
+                Tus datos protegidos. Cada empresa, blindada.
               </h2>
               <p className="mt-5 max-w-lg text-sm leading-7 text-white/55">
                 La experiencia se adapta a cada organización: branding por empresa, roles,
@@ -913,6 +913,11 @@ export function PublicLanding() {
           </div>
         </section>
       </main>
+      {activeSection !== 8 && (
+        <button type="button" onClick={() => goToSection(8)} className="fixed inset-x-4 bottom-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 text-sm font-bold shadow-xl shadow-blue-600/30 sm:hidden">
+          Pedir demo <ArrowRight size={16} />
+        </button>
+      )}
       <footer className="border-t border-white/10 bg-slate-950 px-5 py-8 text-white/45 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 font-bold text-white/75">
