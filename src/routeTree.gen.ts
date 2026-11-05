@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as GestionDePersonasYTurnosRouteImport } from './routes/gestion-de-personas-y-turnos'
 import { Route as GestionMultisucursalRouteImport } from './routes/gestion-multisucursal'
+import { Route as ModulosRouteImport } from './routes/modulos'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SeguridadYCumplimientoRouteImport } from './routes/seguridad-y-cumplimiento'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -45,6 +46,11 @@ const GestionMultisucursalRoute = GestionMultisucursalRouteImport.update({
   path: '/gestion-multisucursal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModulosRoute = ModulosRouteImport.update({
+  id: '/modulos',
+  path: '/modulos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/contacto': typeof ContactoRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/modulos': typeof ModulosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/contacto': typeof ContactoRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/modulos': typeof ModulosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/contacto': typeof ContactoRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/modulos': typeof ModulosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
+    | '/modulos'
     | '/robots.txt'
     | '/seguridad-y-cumplimiento'
     | '/sitemap.xml'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
+    | '/modulos'
     | '/robots.txt'
     | '/seguridad-y-cumplimiento'
     | '/sitemap.xml'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
+    | '/modulos'
     | '/robots.txt'
     | '/seguridad-y-cumplimiento'
     | '/sitemap.xml'
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   ContactoRoute: typeof ContactoRoute
   GestionDePersonasYTurnosRoute: typeof GestionDePersonasYTurnosRoute
   GestionMultisucursalRoute: typeof GestionMultisucursalRoute
+  ModulosRoute: typeof ModulosRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SeguridadYCumplimientoRoute: typeof SeguridadYCumplimientoRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GestionMultisucursalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/modulos': {
+      id: '/modulos'
+      path: '/modulos'
+      fullPath: '/modulos'
+      preLoaderRoute: typeof ModulosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactoRoute: ContactoRoute,
   GestionDePersonasYTurnosRoute: GestionDePersonasYTurnosRoute,
   GestionMultisucursalRoute: GestionMultisucursalRoute,
+  ModulosRoute: ModulosRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SeguridadYCumplimientoRoute: SeguridadYCumplimientoRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

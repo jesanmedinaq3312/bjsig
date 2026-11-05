@@ -2,6 +2,7 @@ export const PUBLIC_SITE_ORIGIN = normalizePublicOrigin(import.meta.env.VITE_PUB
 
 export const INDEXABLE_PUBLIC_PATHS = [
   "/",
+  "/modulos",
   "/gestion-multisucursal",
   "/software-de-gestion-empresarial",
   "/gestion-de-personas-y-turnos",
@@ -41,14 +42,17 @@ export function buildSeoHead({ path, title, description, keywords }: SeoPageInpu
   const imageUrl = PUBLIC_SITE_ORIGIN
     ? new URL("/icons/icon-512.png", PUBLIC_SITE_ORIGIN).toString()
     : null;
+  const indexingDirectives = PUBLIC_SITE_ORIGIN
+    ? "index,follow,max-image-preview:large"
+    : "noindex,follow";
 
   return {
     meta: [
       { title },
       { name: "description", content: description },
       { name: "keywords", content: keywords.join(", ") },
-      { name: "robots", content: "index,follow,max-image-preview:large" },
-      { name: "googlebot", content: "index,follow,max-image-preview:large" },
+      { name: "robots", content: indexingDirectives },
+      { name: "googlebot", content: indexingDirectives },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "BJSIGAPP" },
       { property: "og:title", content: title },

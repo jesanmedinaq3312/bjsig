@@ -1,6 +1,7 @@
 {
   "routes": [
     { "path": "/", "title": "Gestión empresarial multisucursal | BJSIGAPP" },
+    { "path": "/modulos", "title": "Módulos de gestión empresarial | BJSIGAPP" },
     { "path": "/gestion-multisucursal", "title": "Gestión multisucursal | BJSIGAPP" },
     { "path": "/software-de-gestion-empresarial", "title": "Software de gestión empresarial | BJSIGAPP" },
     { "path": "/gestion-de-personas-y-turnos", "title": "Gestión de personas y turnos | BJSIGAPP" },

@@ -12,7 +12,7 @@ describe("SeoLandingPage demo interactiva", () => {
     expect(demoHeading).toBeTruthy();
     expect(
       demoHeading.closest("section")?.querySelector(
-        '[aria-label="Demostración interactiva de módulos BJSIGAPP"]',
+        '[role="group"][aria-labelledby="device-showcase-caption"]',
       ),
     ).toBeTruthy();
 

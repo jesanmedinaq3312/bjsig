@@ -1,4 +1,4 @@
-import { DashboardPreview } from "@/views/PublicLanding";
+import { DeviceShowcase } from "@/components/marketing/DeviceShowcase";
 import {
   ArrowRight,
   BarChart3,
@@ -511,6 +511,7 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
 };
 
 const pageLinks = [
+  { href: "/modulos", label: "Módulos" },
   { href: "/gestion-multisucursal", label: "Gestión multisucursal" },
   { href: "/software-de-gestion-empresarial", label: "Gestión empresarial" },
   { href: "/gestion-de-personas-y-turnos", label: "Personas y turnos" },
@@ -585,9 +586,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
                 <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Demo del panel SaaS</p>
                 <h2 id="interactive-demo-title" className="mt-2 text-xl font-black leading-tight tracking-tight text-white sm:text-2xl">Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro</h2>
               </div>
-              <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-2 shadow-2xl shadow-sky-950/30 sm:p-3">
-                <DashboardPreview />
-              </div>
+              <DeviceShowcase />
             </div>
           </div>
         </section>

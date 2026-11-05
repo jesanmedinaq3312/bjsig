@@ -820,3 +820,50 @@ button:active:not(:disabled) {
     transition: none !important;
   }
 }
+
+
+/* Escena del producto BJSIGAPP en laptop, tablet y móvil. */
+.device-showcase-stage {
+  min-height: clamp(23rem, 55vw, 36rem);
+}
+
+.device-laptop-lid {
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  animation: bjsig-laptop-open 720ms cubic-bezier(0.2, 0.72, 0.2, 1) both;
+}
+
+@keyframes bjsig-laptop-open {
+  0% {
+    transform: perspective(1200px) rotateX(-72deg);
+    opacity: 0.7;
+  }
+  68% {
+    transform: perspective(1200px) rotateX(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 639px) {
+  .device-showcase-stage {
+    min-height: 23rem;
+  }
+}
+
+@media (max-width: 379px) {
+  .device-showcase-stage {
+    min-height: 21rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .device-laptop-lid {
+    animation: none !important;
+    transform: none !important;
+  }
+}
