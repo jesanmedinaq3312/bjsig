@@ -296,11 +296,7 @@ export function App() {
   const hasPermission = canAccessPermission(requiredPerm, permissions, userRole);
   const isPlatformView = view === "saas";
   const effectiveView: ViewKey =
-    unrestricted && isPlatformView && hasPermission
-      ? "saas"
-      : hasPermission || Boolean(route.slug)
-        ? view
-        : "dashboard";
+    unrestricted && isPlatformView && hasPermission ? "saas" : hasPermission ? view : "dashboard";
 
   useNavigationTracking(
     isWorker ? "workerportal" : effectiveView,
@@ -521,7 +517,7 @@ export function App() {
   }
 
   const unknownView = isAdminRoute && !!route.view && !KNOWN_VIEWS.has(route.view);
-  const accessDenied = !hasPermission && view !== "dashboard" && !route.slug;
+  const accessDenied = !hasPermission && view !== "dashboard";
 
   if (unknownView || accessDenied) {
     return (

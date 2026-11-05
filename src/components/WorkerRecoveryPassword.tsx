@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, Button } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
+import {
+  ALLOWED_PASSWORD_SYMBOLS,
+  meetsPasswordPolicy,
+  PASSWORD_POLICY_MESSAGE,
+} from "@/lib/passwordPolicy";
 
 interface Props {
   email: string;
@@ -30,6 +35,7 @@ export function WorkerRecoveryPassword({ email, onSuccess }: Props) {
     upper: /[A-Z]/.test(newPassword),
     lower: /[a-z]/.test(newPassword),
     number: /\d/.test(newPassword),
+    symbol: [...newPassword].some((character) => ALLOWED_PASSWORD_SYMBOLS.includes(character)),
     match: newPassword.length > 0 && newPassword === confirmPassword,
   };
   async function handleSubmit(e: React.FormEvent) {
@@ -44,12 +50,8 @@ export function WorkerRecoveryPassword({ email, onSuccess }: Props) {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    if (newPassword.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/\d/.test(newPassword)) {
-      setError("La contraseña debe incluir mayúsculas, minúsculas y números.");
+    if (!meetsPasswordPolicy(newPassword)) {
+      setError(PASSWORD_POLICY_MESSAGE);
       return;
     }
 
@@ -171,6 +173,7 @@ export function WorkerRecoveryPassword({ email, onSuccess }: Props) {
                 { ok: pwChecks.upper, label: "Al menos una mayúscula" },
                 { ok: pwChecks.lower, label: "Al menos una minúscula" },
                 { ok: pwChecks.number, label: "Al menos un número" },
+                { ok: pwChecks.symbol, label: "Al menos un símbolo permitido" },
                 { ok: pwChecks.match, label: "Las contraseñas coinciden" },
               ].map((req) => (
                 <div

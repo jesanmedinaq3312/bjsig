@@ -60,13 +60,13 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Aviso de privacidad y cookies"
-      className="cookie-banner fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-3xl rounded-2xl border border-white/15 bg-slate-900/95 p-5 text-white shadow-2xl shadow-blue-950/60 backdrop-blur-xl sm:inset-x-6 sm:bottom-6 sm:p-6"
+      className="cookie-banner fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-3xl rounded-2xl border border-white/15 bg-slate-900/95 p-4 text-white shadow-2xl shadow-blue-950/60 backdrop-blur-xl sm:inset-x-6 sm:bottom-6 sm:p-6"
     >
       <button
         type="button"
         onClick={() => close({ functional: false, analytics: false })}
         aria-label="Rechazar opcionales y cerrar"
-        className="absolute right-3 top-3 rounded-lg p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+        className="absolute right-2 top-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white"
       >
         <X size={16} />
       </button>
@@ -77,14 +77,20 @@ export function CookieConsent() {
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-black">Tu privacidad nos importa</h2>
           <p className="mt-1.5 text-sm leading-6 text-white/65">
-            Usamos cookies y recolectamos datos técnicos (dispositivo, IP, actividad y, en los
-            portales, ubicación GPS) solo para seguridad, funcionamiento del servicio y control
-            operacional. No vendemos ni compartimos tus datos con terceros. Revisa nuestra{" "}
-            <a href="/privacidad" className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white">
+            Usamos cookies y datos técnicos (dispositivo, IP y actividad) para seguridad y
+            funcionamiento. En los portales, procesamos ubicación GPS para control operacional. No
+            vendemos ni compartimos tus datos con terceros. Revisa nuestra{" "}
+            <a
+              href="/privacidad"
+              className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white"
+            >
               Política de privacidad
             </a>{" "}
             y los{" "}
-            <a href="/terminos" className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white">
+            <a
+              href="/terminos"
+              className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white"
+            >
               Términos y condiciones
             </a>
             .
@@ -93,9 +99,27 @@ export function CookieConsent() {
           {details && (
             <div className="cookie-details mt-4 space-y-2">
               {[
-                { label: "Necesarias", desc: "Sesión, seguridad y preferencias básicas.", value: true, locked: true, set: () => {} },
-                { label: "Funcionales", desc: "Recordar tema, idioma y ajustes de la interfaz.", value: functional, locked: false, set: setFunctional },
-                { label: "Analíticas", desc: "Medición anónima de uso para mejorar la plataforma.", value: analytics, locked: false, set: setAnalytics },
+                {
+                  label: "Necesarias",
+                  desc: "Sesión, seguridad y preferencias básicas.",
+                  value: true,
+                  locked: true,
+                  set: () => {},
+                },
+                {
+                  label: "Funcionales",
+                  desc: "Recordar tema, idioma y ajustes de la interfaz.",
+                  value: functional,
+                  locked: false,
+                  set: setFunctional,
+                },
+                {
+                  label: "Analíticas",
+                  desc: "Medición anónima de uso para mejorar la plataforma.",
+                  value: analytics,
+                  locked: false,
+                  set: setAnalytics,
+                },
               ].map((row) => (
                 <label
                   key={row.label}

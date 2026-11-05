@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./components/public/public-site.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -761,62 +762,5 @@ button:active:not(:disabled) {
   .wm-stage::after,
   .wm-login-card::before {
     animation: none;
-  }
-}
-
-/* ===== Landing motion ===== */
-@keyframes landingRise {
-  from { opacity: 0; transform: translateY(28px); filter: blur(6px); }
-  to { opacity: 1; transform: none; filter: none; }
-}
-@keyframes landingFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-@keyframes landingShimmer {
-  to { background-position: 200% center; }
-}
-@keyframes landingDrift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, -30px) scale(1.15); }
-}
-@keyframes cookieIn {
-  from { opacity: 0; transform: translateY(40px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes cookieWiggle {
-  0%, 100% { transform: rotate(0); }
-  20% { transform: rotate(-12deg); }
-  40% { transform: rotate(10deg); }
-  60% { transform: rotate(-6deg); }
-}
-[data-landing] > * { animation: landingRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-[data-landing] .grid > *,
-[data-landing] .max-w-xl > * {
-  animation: landingRise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-[data-landing] .grid > *:nth-child(2), [data-landing] .max-w-xl > *:nth-child(2) { animation-delay: 0.08s; }
-[data-landing] .grid > *:nth-child(3), [data-landing] .max-w-xl > *:nth-child(3) { animation-delay: 0.16s; }
-[data-landing] .grid > *:nth-child(4), [data-landing] .max-w-xl > *:nth-child(4) { animation-delay: 0.24s; }
-[data-landing] .grid > *:nth-child(5), [data-landing] .max-w-xl > *:nth-child(5) { animation-delay: 0.32s; }
-[data-landing] .grid > *:nth-child(n+6), [data-landing] .max-w-xl > *:nth-child(n+6) { animation-delay: 0.4s; }
-[data-landing] a, [data-landing] button { transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease, color 0.2s ease; }
-[data-landing] .rounded-2xl, [data-landing] .rounded-3xl { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease; }
-[data-landing] .grid > .rounded-2xl:hover, [data-landing] .grid > .rounded-3xl:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 50px -20px color-mix(in oklab, oklch(0.7 0.17 240) 45%, transparent);
-}
-.landing-preview-wrap { animation: landingFloat 7s ease-in-out infinite; }
-.landing-orb { animation: landingDrift 14s ease-in-out infinite; }
-.landing-orb-two { animation-duration: 18s; animation-direction: reverse; }
-.landing-shimmer { background-size: 200% auto; animation: landingShimmer 4s linear infinite; }
-.landing-header { animation: landingRise 0.6s ease both; }
-.cookie-banner { animation: cookieIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.cookie-icon { animation: cookieWiggle 1.4s ease 0.8s both; }
-.cookie-details { animation: landingRise 0.4s ease both; }
-@media (prefers-reduced-motion: reduce) {
-  [data-landing] *, [data-landing], .landing-preview-wrap, .landing-orb, .landing-shimmer, .landing-header, .cookie-banner, .cookie-icon, .cookie-details {
-    animation: none !important;
-    transition: none !important;
   }
 }

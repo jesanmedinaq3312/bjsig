@@ -162,7 +162,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     resetState();
     setBusy(true);
     try {
-      const check = (await callWorkerAuth("check_account", { email })) as AccountCheck;
+      const check = (await callWorkerAuth("check_account", {
+        email,
+        rut: normalizeRut(rutInput),
+      })) as AccountCheck;
       setAccountInfo(check);
 
       if (!check.exists) {
@@ -178,18 +181,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
       }
       if (!check.active) {
         setError(check.error ?? "Tu cuenta está bloqueada. Contacta al administrador.");
-        setBusy(false);
-        return;
-      }
-      const enteredRut = normalizeRut(rutInput);
-      if (!check.worker_rut || normalizeRut(check.worker_rut) !== enteredRut) {
-        setError("El correo ingresado no corresponde al RUT validado. Verifica tus datos.");
-        await audit({
-          action: "worker.signin_failed",
-          entity: "auth",
-          entity_label: email,
-          details: { reason: "rut_email_mismatch" },
-        });
         setBusy(false);
         return;
       }
@@ -215,12 +206,23 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
         return;
       }
       const msg = friendlyError(err);
-      setError(msg.includes("Invalid login credentials") ? "Credenciales inválidas" : msg);
+      const invalidCredentials = msg.includes("Invalid login credentials");
+      if (invalidCredentials) {
+        try {
+          await callWorkerAuth("record_login_failure", { email });
+        } catch (rateErr) {
+          if (rateErr instanceof RateLimitError) {
+            showRequestError(rateErr);
+            return;
+          }
+        }
+      }
+      setError(invalidCredentials ? "Credenciales inválidas" : msg);
       await audit({
         action: "worker.signin_failed",
         entity: "auth",
         entity_label: email,
-        details: { reason: "invalid_credentials" },
+        details: { reason: invalidCredentials ? "invalid_credentials" : "authentication_error" },
       });
     } finally {
       setBusy(false);

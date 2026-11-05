@@ -15,7 +15,6 @@ export interface AccountCheck {
   is_worker: boolean;
   active: boolean;
   must_change_password: boolean;
-  worker_rut: string | null;
   has_auth_user: boolean;
   error?: string;
 }

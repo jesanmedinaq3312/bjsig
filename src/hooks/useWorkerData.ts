@@ -145,6 +145,7 @@ export function useWorkerData(workerRut: string | null) {
       const { data, error } = await supabase
         .from("trainings_ds44")
         .select("*")
+        .eq("tenant_id", tenantId!)
         .contains("attendees_rut_list", [workerRut])
         .order("created_at", { ascending: false })
         .limit(100);

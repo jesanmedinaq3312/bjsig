@@ -1,9 +1,50 @@
 {
   "routes": [
-    { "path": "/", "title": "BJSIGAPP — Gestión empresarial" },
+    { "path": "/", "title": "BJSIGAPP | Software de RR. HH. multiempresa" },
+    {
+      "path": "/modulos/plataforma-multiempresa",
+      "title": "Plataforma SaaS multiempresa | BJSIGAPP"
+    },
+    { "path": "/modulos/recursos-humanos", "title": "Software de recursos humanos | BJSIGAPP" },
+    {
+      "path": "/modulos/asistencia-y-turnos",
+      "title": "Software de asistencia y turnos | BJSIGAPP"
+    },
+    {
+      "path": "/modulos/prevencion-de-riesgos",
+      "title": "Prevención de riesgos y trabajo en terreno | BJSIGAPP"
+    },
+    { "path": "/modulos/epp-e-inventario", "title": "Control de EPP e inventario | BJSIGAPP" },
+    {
+      "path": "/modulos/capacitaciones",
+      "title": "Gestión de capacitaciones laborales | BJSIGAPP"
+    },
+    { "path": "/modulos/portal-del-trabajador", "title": "Portal del trabajador | BJSIGAPP" },
+    {
+      "path": "/modulos/documentos-y-cumplimiento",
+      "title": "Gestión documental y cumplimiento | BJSIGAPP"
+    },
+    { "path": "/modulos/canal-de-denuncias", "title": "Canal de denuncias interno | BJSIGAPP" },
+    { "path": "/modulos/ley-karin", "title": "Ley Karin y protocolos laborales | BJSIGAPP" },
+    {
+      "path": "/modulos/solicitudes-y-comunicaciones",
+      "title": "Solicitudes y comunicaciones internas | BJSIGAPP"
+    },
+    {
+      "path": "/modulos/finanzas-y-proveedores",
+      "title": "Finanzas y proveedores para empresas | BJSIGAPP"
+    },
+    {
+      "path": "/modulos/indicadores-y-reportes",
+      "title": "Indicadores y reportes empresariales | BJSIGAPP"
+    },
+    {
+      "path": "/modulos/auditoria-y-trazabilidad",
+      "title": "Auditoría y trazabilidad empresarial | BJSIGAPP"
+    },
     { "path": "/privacidad", "title": "Política de privacidad" },
     { "path": "/terminos", "title": "Términos y condiciones" },
-    { "path": "/contacto", "title": "Contacto" },
+    { "path": "/contacto", "title": "Contacto comercial" },
     { "path": "/trabajador", "title": "Portal personal del trabajador" },
     { "path": "/portal-trabajador", "title": "Portal personal del trabajador" },
     { "path": "/:slug", "title": "Portal personal por empresa" },

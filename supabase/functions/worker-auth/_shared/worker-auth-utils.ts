@@ -88,6 +88,10 @@ export async function checkRateLimit(
   } catch { return false; }
 }
 
+export function workerLoginRateLimitKey(email: string, ip: string | null): string {
+  return `${email.toLowerCase().trim()}:worker_login:${ip ?? "unknown"}`;
+}
+
 export async function recordLoginAttempt(
   svc: SupabaseClient,
   identifier: string,
