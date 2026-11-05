@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as ContactoRouteImport } from './routes/contacto'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as GestionDePersonasYTurnosRouteImport } from './routes/gestion-de-personas-y-turnos'
 import { Route as GestionMultisucursalRouteImport } from './routes/gestion-multisucursal'
 import { Route as ModulosRouteImport } from './routes/modulos'
@@ -33,6 +34,11 @@ const SplatRoute = SplatRouteImport.update({
 const ContactoRoute = ContactoRouteImport.update({
   id: '/contacto',
   path: '/contacto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GestionDePersonasYTurnosRoute =
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
   '/modulos': typeof ModulosRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
   '/modulos': typeof ModulosRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
   '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
   '/gestion-multisucursal': typeof GestionMultisucursalRoute
   '/modulos': typeof ModulosRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/contacto'
+    | '/cookies'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
     | '/modulos'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/contacto'
+    | '/cookies'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
     | '/modulos'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/contacto'
+    | '/cookies'
     | '/gestion-de-personas-y-turnos'
     | '/gestion-multisucursal'
     | '/modulos'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   ContactoRoute: typeof ContactoRoute
+  CookiesRoute: typeof CookiesRoute
   GestionDePersonasYTurnosRoute: typeof GestionDePersonasYTurnosRoute
   GestionMultisucursalRoute: typeof GestionMultisucursalRoute
   ModulosRoute: typeof ModulosRoute
@@ -183,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/contacto'
       fullPath: '/contacto'
       preLoaderRoute: typeof ContactoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gestion-de-personas-y-turnos': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   ContactoRoute: ContactoRoute,
+  CookiesRoute: CookiesRoute,
   GestionDePersonasYTurnosRoute: GestionDePersonasYTurnosRoute,
   GestionMultisucursalRoute: GestionMultisucursalRoute,
   ModulosRoute: ModulosRoute,
