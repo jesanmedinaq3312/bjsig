@@ -1,29 +1,32 @@
-import { describe, it as test } from "node:test";
-import { strictEqual } from "node:assert";
-import { hasActivityAuditAssurance } from "./activityAuth";
+import { describe, expect, it } from "vitest";
+import {
+  canSubmitActivityAudit,
+  hasActivityAuditAssurance,
+  markActivityAuditMfaRequired,
+} from "./activityAuth";
 
 const token = (aal?: string) => `header.${btoa(JSON.stringify({ aal }))}.signature`;
 
 describe("Activity audit MFA preflight", () => {
-  test("does not submit audit events with an AAL1 session", () => {
-    strictEqual(hasActivityAuditAssurance(token("aal1")), false);
+  it("does not submit audit events with an AAL1 session", () => {
+    expect(hasActivityAuditAssurance(token("aal1"))).toBe(false);
   });
-  test("resumes submissions with the upgraded AAL2 token", () => {
-    strictEqual(hasActivityAuditAssurance(token("aal2")), true);
+
+  it("resumes submissions with the upgraded AAL2 token", () => {
+    expect(hasActivityAuditAssurance(token("aal2"))).toBe(true);
   });
-  test("does not submit with missing or malformed assurance", () => {
-    strictEqual(hasActivityAuditAssurance(token()), false);
-    strictEqual(hasActivityAuditAssurance("invalid"), false);
+
+  it("does not submit with missing or malformed assurance", () => {
+    expect(hasActivityAuditAssurance(token())).toBe(false);
+    expect(hasActivityAuditAssurance("invalid")).toBe(false);
   });
-});
-describe("Activity audit server MFA rejection", () => {
-  test("stops resending with a token the server rejected, resumes with a new one", async () => {
-    const { canSubmitActivityAudit, markActivityAuditMfaRequired } = await import("./activityAuth");
+
+  it("stops resending with a token the server rejected, then resumes with a refreshed token", () => {
     const rejected = `header.${btoa(JSON.stringify({ aal: "aal2", n: 1 }))}.sig`;
     const refreshed = `header.${btoa(JSON.stringify({ aal: "aal2", n: 2 }))}.sig`;
-    strictEqual(canSubmitActivityAudit(rejected), true);
+    expect(canSubmitActivityAudit(rejected)).toBe(true);
     markActivityAuditMfaRequired(rejected);
-    strictEqual(canSubmitActivityAudit(rejected), false);
-    strictEqual(canSubmitActivityAudit(refreshed), true);
+    expect(canSubmitActivityAudit(rejected)).toBe(false);
+    expect(canSubmitActivityAudit(refreshed)).toBe(true);
   });
 });

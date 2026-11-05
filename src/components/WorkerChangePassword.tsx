@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, Button } from "@/components/ui";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
+import {
+  meetsPasswordPolicy,
+  PASSWORD_POLICY_MESSAGE,
+  ALLOWED_PASSWORD_SYMBOLS,
+} from "@/lib/passwordPolicy";
 
 interface Props {
   email: string;
@@ -32,6 +37,7 @@ export function WorkerChangePassword({ email, forced = false, onSuccess }: Props
     upper: /[A-Z]/.test(newPassword),
     lower: /[a-z]/.test(newPassword),
     number: /\d/.test(newPassword),
+    symbol: [...newPassword].some((character) => ALLOWED_PASSWORD_SYMBOLS.includes(character)),
     match: newPassword.length > 0 && newPassword === confirmPassword,
     different: currentPassword.length > 0 && newPassword !== currentPassword,
   };
@@ -47,8 +53,8 @@ export function WorkerChangePassword({ email, forced = false, onSuccess }: Props
       setError("Las contraseñas no coinciden.");
       return;
     }
-    if (newPassword.length < 8) {
-      setError("La nueva contraseña debe tener al menos 8 caracteres.");
+    if (!meetsPasswordPolicy(newPassword)) {
+      setError(PASSWORD_POLICY_MESSAGE);
       return;
     }
     if (currentPassword === newPassword) {
@@ -205,6 +211,7 @@ export function WorkerChangePassword({ email, forced = false, onSuccess }: Props
                 { ok: pwChecks.upper, label: "Al menos una mayúscula" },
                 { ok: pwChecks.lower, label: "Al menos una minúscula" },
                 { ok: pwChecks.number, label: "Al menos un número" },
+                { ok: pwChecks.symbol, label: "Al menos un símbolo permitido" },
                 { ok: pwChecks.match, label: "Las contraseñas coinciden" },
                 ...(!forced
                   ? [{ ok: pwChecks.different, label: "Diferente a la contraseña actual" }]

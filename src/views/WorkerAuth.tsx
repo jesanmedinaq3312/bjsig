@@ -239,6 +239,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
       setError("Las contraseñas no coinciden.");
       return;
     }
+    if (newPassword === password) {
+      setError("La nueva contraseña debe ser diferente a la temporal.");
+      return;
+    }
     const pwError = validatePassword(newPassword);
     if (pwError) {
       setError(pwError);
@@ -246,7 +250,11 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     }
     setBusy(true);
     try {
-      await callWorkerAuth("set_initial_password", { email, password: newPassword });
+      await callWorkerAuth("set_initial_password", {
+        email,
+        current_password: password,
+        new_password: newPassword,
+      });
       setSuccessMsg("Contraseña establecida. Ahora puedes ingresar.");
       setMode("success");
       setPassword(newPassword);

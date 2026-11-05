@@ -2,8 +2,8 @@
 const LOWER = "abcdefghijklmnopqrstuvwxyz";
 const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const DIGITS = "0123456789";
-const SYMBOLS = "!@#$%^&*()_+-=[]{};:,.?";
-const ALL = LOWER + UPPER + DIGITS + SYMBOLS;
+export const ALLOWED_PASSWORD_SYMBOLS = "!@#$%^&*()_+-=[]{};:,.?";
+const ALL = LOWER + UPPER + DIGITS + ALLOWED_PASSWORD_SYMBOLS;
 
 export function meetsPasswordPolicy(pw: string): boolean {
   return (
@@ -11,12 +11,12 @@ export function meetsPasswordPolicy(pw: string): boolean {
     /[a-z]/.test(pw) &&
     /[A-Z]/.test(pw) &&
     /\d/.test(pw) &&
-    /[^A-Za-z0-9]/.test(pw)
+    [...pw].some((character) => ALLOWED_PASSWORD_SYMBOLS.includes(character))
   );
 }
 
 export const PASSWORD_POLICY_MESSAGE =
-  "La contraseña debe tener al menos 8 caracteres e incluir minúscula, mayúscula, número y símbolo.";
+  "La contraseña debe tener al menos 8 caracteres e incluir minúscula, mayúscula, número y símbolo permitido.";
 
 function pick(set: string): string {
   const buf = new Uint32Array(1);
@@ -25,7 +25,7 @@ function pick(set: string): string {
 }
 
 export function generateTemporaryPassword(length = 16): string {
-  const chars = [pick(LOWER), pick(UPPER), pick(DIGITS), pick(SYMBOLS)];
+  const chars = [pick(LOWER), pick(UPPER), pick(DIGITS), pick(ALLOWED_PASSWORD_SYMBOLS)];
   while (chars.length < length) chars.push(pick(ALL));
   for (let i = chars.length - 1; i > 0; i--) {
     const buf = new Uint32Array(1);

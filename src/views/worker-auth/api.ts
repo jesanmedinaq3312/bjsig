@@ -1,4 +1,5 @@
 import { callEdgeFunctionAnon } from "@/lib/edgeFunctions";
+import { meetsPasswordPolicy, PASSWORD_POLICY_MESSAGE } from "@/lib/passwordPolicy";
 import {
   getCachedGps,
   getBrowserFingerprint,
@@ -49,9 +50,5 @@ export async function callWorkerAuth(action: string, payload: Record<string, unk
 }
 
 export function validatePassword(pw: string): string | null {
-  if (pw.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
-  if (!/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw)) {
-    return "La contraseña debe incluir mayúsculas, minúsculas y números.";
-  }
-  return null;
+  return meetsPasswordPolicy(pw) ? null : PASSWORD_POLICY_MESSAGE;
 }

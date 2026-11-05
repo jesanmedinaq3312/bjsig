@@ -7,6 +7,7 @@ import {
   SectionTitle,
   FieldLabel,
 } from "./ui";
+import { PASSWORD_POLICY_MESSAGE } from "@/lib/passwordPolicy";
 
 export function FirstPasswordForm({
   newPassword,
@@ -39,6 +40,7 @@ export function FirstPasswordForm({
       <div className="p-3 bg-cyan-500/10 backdrop-blur-md border border-cyan-400/20 rounded-xl text-xs text-cyan-200 font-medium [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]">
         Bienvenido. Es la primera vez que ingresas. Crea una contraseña para tu cuenta.
       </div>
+      <p className="text-[11px] leading-relaxed text-white/60">{PASSWORD_POLICY_MESSAGE}</p>
       <div>
         <FieldLabel>Nueva Contraseña</FieldLabel>
         <div className="relative group">

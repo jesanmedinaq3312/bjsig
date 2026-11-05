@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/auth.ts";
 import { jsonResponse } from "../_shared/worker-auth-utils.ts";
 import { handleCheckRut } from "./handlers/check_rut.ts";
@@ -16,10 +16,15 @@ Deno.serve(async (req: Request) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!supabaseUrl || !serviceKey) {
-      return jsonResponse(corsHeaders, { error: "Variables de entorno de Supabase no configuradas en el servidor." }, 500);
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      return jsonResponse(
+        corsHeaders,
+        { error: "Variables de entorno de Supabase no configuradas en el servidor." },
+        500,
+      );
     }
 
     const svc = createClient(supabaseUrl, serviceKey);
@@ -32,7 +37,7 @@ Deno.serve(async (req: Request) => {
       case "check_account":
         return await handleCheckAccount(svc, req, body, corsHeaders);
       case "set_initial_password":
-        return await handleSetInitialPassword(svc, req, body, corsHeaders);
+        return await handleSetInitialPassword(svc, req, body, corsHeaders, supabaseUrl, anonKey);
       case "change_password":
         return await handleChangePassword(svc, req, body, corsHeaders, supabaseUrl);
       case "request_reset":
@@ -41,7 +46,13 @@ Deno.serve(async (req: Request) => {
       default:
         return jsonResponse(corsHeaders, { error: "Acción no reconocida." }, 400);
     }
-  } catch (err) {
-    return jsonResponse(corsHeaders, { error: (err as Error).message || "Error interno del servidor." }, 500);
+  } catch {
+    return jsonResponse(
+      corsHeaders,
+      {
+        error: "No se pudo procesar la solicitud. Intenta nuevamente.",
+      },
+      500,
+    );
   }
 });

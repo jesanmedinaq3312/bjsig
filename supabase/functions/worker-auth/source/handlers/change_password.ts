@@ -1,8 +1,14 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import {
   RATE_LIMIT_WINDOW_MIN,
-  checkRateLimit, recordLoginAttempt, clientInfo, clientTracking, logAction, jsonResponse,
+  checkRateLimit,
+  recordLoginAttempt,
+  clientInfo,
+  logAction,
+  jsonResponse,
   findAuthUserByEmail,
+  meetsWorkerPasswordPolicy,
+  WORKER_PASSWORD_POLICY_MESSAGE,
 } from "../../_shared/worker-auth-utils.ts";
 
 export async function handleChangePassword(
@@ -18,31 +24,41 @@ export async function handleChangePassword(
   }
   const jwt = authHeader.replace("Bearer ", "");
 
-  const email = String(body?.email ?? "").toLowerCase().trim();
+  const email = String(body?.email ?? "")
+    .toLowerCase()
+    .trim();
   const currentPassword = String(body?.current_password ?? "");
   const newPassword = String(body?.new_password ?? "");
 
   if (!email || !currentPassword || !newPassword) {
-    return jsonResponse(corsHeaders, { error: "Email, contraseña actual y nueva contraseña son obligatorios." }, 400);
+    return jsonResponse(
+      corsHeaders,
+      { error: "Email, contraseña actual y nueva contraseña son obligatorios." },
+      400,
+    );
   }
-  if (newPassword.length < 8) {
-    return jsonResponse(corsHeaders, { error: "La nueva contraseña debe tener al menos 8 caracteres." }, 400);
-  }
-  if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/\d/.test(newPassword)) {
-    return jsonResponse(corsHeaders, { error: "La contraseña debe incluir mayúsculas, minúsculas y números." }, 400);
+  if (!meetsWorkerPasswordPolicy(newPassword)) {
+    return jsonResponse(corsHeaders, { error: WORKER_PASSWORD_POLICY_MESSAGE }, 400);
   }
   if (currentPassword === newPassword) {
-    return jsonResponse(corsHeaders, { error: "La nueva contraseña debe ser diferente a la actual." }, 400);
+    return jsonResponse(
+      corsHeaders,
+      { error: "La nueva contraseña debe ser diferente a la actual." },
+      400,
+    );
   }
 
   const { ip } = clientInfo(req);
-  const ct = clientTracking(body);
   const rateLimitKey = `changepw:${email}`;
   const rateOk = await checkRateLimit(svc, rateLimitKey);
   if (!rateOk) {
-    return jsonResponse(corsHeaders, {
-      error: `Demasiados intentos. Intenta nuevamente en ${RATE_LIMIT_WINDOW_MIN} minutos.`,
-    }, 429);
+    return jsonResponse(
+      corsHeaders,
+      {
+        error: `Demasiados intentos. Intenta nuevamente en ${RATE_LIMIT_WINDOW_MIN} minutos.`,
+      },
+      429,
+    );
   }
 
   const { data: allowed, error: allowErr } = await svc
@@ -73,16 +89,28 @@ export async function handleChangePassword(
     return jsonResponse(corsHeaders, { error: "No se encontró el usuario." }, 400);
   }
 
-  const { error: updateErr } = await svc.auth.admin.updateUserById(authUser.id, { password: newPassword });
+  const { error: updateErr } = await svc.auth.admin.updateUserById(authUser.id, {
+    password: newPassword,
+  });
   if (updateErr) throw updateErr;
 
-  await svc.from("allowed_emails")
+  await svc
+    .from("allowed_emails")
     .update({ must_change_password: false, password_set_at: new Date().toISOString() })
     .ilike("email", email)
     .eq("tenant_id", allowed.tenant_id);
 
   await recordLoginAttempt(svc, rateLimitKey, ip, true, allowed.tenant_id ?? null);
-  await logAction(svc, req, { email, action: "worker.change_password", entity: "auth", entity_label: email, tenantId: allowed.tenant_id, ...ct });
+  await logAction(svc, req, {
+    email,
+    action: "worker.change_password",
+    entity: "auth",
+    entity_label: email,
+    tenantId: allowed.tenant_id,
+  });
 
-  return jsonResponse(corsHeaders, { success: true, message: "Contraseña actualizada correctamente." });
+  return jsonResponse(corsHeaders, {
+    success: true,
+    message: "Contraseña actualizada correctamente.",
+  });
 }

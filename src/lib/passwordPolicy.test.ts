@@ -1,13 +1,26 @@
-import { describe, it as test } from "node:test";
-import { strictEqual } from "node:assert";
+import { describe, expect, it } from "vitest";
 import { generateTemporaryPassword, meetsPasswordPolicy } from "./passwordPolicy";
 
 describe("Password policy", () => {
-  test("generated temporary passwords always include all four character types", () => {
-    for (let i = 0; i < 500; i++)
-      strictEqual(meetsPasswordPolicy(generateTemporaryPassword()), true);
+  it("generated temporary passwords always include all four character types", () => {
+    for (let i = 0; i < 500; i++) {
+      expect(meetsPasswordPolicy(generateTemporaryPassword())).toBe(true);
+    }
   });
-  test("rejects a password without a symbol", () => {
-    strictEqual(meetsPasswordPolicy("Abcdefg1"), false);
+
+  it("rejects a password without a symbol", () => {
+    expect(meetsPasswordPolicy("Abcdefg1")).toBe(false);
+  });
+
+  it("accepts a password with an allowed symbol", () => {
+    expect(meetsPasswordPolicy("Abcdef1!")).toBe(true);
+  });
+
+  it("does not treat whitespace as an allowed symbol", () => {
+    expect(meetsPasswordPolicy("Abcdef1 ")).toBe(false);
+  });
+
+  it("rejects punctuation outside the configured symbol allowlist", () => {
+    expect(meetsPasswordPolicy("Abcdef1/")).toBe(false);
   });
 });

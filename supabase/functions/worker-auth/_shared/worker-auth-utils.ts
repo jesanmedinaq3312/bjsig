@@ -5,6 +5,19 @@ export const RATE_LIMIT_WINDOW_MIN = 15;
 export const RUT_CHECK_MAX_ATTEMPTS = 3;
 export const RUT_CHECK_IP_MAX_ATTEMPTS = 10;
 export const DEFAULT_PASSWORD_EXPIRY_HOURS = 72;
+export const WORKER_PASSWORD_SYMBOLS = "!@#$%^&*()_+-=[]{};:,.?";
+export const WORKER_PASSWORD_POLICY_MESSAGE =
+  "La contraseña debe tener al menos 8 caracteres e incluir minúscula, mayúscula, número y símbolo permitido.";
+
+export function meetsWorkerPasswordPolicy(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    [...password].some((character) => WORKER_PASSWORD_SYMBOLS.includes(character))
+  );
+}
 
 export function generateRandomPassword(length = 16): string {
   const charset = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
@@ -89,7 +102,7 @@ export async function recordLoginAttempt(
       success,
       tenant_id: tenantId,
     });
-    await svc.rpc("cleanup_login_attempts").catch(() => {});
+    await Promise.resolve(svc.rpc("cleanup_login_attempts")).catch(() => {});
   } catch { /* non-blocking */ }
 }
 

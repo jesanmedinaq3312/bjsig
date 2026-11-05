@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const publicRoutes = [
-  { path: "/", heading: /Personas, seguridad y cumplimiento/i },
+  { path: "/", heading: /Deja de perseguir papeles/i },
   { path: "/privacidad", heading: /Política de privacidad/i },
   { path: "/terminos", heading: /Términos y condiciones/i },
 ];
@@ -18,6 +18,10 @@ test("landing muestra navegación, módulos y CTA de WhatsApp sin envío automá
   page,
 }) => {
   await page.goto("/");
+  const cookieDialog = page.getByRole("dialog", { name: "Aviso de privacidad y cookies" });
+  if (await cookieDialog.isVisible()) {
+    await cookieDialog.getByRole("button", { name: "Solo necesarias" }).click();
+  }
   await expect(page.getByRole("banner")).toBeVisible();
   await expect(page.locator('a[href="/admin"]').first()).toHaveAttribute("href", "/admin");
   await expect(page.locator('a[href="/trabajador"]').first()).toHaveAttribute(
@@ -25,10 +29,14 @@ test("landing muestra navegación, módulos y CTA de WhatsApp sin envío automá
     "/trabajador",
   );
   await page
-    .getByRole("link", { name: /Solicitar una demo/i })
+    .getByRole("link", { name: /Quiero mi demo gratis/i })
     .first()
     .click();
+  await expect(
+    page.getByRole("heading", { name: /No te quedes atrás\. Agenda tu demo hoy/i }),
+  ).toBeVisible();
   const whatsapp = page.getByRole("link", { name: /Solicitar demo por WhatsApp/i });
+  await expect(whatsapp).toBeVisible();
   await expect(whatsapp).toHaveAttribute("href", /^https:\/\/wa\.me\//);
   await expect(whatsapp).toHaveAttribute("target", "_blank");
 });
