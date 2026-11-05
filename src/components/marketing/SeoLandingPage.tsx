@@ -38,9 +38,9 @@ type PageContent = {
 const pages: Record<SeoLandingPageKey, PageContent> = {
   home: {
     eyebrow: "Software para RR. HH. y operaciones",
-    title: "Conecta personas y prevención",
+    title: "Software multiempresa de RR. HH. y operaciones",
     introduction:
-      "RR. HH., turnos y seguridad en una plataforma configurable por empresa y sucursal.",
+      "Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa.",
     challengeTitle: "Ordena todas tus sucursales desde una sola plataforma",
     challenge:
       "Cuando cada sede trabaja con planillas, correos y carpetas distintas, cuesta saber qué está pendiente y quién debe actuar. BJSIGAPP centraliza la información y ayuda a mantener el contexto de cada empresa, sucursal y responsable.",
@@ -560,9 +560,9 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
               <h1 className="text-balance text-3xl font-black leading-[1.08] tracking-tight text-white md:text-4xl xl:text-5xl">
                 {content.title}
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+              <h2 className="mt-5 max-w-xl text-balance text-base font-semibold leading-7 text-slate-200 sm:text-lg sm:leading-8">
                 {content.introduction}
-              </p>
+              </h2>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 {page === "home" ? (
                   <>
