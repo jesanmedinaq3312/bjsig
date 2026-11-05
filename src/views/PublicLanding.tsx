@@ -2,9 +2,10 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, ShieldCheck } from "lucide-react";
 import { CookieConsent } from "@/components/CookieConsent";
 import { DashboardPreview } from "@/components/public/DashboardPreview";
+import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import { PUBLIC_MODULES, getPublicModulePath } from "@/lib/publicModules";
+import { getPublicModulePath } from "@/lib/publicModules";
 
 const demoUrl =
   "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
@@ -244,41 +245,16 @@ export function PublicLanding() {
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-16">
               <h2 className="public-h2 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-                Explora los módulos del software de gestión empresarial
+                ¿Qué quieres resolver en la gestión de tu empresa?
               </h2>
               <p className="public-body max-w-2xl text-base leading-7 text-slate-600">
-                Cada página explica una parte de la plataforma y enlaza con áreas relacionadas.
-                Recorre las funciones que pueden habilitarse para la operación de tu empresa.
+                Elige un área para ver módulos relacionados y abrir una ficha con funciones y
+                respuestas sobre su alcance.
               </p>
             </div>
-
-            <ul className="mt-10 grid list-none gap-x-12 p-0 sm:grid-cols-2 lg:grid-cols-3">
-              {PUBLIC_MODULES.map((module) => (
-                <li key={module.slug} className="border-t border-slate-300 py-5">
-                  <a
-                    href={getPublicModulePath(module.slug)}
-                    className="group flex min-h-11 items-start justify-between gap-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-4"
-                  >
-                    <span>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-blue-800">
-                        {module.label}
-                      </span>
-                      <span className="mt-2 block text-base font-semibold leading-6 text-slate-900 group-hover:text-blue-800">
-                        {module.title}
-                      </span>
-                      <span className="public-body mt-2 block text-sm leading-6 text-slate-600">
-                        {module.description}
-                      </span>
-                    </span>
-                    <ArrowUpRight
-                      size={18}
-                      className="mt-1 shrink-0 text-blue-700 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-8 sm:mt-10">
+              <ModuleExplorer />
+            </div>
           </div>
         </section>
 

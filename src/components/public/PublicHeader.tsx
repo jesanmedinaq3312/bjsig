@@ -7,7 +7,7 @@ type PublicHeaderProps = {
 
 const navigation = [
   { href: "/#plataforma", label: "Plataforma" },
-  { href: "/#modulos", label: "Módulos" },
+  { href: "/modulos", label: "Módulos" },
   { href: "/#como-funciona", label: "Cómo funciona" },
   { href: "/#preguntas", label: "Preguntas" },
 ];
@@ -29,7 +29,7 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
           <span className="text-base font-bold tracking-tight sm:text-lg">BJSIGAPP</span>
         </a>
 
-        <nav aria-label="Navegación principal" className="hidden items-center gap-6 md:flex">
+        <nav aria-label="Navegación principal" className="hidden items-center gap-6 lg:flex">
           {navigation.map((item) => (
             <a
               key={item.href}
@@ -41,7 +41,7 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <a
             href="/trabajador"
             className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
@@ -68,7 +68,7 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
           aria-expanded={menuOpen}
           aria-controls="public-mobile-navigation"
           onClick={() => setMenuOpen((open) => !open)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 lg:hidden"
         >
           {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>
@@ -78,7 +78,7 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
         <nav
           id="public-mobile-navigation"
           aria-label="Navegación móvil"
-          className="border-t border-white/10 bg-slate-950 px-4 pb-4 pt-2 md:hidden"
+          className="border-t border-white/10 bg-slate-950 px-4 pb-4 pt-2 lg:hidden"
         >
           <div className="mx-auto flex max-w-7xl flex-col">
             {navigation.map((item) => (

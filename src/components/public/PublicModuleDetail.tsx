@@ -34,7 +34,7 @@ export function PublicModuleDetail({ module }: { module: PublicModule }) {
               </a>
               <ChevronRight size={14} aria-hidden="true" />
               <a
-                href="/#modulos"
+                href="/modulos"
                 className="min-h-11 inline-flex items-center rounded-md underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
               >
                 Módulos
@@ -60,7 +60,7 @@ export function PublicModuleDetail({ module }: { module: PublicModule }) {
                   Solicitar una demo <ArrowRight size={16} aria-hidden="true" />
                 </a>
                 <a
-                  href="/#modulos"
+                  href="/modulos"
                   className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white/85 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
                 >
                   Ver todos los módulos
@@ -118,6 +118,39 @@ export function PublicModuleDetail({ module }: { module: PublicModule }) {
           </div>
         </section>
 
+        <section className="bg-white px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <h2 className="public-h2 max-w-lg text-2xl leading-tight sm:text-3xl">
+              Preguntas frecuentes sobre {module.label}
+            </h2>
+            <div>
+              {[
+                {
+                  question: "¿Qué permite gestionar este módulo?",
+                  answer: module.lead,
+                },
+                {
+                  question: "¿Qué funciones considera?",
+                  answer: `${module.included.join(", ")}.`,
+                },
+                {
+                  question: "¿Cómo se define qué funciones puede usar cada empresa?",
+                  answer:
+                    "El alcance depende del plan, los módulos habilitados y los permisos definidos para cada empresa y perfil.",
+                },
+              ].map(({ question, answer }) => (
+                <details key={question} className="public-module-question">
+                  <summary>
+                    {question}
+                    <ChevronRight size={18} className="shrink-0 text-blue-700" aria-hidden="true" />
+                  </summary>
+                  <p>{answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="bg-slate-50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl">
@@ -158,7 +191,7 @@ export function PublicModuleNotFound() {
             información que buscas.
           </p>
           <a
-            href="/#modulos"
+            href="/modulos"
             className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
           >
             Ir al catálogo de módulos <ArrowRight size={16} aria-hidden="true" />

@@ -25,7 +25,11 @@ export function PublicFooter() {
         </div>
 
         <div>
-          <h2 className="text-sm font-bold text-white">Módulos de la plataforma</h2>
+          <h2 className="text-sm font-bold text-white">
+            <a href="/modulos" className="hover:text-cyan-200">
+              Módulos de la plataforma
+            </a>
+          </h2>
           <ul className="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2">
             {PUBLIC_MODULES.map((module) => (
               <li key={module.slug}>

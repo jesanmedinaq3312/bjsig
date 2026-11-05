@@ -1,6 +1,7 @@
 {
   "routes": [
     { "path": "/", "title": "BJSIGAPP | Software de RR. HH. multiempresa" },
+    { "path": "/modulos", "title": "Módulos de RR. HH. y gestión empresarial | BJSIGAPP" },
     {
       "path": "/modulos/plataforma-multiempresa",
       "title": "Plataforma SaaS multiempresa | BJSIGAPP"

@@ -48,7 +48,7 @@ if (!existsSync(routesPath)) {
 const manifest = JSON.parse(readFileSync(routesPath, "utf8"));
 const publicPaths = manifest.routes
   .map((route) => route.path)
-  .filter((path) => path === "/" || path.startsWith("/modulos/"))
+  .filter((path) => path === "/" || path === "/modulos" || path.startsWith("/modulos/"))
   .filter((path) => !path.includes(":") && !path.includes("$"));
 
 const uniquePaths = [...new Set(publicPaths)];

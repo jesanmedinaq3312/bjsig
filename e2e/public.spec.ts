@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 const publicRoutes = [
-  { path: "/", heading: /Deja de perseguir papeles/i },
+  { path: "/", heading: /Software multiempresa de RR\. HH\. y operaciones/i },
+  { path: "/modulos", heading: /Módulos de recursos humanos y gestión empresarial/i },
   { path: "/privacidad", heading: /Política de privacidad/i },
   { path: "/terminos", heading: /Términos y condiciones/i },
 ];
@@ -14,9 +15,32 @@ for (const route of publicRoutes) {
   });
 }
 
-test("landing muestra navegación, módulos y CTA de WhatsApp sin envío automático", async ({
+test("catálogo y detalle de módulo entregan HTML inicial con contenido indexable", async ({
   page,
 }) => {
+  const catalogResponse = await page.request.get("/modulos");
+  expect(catalogResponse.status()).toBe(200);
+  const catalogHtml = await catalogResponse.text();
+  expect(catalogHtml).toContain("Módulos de recursos humanos y gestión empresarial");
+  expect(catalogHtml).toContain("/modulos/portal-del-trabajador");
+
+  await page.goto("/modulos");
+  await expect(page.getByRole("heading", { name: /Todos los módulos de BJSIGAPP/i })).toBeVisible();
+  await expect(
+    page.locator('main a[href="/modulos/portal-del-trabajador"]').first(),
+  ).toHaveAttribute("href", "/modulos/portal-del-trabajador");
+
+  const detailResponse = await page.request.get("/modulos/portal-del-trabajador");
+  expect(detailResponse.status()).toBe(200);
+  const detailHtml = await detailResponse.text();
+  expect(detailHtml).toContain("Portal del trabajador para documentos, turnos y solicitudes");
+  expect(detailHtml).toContain("¿Qué permite gestionar este módulo?");
+
+  const unknownResponse = await page.request.get("/modulos/slug-inexistente");
+  expect(unknownResponse.status()).toBe(404);
+});
+
+test("landing muestra accesos y formulario de demo sin envío automático", async ({ page }) => {
   await page.goto("/");
   const cookieDialog = page.getByRole("dialog", { name: "Aviso de privacidad y cookies" });
   if (await cookieDialog.isVisible()) {
@@ -28,26 +52,35 @@ test("landing muestra navegación, módulos y CTA de WhatsApp sin envío automá
     "href",
     "/trabajador",
   );
-  await page
-    .getByRole("link", { name: /Quiero mi demo gratis/i })
-    .first()
-    .click();
   await expect(
-    page.getByRole("heading", { name: /No te quedes atrás\. Agenda tu demo hoy/i }),
+    page.getByRole("heading", {
+      name: /Software multiempresa de RR\. HH\. y operaciones/i,
+      level: 1,
+    }),
   ).toBeVisible();
-  const whatsapp = page.getByRole("link", { name: /Solicitar demo por WhatsApp/i });
+  await expect(page.locator('a[href="/modulos"]').first()).toHaveAttribute("href", "/modulos");
+  const whatsapp = page.getByRole("button", { name: /Solicitar demo por WhatsApp/i });
   await expect(whatsapp).toBeVisible();
-  await expect(whatsapp).toHaveAttribute("href", /^https:\/\/wa\.me\//);
-  await expect(whatsapp).toHaveAttribute("target", "_blank");
+  await expect(whatsapp).not.toHaveAttribute("href");
+  await expect(page.getByRole("link", { name: "Abrir WhatsApp" })).toHaveAttribute(
+    "href",
+    /^https:\/\/wa\.me\//,
+  );
 });
 
 test("menú móvil permite abrir y cerrar navegación sin overflow horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  const cookieDialog = page.getByRole("dialog", { name: "Aviso de privacidad y cookies" });
+  if (await cookieDialog.isVisible()) {
+    await cookieDialog.getByRole("button", { name: "Solo necesarias" }).click();
+  }
+  await page.waitForLoadState("networkidle");
   await expect(page.getByRole("button", { name: "Abrir menú" })).toBeVisible();
   await page.getByRole("button", { name: "Abrir menú" }).click();
   await expect(page.getByRole("button", { name: "Cerrar menú" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ingresar como administrador" })).toBeVisible();
+  await expect(page.locator('#public-mobile-navigation a[href="/modulos"]')).toBeVisible();
+  await expect(page.locator('#public-mobile-navigation a[href="/admin"]')).toBeVisible();
   await page.getByRole("button", { name: "Cerrar menú" }).click();
   await expect(page.getByRole("button", { name: "Abrir menú" })).toBeVisible();
 

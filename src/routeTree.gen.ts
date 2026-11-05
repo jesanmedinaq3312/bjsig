@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ModulosIndexRouteImport } from './routes/modulos/index'
 import { Route as ModulosSlugRouteImport } from './routes/modulos/$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModulosIndexRoute = ModulosIndexRouteImport.update({
+  id: '/modulos/',
+  path: '/modulos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ModulosSlugRoute = ModulosSlugRouteImport.update({
   id: '/modulos/$slug',
   path: '/modulos/$slug',
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/modulos/$slug': typeof ModulosSlugRoute
+  '/modulos/': typeof ModulosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/modulos/$slug': typeof ModulosSlugRoute
+  '/modulos': typeof ModulosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/modulos/$slug': typeof ModulosSlugRoute
+  '/modulos/': typeof ModulosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/modulos/$slug'
+  fullPaths: '/' | '/$' | '/modulos/$slug' | '/modulos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/modulos/$slug'
-  id: '__root__' | '/' | '/$' | '/modulos/$slug'
+  to: '/' | '/$' | '/modulos/$slug' | '/modulos'
+  id: '__root__' | '/' | '/$' | '/modulos/$slug' | '/modulos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   ModulosSlugRoute: typeof ModulosSlugRoute
+  ModulosIndexRoute: typeof ModulosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/modulos/': {
+      id: '/modulos/'
+      path: '/modulos'
+      fullPath: '/modulos/'
+      preLoaderRoute: typeof ModulosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/modulos/$slug': {
       id: '/modulos/$slug'
       path: '/modulos/$slug'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   ModulosSlugRoute: ModulosSlugRoute,
+  ModulosIndexRoute: ModulosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

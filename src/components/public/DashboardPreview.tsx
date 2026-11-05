@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   BarChart3,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
   HardHat,
+  Laptop,
   LockKeyhole,
-  Monitor,
   Smartphone,
   Tablet,
   Users,
@@ -73,67 +73,18 @@ const views = [
   },
 ];
 
-const deviceOrder = ["desktop", "phone", "tablet"] as const;
-type DeviceMode = (typeof deviceOrder)[number];
-
-const devicePresentation: Record<DeviceMode, { label: string; icon: typeof Monitor }> = {
-  desktop: { label: "PC", icon: Monitor },
-  phone: { label: "teléfono", icon: Smartphone },
-  tablet: { label: "tablet", icon: Tablet },
-};
-
-const deviceStorageKey = "bjsig-public-preview-next-device";
-
-function isDeviceMode(value: string | null): value is DeviceMode {
-  return deviceOrder.some((mode) => mode === value);
-}
-
-function nextDevice(mode: DeviceMode): DeviceMode {
-  const currentIndex = deviceOrder.indexOf(mode);
-  return deviceOrder[(currentIndex + 1) % deviceOrder.length];
-}
-
 export function DashboardPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [device, setDevice] = useState<DeviceMode>("desktop");
-  const didAdvanceDeviceRef = useRef(false);
   const activeView = views[activeIndex];
   const ActiveIcon = activeView.icon;
-  const DeviceIcon = devicePresentation[device].icon;
-  const deviceLabel = devicePresentation[device].label;
-  const isPhone = device === "phone";
-
-  useEffect(() => {
-    if (didAdvanceDeviceRef.current) return;
-    didAdvanceDeviceRef.current = true;
-    try {
-      const nextMode = window.localStorage.getItem(deviceStorageKey);
-      if (isDeviceMode(nextMode)) {
-        setDevice(nextMode);
-        window.localStorage.setItem(deviceStorageKey, nextDevice(nextMode));
-      } else {
-        // Keep the first server-rendered visit on PC; the next visit starts on phone.
-        window.localStorage.setItem(deviceStorageKey, "phone");
-      }
-    } catch {
-      // Storage can be disabled; the preview remains usable in its default PC view.
-    }
-  }, []);
 
   return (
     <div
       className="landing-preview-wrap"
       role="group"
-      aria-label={`Vista demostrativa e interactiva de BJSIGAPP en ${deviceLabel}`}
+      aria-label="Vista demostrativa e interactiva de BJSIGAPP en laptop"
     >
-      <div className={`landing-device-frame landing-device-frame--${device}`}>
-        {isPhone && (
-          <div className="landing-phone-earpiece" aria-hidden="true">
-            <span />
-            <span />
-          </div>
-        )}
-
+      <div className="landing-device-frame landing-device-frame--laptop">
         <div className="landing-preview">
           <div className="landing-window-bar flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-white/75">
@@ -143,16 +94,14 @@ export function DashboardPreview() {
               <span className="font-semibold">BJSIGAPP · panel de gestión</span>
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-white/70">
-              <DeviceIcon size={12} aria-hidden="true" /> Vista para {deviceLabel}
+              <Laptop size={12} aria-hidden="true" /> Vista en laptop
             </span>
           </div>
 
-          <div
-            className={`grid bg-slate-100 ${isPhone ? "min-h-[520px] grid-cols-1" : "min-h-[360px] sm:grid-cols-[150px_1fr]"}`}
-          >
+          <div className="grid min-h-[360px] grid-cols-1 bg-slate-100 sm:grid-cols-[150px_1fr]">
             <nav
               aria-label="Vistas del panel ilustrativo"
-              className={`border-r border-slate-200 bg-slate-50 p-3 ${isPhone ? "hidden" : "hidden sm:block"}`}
+              className="hidden border-r border-slate-200 bg-slate-50 p-3 sm:block"
             >
               <p className="px-2 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
                 Áreas
@@ -171,7 +120,7 @@ export function DashboardPreview() {
                   </button>
                 ))}
               </div>
-              <p className="mt-5 px-2 text-[10px] leading-4 text-slate-400">
+              <p className="mt-5 px-2 text-[10px] leading-4 text-slate-500">
                 Datos ilustrativos. Las vistas dependen de la configuración.
               </p>
             </nav>
@@ -185,7 +134,7 @@ export function DashboardPreview() {
               </div>
               <nav
                 aria-label="Secciones del panel ilustrativo"
-                className={`mb-4 flex gap-1 overflow-x-auto pb-1 ${isPhone ? "" : "sm:hidden"}`}
+                className="mb-4 flex gap-1 overflow-x-auto pb-1 sm:hidden"
               >
                 {views.map(({ label }, index) => (
                   <button
@@ -232,26 +181,24 @@ export function DashboardPreview() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] leading-4 text-slate-500">
+                <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] leading-4 text-slate-600">
                   Alcance ilustrativo. Los módulos y accesos se configuran por empresa.
                 </p>
               </section>
             </div>
           </div>
         </div>
-
-        {device === "desktop" && (
-          <div className="landing-monitor-stand" aria-hidden="true">
-            <span className="landing-monitor-neck" />
-            <span className="landing-monitor-base" />
-          </div>
-        )}
+        <div className="landing-laptop-hinge" aria-hidden="true" />
+        <div className="landing-laptop-base" aria-hidden="true" />
       </div>
 
-      <p className="landing-device-note" aria-label="Disponible en PC, teléfono y tablet">
-        <span>Disponible en</span>
+      <p
+        className="landing-device-note"
+        aria-label="Interfaz adaptable a laptop, teléfono y tablet"
+      >
+        <span>Interfaz adaptable a</span>
         <span>
-          <Monitor size={14} aria-hidden="true" /> PC
+          <Laptop size={14} aria-hidden="true" /> laptop
         </span>
         <span>
           <Smartphone size={14} aria-hidden="true" /> teléfono
