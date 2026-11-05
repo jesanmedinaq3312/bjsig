@@ -86,8 +86,12 @@ export function CookieConsent() {
             y los{" "}
             <a href="/terminos" className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white">
               Términos y condiciones
+            </a>{" "}
+            y la{" "}
+            <a href="/cookies" className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white">
+              Política de cookies
             </a>
-            .
+            . Las analíticas (Google Analytics) solo se activan si las aceptas.
           </p>
 
           {details && (
