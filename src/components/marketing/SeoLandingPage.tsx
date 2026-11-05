@@ -4,7 +4,6 @@ import {
   BarChart3,
   Building2,
   CalendarClock,
-  Check,
   ClipboardCheck,
   FileText,
   HardHat,
@@ -581,51 +580,13 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
               </p>
             </div>
 
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-3 shadow-2xl shadow-sky-950/30 sm:p-5" aria-label="Vista ilustrativa de un panel de gestión">
-              <div className="rounded-2xl border border-white/10 bg-slate-900 p-4 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-                  <div>
-                    <p className="text-xs font-bold text-sky-200">BJSIGAPP · Panel de gestión</p>
-                    <p className="mt-1 text-lg font-extrabold text-white">La operación, en contexto</p>
-                  </div>
-                  <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[10px] font-bold text-amber-100">Vista ilustrativa</span>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {["Empresa", "Sucursal", "Equipo"].map((label, index) => (
-                    <div key={label} className="rounded-xl border border-white/10 bg-slate-950/80 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-                      <p className="mt-2 flex items-center gap-2 text-sm font-bold text-slate-100">
-                        <span className={`h-2 w-2 rounded-full ${index === 0 ? "bg-sky-400" : index === 1 ? "bg-emerald-400" : "bg-violet-400"}`} />
-                        {index === 0 ? "Organización" : index === 1 ? "Sede asignada" : "Responsables"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/80 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-bold text-white">Procesos para dar seguimiento</p>
-                    <BarChart3 size={17} className="text-sky-300" aria-hidden="true" />
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {[
-                      ["Personas y turnos", "Equipo y asignaciones"],
-                      ["Prevención y EPP", "Acciones y evidencias"],
-                      ["Documentos", "Registros y vencimientos"],
-                    ].map(([label, detail], index) => (
-                      <div key={label} className="flex items-center gap-3 rounded-lg bg-white/[0.035] px-3 py-2.5">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-300/10 text-sky-200">
-                          {index === 0 ? <UsersRound size={15} /> : index === 1 ? <HardHat size={15} /> : <FileText size={15} />}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-xs font-bold text-slate-100">{label}</span>
-                          <span className="mt-0.5 block text-[11px] text-slate-400">{detail}</span>
-                        </span>
-                        <Check size={15} className="text-emerald-300" aria-hidden="true" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="mt-3 text-[10px] leading-4 text-slate-500">Representación demostrativa; la información real depende de la configuración de cada organización.</p>
+            <div className="min-w-0">
+              <div className="mb-4">
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Demo del panel SaaS</p>
+                <h2 id="interactive-demo-title" className="mt-2 text-xl font-black leading-tight tracking-tight text-white sm:text-2xl">Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro</h2>
+              </div>
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-2 shadow-2xl shadow-sky-950/30 sm:p-3">
+                <DashboardPreview />
               </div>
             </div>
           </div>
@@ -645,21 +606,6 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             </div>
           </div>
         </section>
-
-        {page === "home" && (
-          <section id="demo-interactiva" className="px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="interactive-demo-title">
-            <div className="mx-auto max-w-7xl">
-              <div className="max-w-3xl">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Explora el producto</p>
-                <h2 id="interactive-demo-title" className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro</h2>
-                <p className="mt-4 text-base leading-7 text-slate-300">Cambia entre vistas y selecciona un alcance de ejemplo para recorrer las áreas de la plataforma. El contenido de esta demostración es ilustrativo y no muestra datos de clientes.</p>
-              </div>
-              <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-2 shadow-2xl shadow-sky-950/30 sm:p-4">
-                <DashboardPreview />
-              </div>
-            </div>
-          </section>
-        )}
 
         <section id="capacidades" className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="features-title">
           <div className="mx-auto max-w-7xl">

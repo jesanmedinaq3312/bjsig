@@ -6,10 +6,14 @@ describe("SeoLandingPage demo interactiva", () => {
   it("permite explorar módulos y cambiar el alcance de sucursal", () => {
     render(<SeoLandingPage page="home" />);
 
+    const demoHeading = screen.getByRole("heading", {
+      name: "Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro",
+    });
+    expect(demoHeading).toBeTruthy();
     expect(
-      screen.getByRole("heading", {
-        name: "Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro",
-      }),
+      demoHeading.closest("section")?.querySelector(
+        '[aria-label="Demostración interactiva de módulos BJSIGAPP"]',
+      ),
     ).toBeTruthy();
 
     fireEvent.click(screen.getAllByRole("button", { name: "Sucursales" })[0]);
