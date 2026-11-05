@@ -108,7 +108,7 @@ const faqs = [
 
 export function ModuleDirectoryPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="marketing-page min-h-screen bg-slate-950 text-slate-100">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <a href="/" className="flex shrink-0 items-center gap-2.5" aria-label="BJSIGAPP, inicio">

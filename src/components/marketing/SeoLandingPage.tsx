@@ -42,20 +42,19 @@ type PageContent = {
 
 const pages: Record<SeoLandingPageKey, PageContent> = {
   home: {
-    eyebrow: "Gestión empresarial multisucursal",
-    title: "Plataforma de gestión empresarial multisucursal para ordenar tu operación",
-    introduction:
-      "Reúne la gestión de personas, turnos, prevención, EPP y documentación en un solo lugar. Coordina tus sucursales y conserva una visión clara de lo que ocurre en cada equipo.",
+    eyebrow: "Software para RR. HH. y operaciones",
+    title: "Software multiempresa de RR. HH. y operaciones",
+    introduction: "Administra personas, asistencia, turnos, prevención, documentos y procesos internos. Configura módulos, permisos e identidad para cada empresa.",
     challengeTitle: "Ordena todas tus sucursales desde una sola plataforma",
     challenge:
       "Cuando cada sede trabaja con planillas, correos y carpetas distintas, cuesta saber qué está pendiente y quién debe actuar. BJSIGAPP centraliza la información y ayuda a mantener el contexto de cada empresa, sucursal y responsable.",
-    featuresTitle: "Una plataforma de gestión empresarial para personas y operaciones",
+    featuresTitle: "Personas, RR. HH. y operaciones en una sola plataforma",
     features: [
       {
         icon: Building2,
         title: "Gestión por empresa y sucursal",
         description:
-          "Organiza la operación por empresa, sede y equipo, sin perder la visión general ni mezclar los espacios de trabajo.",
+          "Organiza empresas, sedes y equipos con módulos, permisos e identidad configurables para cada espacio de trabajo.",
       },
       {
         icon: UsersRound,
@@ -113,10 +112,11 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
       },
     ],
     keywords: [
-      "gestión empresarial multisucursal",
-      "software para sucursales",
-      "gestión de operaciones",
-      "gestión de personas",
+      "software multiempresa",
+      "software de RR. HH.",
+      "plataforma SaaS de operaciones",
+      "gestión de personas y asistencia",
+      "software de gestión multisucursal",
       "BJSIGAPP",
     ],
   },
@@ -526,7 +526,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
   const isContactPage = page === "contacto";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="marketing-page min-h-screen bg-slate-950 text-slate-100">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <a href="/" className="flex shrink-0 items-center gap-2.5" aria-label="BJSIGAPP, inicio">
@@ -565,6 +565,11 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
               <h1 className="text-balance text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 {content.title}
               </h1>
+              {page === "home" && (
+                <h2 className="mt-5 max-w-xl text-lg font-semibold leading-7 text-slate-200 sm:text-xl sm:leading-8">
+                  Administra personas y operaciones desde una plataforma SaaS
+                </h2>
+              )}
               <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 {content.introduction}
               </p>
@@ -706,7 +711,7 @@ export function getSeoPageMetadata(page: SeoLandingPageKey) {
     contacto: "/contacto",
   } as const;
   const titles: Record<SeoLandingPageKey, string> = {
-    home: "Gestión empresarial multisucursal | BJSIGAPP",
+    home: "Software multiempresa de RR. HH. y operaciones | BJSIGAPP",
     multisucursal: "Software de gestión multisucursal | BJSIGAPP",
     gestion: "Software de gestión empresarial | BJSIGAPP",
     personas: "Gestión de personas y turnos | BJSIGAPP",
@@ -714,7 +719,7 @@ export function getSeoPageMetadata(page: SeoLandingPageKey) {
     contacto: "Contacto y demo de gestión empresarial | BJSIGAPP",
   };
   const descriptions: Record<SeoLandingPageKey, string> = {
-    home: "Ordena personas, turnos, seguridad y operación de todas tus sucursales desde una plataforma de gestión empresarial.",
+    home: "Software SaaS multiempresa para administrar RR. HH., asistencia, turnos, prevención y documentos. Configura módulos, permisos e identidad para cada empresa.",
     multisucursal: "Coordina personas, procesos y seguimiento entre sucursales con información organizada por sede, empresa y responsable.",
     gestion: "Centraliza personas, turnos, prevención, EPP, documentación y seguimiento en un software de gestión empresarial.",
     personas: "Organiza trabajadores, asistencia, turnos, documentos y solicitudes en todas tus sucursales con BJSIGAPP.",

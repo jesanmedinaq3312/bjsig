@@ -1,9 +1,7 @@
 
 
-## SEO competitivo y catálogo de módulos (5 de noviembre de 2026)
-- [x] Analizar la arquitectura pública de Talana, Buk y GeoVictoria con fuentes oficiales y documentar patrones y límites de la comparación.
-- [x] Crear `/modulos` como índice SSR con contenido propio, H1/H2, enlazado a las páginas de solución y CTA a contacto.
-- [x] Añadir `/modulos` al sitemap condicional y al manifiesto, sin reemplazar el catch-all ni inventar rutas detalle.
-- [x] Actualizar el hero con demo SaaS en laptop, asistencia QR ilustrativa en tablet y entrega de EPP en teléfono, con apertura animada y soporte de movimiento reducido.
-- [x] Validar build, TypeScript, 15 pruebas, SSR, noindex de Preview y seis breakpoints sin overflow horizontal.
-- [ ] Configurar `VITE_PUBLIC_SITE_URL` con el dominio público HTTPS real antes de indexar en producción; el sitemap permanece desactivado hasta entonces.
+## Mensaje del home y tipografía (5 de noviembre de 2026)
+- [x] Usar el H1 «Software multiempresa de RR. HH. y operaciones» y un H2 breve que explique el resultado SaaS.
+- [x] Mantener el listado de personas, asistencia, turnos, prevención, documentos, procesos internos, módulos, permisos e identidad en el texto de apoyo.
+- [x] Aplicar DM Sans Variable autoalojada, con títulos de peso 500 y jerarquía sobria; conservar fallback y licencia OFL.
+- [x] Ajustar título y meta description, comprobar límites SEO, H1/H2 SSR, fuente cargada y 375/1280 px sin overflow; validar TypeScript, pruebas y build.

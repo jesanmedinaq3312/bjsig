@@ -2,6 +2,10 @@
 
 Las páginas comerciales se sirven con HTML inicial renderizado por servidor y metadatos específicos por ruta. Las páginas indexables son `/`, `/modulos`, `/gestion-multisucursal`, `/software-de-gestion-empresarial`, `/gestion-de-personas-y-turnos`, `/seguridad-y-cumplimiento` y `/contacto`. Las rutas de acceso y portales siguen bajo el fallback de la aplicación y se marcan `noindex,nofollow`.
 
+La portada utiliza el H1 «Software multiempresa de RR. HH. y operaciones» y el H2 «Administra personas y operaciones desde una plataforma SaaS». La bajada concreta asistencia, turnos, prevención, documentos, procesos internos, módulos, permisos e identidad por empresa. La meta description mantiene esos términos dentro del límite de 160 caracteres.
+
+Las páginas comerciales usan DM Sans Variable autoalojada en `public/fonts`, con licencia OFL incluida. Los H1/H2 usan peso 500, el cuerpo conserva un peso regular y la vista SaaS privada no cambia su tipografía.
+
 `/modulos` es un índice de capacidades, enlaza las páginas de solución y conserva una URL exacta independiente. No reemplaza el catch-all ni crea rutas detalle ficticias; las páginas bajo `/modulos/{slug}` deben mantener sus handlers actuales y sólo añadirse al sitemap cuando tengan URL real y contenido propio indexable.
 
 ## Dominio público requerido

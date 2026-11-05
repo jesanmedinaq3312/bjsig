@@ -6,6 +6,17 @@ describe("SeoLandingPage demo interactiva", () => {
   it("permite explorar módulos y cambiar el alcance de sucursal", () => {
     render(<SeoLandingPage page="home" />);
 
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Software multiempresa de RR. HH. y operaciones" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Administra personas y operaciones desde una plataforma SaaS",
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText("Administra personas, asistencia, turnos, prevención, documentos y procesos internos. Configura módulos, permisos e identidad para cada empresa.")).toBeTruthy();
+
     const demoHeading = screen.getByRole("heading", {
       name: "Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro",
     });

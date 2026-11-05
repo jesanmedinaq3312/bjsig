@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "DM Sans Variable";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-wght-normal.woff2") format("woff2-variations");
+}
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -866,4 +874,34 @@ button:active:not(:disabled) {
     animation: none !important;
     transform: none !important;
   }
+}
+
+
+/* Typography for public marketing pages: restrained weights, clear hierarchy. */
+.marketing-page {
+  font-family: "DM Sans Variable", "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+}
+
+.marketing-page .font-black,
+.marketing-page .font-extrabold {
+  font-weight: 600;
+}
+
+.marketing-page .font-bold {
+  font-weight: 500;
+}
+
+.marketing-page h1,
+.marketing-page h2,
+.marketing-page h1.font-black,
+.marketing-page h2.font-black,
+.marketing-page h1.font-extrabold,
+.marketing-page h2.font-extrabold {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.marketing-page h3 {
+  font-weight: 600;
 }
