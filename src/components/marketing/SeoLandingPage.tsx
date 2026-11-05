@@ -52,39 +52,32 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
     challengeTitle: "Ordena todas tus sucursales desde una sola plataforma",
     challenge:
       "Cuando cada sede trabaja con planillas, correos y carpetas distintas, cuesta saber qué está pendiente y quién debe actuar. BJSIGAPP centraliza la información y ayuda a mantener el contexto de cada empresa, sucursal y responsable.",
-    featuresTitle: "Procesos que trabajan en conjunto",
-    features: [
-      {
-        icon: UsersRound,
-        title: "Personas",
-        description: "Fichas, asistencia, turnos y solicitudes.",
-      },
-      {
-        icon: ShieldCheck,
-        title: "Prevención",
-        description: "Incidentes, EPP, formación y evidencias.",
-      },
-      {
-        icon: Building2,
-        title: "Sucursales",
-        description: "Permisos y seguimiento según cada sede.",
-      },
-    ],
-    workflowTitle: "Empieza por lo prioritario",
-    steps: [
-      {
-        title: "Configura tu estructura",
-        description: "Empresas, sedes, equipos y permisos.",
-      },
-      {
-        title: "Activa lo que necesitas",
-        description: "Personas, turnos, prevención y otros módulos.",
-      },
-      {
-        title: "Da seguimiento",
-        description: "Avances, responsables y pendientes por sede.",
-      },
-    ],
+    platformSection: {
+      title: "Una plataforma SaaS para gestionar personas y operación por empresa",
+      introduction:
+        "BJSIGAPP permite administrar varias organizaciones desde un control de plataforma y trabajar dentro del contexto de cada empresa. Los módulos habilitados y los permisos definen qué funciones ve cada equipo.",
+      items: [
+        {
+          icon: Building2,
+          title: "Estructura",
+          description:
+            "Organizaciones, sucursales, áreas y responsables organizados según la estructura definida por cada empresa.",
+        },
+        {
+          icon: Layers,
+          title: "Módulos y accesos",
+          description:
+            "Planes, vistas y permisos configurables para que cada perfil utilice las funciones que le corresponden.",
+        },
+        {
+          icon: Boxes,
+          title: "Contexto separado",
+          description:
+            "La información operativa se asocia a la empresa activa y sus permisos, con branding y portales diferenciados según configuración.",
+        },
+      ],
+      note: "El alcance concreto depende del plan y los módulos habilitados para cada organización.",
+    },
     faqTitle: "Preguntas frecuentes",
     faqs: [
       {
