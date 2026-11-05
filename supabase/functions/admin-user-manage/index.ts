@@ -10,6 +10,7 @@ import {
   type Actor,
   type Decision,
 } from "../_shared/authz.ts";
+import { isPreauthorizedCompanyOwner } from "./_shared/provisioning.ts";
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -190,13 +191,20 @@ Deno.serve(async (req) => {
       }
       const t = resolveTenant(actor, body.tenant_id);
       if (!t.ok) return json({ error: t.code }, t.status);
-      const dup = await svc
+      const { data: existingAccess, error: accessError } = await svc
         .from("allowed_emails")
-        .select("id")
+        .select("role, tenant_id, active")
         .eq("email", target)
         .eq("tenant_id", t.tenantId)
         .maybeSingle();
-      if (dup.data) return json({ error: "Este correo ya está autorizado en la empresa." }, 400);
+      if (accessError) throw accessError;
+      const preauthorizedOwner = isPreauthorizedCompanyOwner(
+        existingAccess,
+        targetRole,
+        t.tenantId,
+      );
+      if (existingAccess && !preauthorizedOwner)
+        return json({ error: "Este correo ya está autorizado en la empresa." }, 400);
       const { error } = await user.rpc("provision_tenant_access", {
         _tenant_id: t.tenantId,
         _email: target,
