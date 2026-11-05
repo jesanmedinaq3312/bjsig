@@ -15,12 +15,7 @@ import {
 } from "lucide-react";
 
 export type SeoLandingPageKey =
-  | "home"
-  | "multisucursal"
-  | "gestion"
-  | "personas"
-  | "seguridad"
-  | "contacto";
+  "home" | "multisucursal" | "gestion" | "personas" | "seguridad" | "contacto";
 
 type Feature = { icon: LucideIcon; title: string; description: string };
 type Step = { title: string; description: string };
@@ -43,72 +38,59 @@ type PageContent = {
 const pages: Record<SeoLandingPageKey, PageContent> = {
   home: {
     eyebrow: "Software para RR. HH. y operaciones",
-    title: "Software multiempresa de RR. HH. y operaciones",
-    introduction: "Administra personas, asistencia, turnos, prevención, documentos y procesos internos. Configura módulos, permisos e identidad para cada empresa.",
+    title: "Conecta personas y prevención",
+    introduction:
+      "RR. HH., turnos y seguridad en una plataforma configurable por empresa y sucursal.",
     challengeTitle: "Ordena todas tus sucursales desde una sola plataforma",
     challenge:
       "Cuando cada sede trabaja con planillas, correos y carpetas distintas, cuesta saber qué está pendiente y quién debe actuar. BJSIGAPP centraliza la información y ayuda a mantener el contexto de cada empresa, sucursal y responsable.",
-    featuresTitle: "Personas, RR. HH. y operaciones en una sola plataforma",
+    featuresTitle: "Procesos que trabajan en conjunto",
     features: [
       {
-        icon: Building2,
-        title: "Gestión por empresa y sucursal",
-        description:
-          "Organiza empresas, sedes y equipos con módulos, permisos e identidad configurables para cada espacio de trabajo.",
-      },
-      {
         icon: UsersRound,
-        title: "Personas y trabajo diario",
-        description:
-          "Ordena trabajadores, asistencia, turnos, solicitudes, documentos y comunicaciones en flujos conectados.",
+        title: "Personas",
+        description: "Fichas, asistencia, turnos y solicitudes.",
       },
       {
         icon: ShieldCheck,
-        title: "Prevención y cumplimiento",
-        description:
-          "Da seguimiento a incidentes, inspecciones, EPP, capacitaciones, protocolos y evidencias con responsables claros.",
+        title: "Prevención",
+        description: "Incidentes, EPP, formación y evidencias.",
       },
       {
-        icon: BarChart3,
-        title: "Seguimiento para decidir",
-        description:
-          "Consulta indicadores, pendientes y actividad para orientar el trabajo sin depender de consolidaciones manuales.",
+        icon: Building2,
+        title: "Sucursales",
+        description: "Permisos y seguimiento según cada sede.",
       },
     ],
-    workflowTitle: "Cómo ayuda BJSIGAPP a ordenar la operación multisucursal",
+    workflowTitle: "Empieza por lo prioritario",
     steps: [
       {
-        title: "Define la estructura",
-        description:
-          "Configura empresas, sucursales, equipos y responsables según la forma en que trabaja tu organización.",
+        title: "Configura tu estructura",
+        description: "Empresas, sedes, equipos y permisos.",
       },
       {
-        title: "Activa los procesos que necesitas",
-        description:
-          "Organiza personas, turnos, prevención, documentos y otros módulos habilitados para cada operación.",
+        title: "Activa lo que necesitas",
+        description: "Personas, turnos, prevención y otros módulos.",
       },
       {
-        title: "Revisa avances y pendientes",
-        description:
-          "Mantén a la vista la actividad y la trazabilidad para que cada equipo sepa qué hacer y cuándo.",
+        title: "Da seguimiento",
+        description: "Avances, responsables y pendientes por sede.",
       },
     ],
-    faqTitle: "Preguntas frecuentes sobre gestión empresarial multisucursal",
+    faqTitle: "Preguntas frecuentes",
     faqs: [
       {
-        question: "¿Qué significa gestionar una empresa multisucursal con BJSIGAPP?",
-        answer:
-          "Significa ordenar procesos y responsables con una vista central, manteniendo la información y el trabajo vinculados a la empresa o sucursal que corresponde.",
+        question: "¿La demo muestra información de clientes?",
+        answer: "No. La demo usa datos ilustrativos, no información de clientes.",
       },
       {
-        question: "¿Qué procesos puedo organizar en la plataforma?",
+        question: "¿Se puede configurar para cada empresa?",
         answer:
-          "La plataforma reúne capacidades de personas y RR. HH., asistencia, turnos, prevención, EPP, capacitaciones, documentación, comunicaciones, solicitudes e indicadores, de acuerdo con los módulos habilitados.",
+          "Sí. Se pueden configurar módulos, vistas, roles y permisos por empresa y sucursal.",
       },
       {
-        question: "¿Cómo solicito una demostración?",
-        answer:
-          "Puedes escribir al equipo de BJSIGAPP por WhatsApp para conversar sobre la estructura de tu empresa, sus sucursales y los procesos que quieres ordenar.",
+        question: "¿Puedo empezar por algunos módulos?",
+        answer: "Sí. Puedes priorizar los procesos y módulos que tu empresa necesita revisar.",
       },
     ],
     keywords: [
@@ -475,7 +457,8 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
       },
       {
         title: "Prioriza los procesos que quieres ordenar",
-        description: "Por ejemplo, trabajadores, turnos, asistencia, EPP, documentación o prevención.",
+        description:
+          "Por ejemplo, trabajadores, turnos, asistencia, EPP, documentación o prevención.",
       },
       {
         title: "Agenda el siguiente paso",
@@ -496,8 +479,7 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
       },
       {
         question: "¿Cómo contacto al equipo?",
-        answer:
-          "Puedes iniciar la conversación desde el botón de WhatsApp de esta página.",
+        answer: "Puedes iniciar la conversación desde el botón de WhatsApp de esta página.",
       },
     ],
     keywords: [
@@ -535,7 +517,10 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             </span>
             <span className="text-lg font-black tracking-tight">BJSIGAPP</span>
           </a>
-          <nav aria-label="Páginas de BJSIGAPP" className="hidden items-center gap-5 text-xs font-semibold text-slate-300 xl:flex">
+          <nav
+            aria-label="Páginas de BJSIGAPP"
+            className="hidden items-center gap-5 text-xs font-semibold text-slate-300 xl:flex"
+          >
             {pageLinks.map((link) => (
               <a key={link.href} href={link.href} className="transition hover:text-white">
                 {link.label}
@@ -543,10 +528,18 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="/admin" className="hidden rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/5 hover:text-white sm:inline-flex">
+            <a
+              href="/admin"
+              className="hidden rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/5 hover:text-white sm:inline-flex"
+            >
               Acceso clientes
             </a>
-            <a href={demoUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky-400 px-3.5 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-sky-300 sm:px-4 sm:text-sm">
+            <a
+              href={demoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky-400 px-3.5 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-sky-300 sm:px-4 sm:text-sm"
+            >
               Solicitar demo <ArrowRight size={15} aria-hidden="true" />
             </a>
           </div>
@@ -554,78 +547,153 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden border-b border-white/10 px-5 py-16 sm:py-20 lg:px-8 lg:py-28">
-          <div aria-hidden="true" className="absolute -right-24 -top-20 -z-10 h-96 w-96 rounded-full bg-sky-500/15 blur-3xl" />
-          <div aria-hidden="true" className="absolute -bottom-36 left-0 -z-10 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr] lg:gap-16">
+        <section className="border-b border-white/10 px-5 py-14 sm:py-16 lg:px-8 lg:py-20">
+          <div
+            className={`mx-auto grid max-w-7xl items-center gap-8 lg:gap-12 ${page === "home" ? "lg:grid-cols-[0.72fr_1.28fr]" : "lg:grid-cols-[1fr_0.9fr]"}`}
+          >
             <div className="max-w-2xl">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-sky-200">
-                <Building2 size={14} aria-hidden="true" /> {content.eyebrow}
-              </p>
-              <h1 className="text-balance text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              {page !== "home" && (
+                <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-sky-200">
+                  <Building2 size={14} aria-hidden="true" /> {content.eyebrow}
+                </p>
+              )}
+              <h1 className="text-balance text-3xl font-black leading-[1.08] tracking-tight text-white md:text-4xl xl:text-5xl">
                 {content.title}
               </h1>
-              {page === "home" && (
-                <h2 className="mt-5 max-w-xl text-lg font-semibold leading-7 text-slate-200 sm:text-xl sm:leading-8">
-                  Administra personas y operaciones desde una plataforma SaaS
-                </h2>
-              )}
-              <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 {content.introduction}
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a href={demoUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-400 px-5 py-3 text-sm font-extrabold text-slate-950 shadow-lg shadow-sky-950/40 transition hover:-translate-y-0.5 hover:bg-sky-300">
-                  <MessageCircle size={17} aria-hidden="true" /> Solicitar una demostración
-                </a>
-                <a href="/gestion-multisucursal" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/5">
-                  Ver gestión multisucursal <ArrowRight size={16} aria-hidden="true" />
-                </a>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                {page === "home" ? (
+                  <>
+                    <a
+                      href="#demo"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-sky-300"
+                    >
+                      Explorar la demo <ArrowRight size={16} aria-hidden="true" />
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      href={demoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-400 px-5 py-3 text-sm font-extrabold text-slate-950 shadow-lg shadow-sky-950/40 transition hover:-translate-y-0.5 hover:bg-sky-300"
+                    >
+                      <MessageCircle size={17} aria-hidden="true" /> Solicitar una demostración
+                    </a>
+                    <a
+                      href="/gestion-multisucursal"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/5"
+                    >
+                      Ver gestión multisucursal <ArrowRight size={16} aria-hidden="true" />
+                    </a>
+                  </>
+                )}
               </div>
-              <p className="mt-5 text-xs leading-5 text-slate-400">
-                Información organizada por empresa y equipo · Roles y permisos · Seguimiento con trazabilidad
-              </p>
+              {page !== "home" && (
+                <p className="mt-5 text-xs leading-5 text-slate-400">
+                  Información organizada por empresa y equipo · Roles y permisos · Seguimiento con
+                  trazabilidad
+                </p>
+              )}
             </div>
 
-            <div className="min-w-0">
+            <div id="demo" className="scroll-mt-24 min-w-0">
               <div className="mb-4">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Demo del panel SaaS</p>
-                <h2 id="interactive-demo-title" className="mt-2 text-xl font-black leading-tight tracking-tight text-white sm:text-2xl">Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro</h2>
+                <h2
+                  id="interactive-demo-title"
+                  className="text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl"
+                >
+                  {page === "home" ? "Explora la plataforma" : "Prueba la demo interactiva"}
+                </h2>
+                <p className="mt-2 text-base leading-7 text-slate-300">
+                  {page === "home"
+                    ? "Elige un área. Las tres pantallas siguen el mismo recorrido."
+                    : "Panel central, terreno y teléfono en una vista de ejemplo."}
+                </p>
               </div>
               <DeviceShowcase />
             </div>
           </div>
         </section>
 
-        <section className="px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="challenge-title">
-          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">El problema que ordenamos</p>
-              <h2 id="challenge-title" className="mt-3 max-w-xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{content.challengeTitle}</h2>
+        {page !== "home" && (
+          <section className="px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="challenge-title">
+            <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">
+                  El problema que ordenamos
+                </p>
+                <h2
+                  id="challenge-title"
+                  className="mt-3 max-w-xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl"
+                >
+                  {content.challengeTitle}
+                </h2>
+              </div>
+              <div className="max-w-3xl self-end">
+                <p className="text-base leading-7 text-slate-300">{content.challenge}</p>
+                <a
+                  href="/software-de-gestion-empresarial"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-sky-200 underline decoration-sky-300/30 underline-offset-4 hover:text-white"
+                >
+                  Conoce la plataforma de gestión empresarial{" "}
+                  <ArrowRight size={15} aria-hidden="true" />
+                </a>
+              </div>
             </div>
-            <div className="max-w-3xl self-end">
-              <p className="text-base leading-7 text-slate-300">{content.challenge}</p>
-              <a href="/software-de-gestion-empresarial" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-sky-200 underline decoration-sky-300/30 underline-offset-4 hover:text-white">
-                Conoce la plataforma de gestión empresarial <ArrowRight size={15} aria-hidden="true" />
-              </a>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section id="capacidades" className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="features-title">
+        <section
+          id="capacidades"
+          className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+          aria-labelledby="features-title"
+        >
           <div className="mx-auto max-w-7xl">
             <div className="max-w-3xl">
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Capacidades conectadas</p>
-              <h2 id="features-title" className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{content.featuresTitle}</h2>
-              <p className="mt-4 text-base leading-7 text-slate-300">Cada módulo aporta orden a una parte del trabajo y permite que los equipos consulten lo que necesitan según su función.</p>
+              {page !== "home" && (
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">
+                  Capacidades conectadas
+                </p>
+              )}
+              <h2
+                id="features-title"
+                className={`${page === "home" ? "mt-0" : "mt-3"} text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl`}
+              >
+                {content.featuresTitle}
+              </h2>
+              {page !== "home" && (
+                <p className="mt-4 text-base leading-7 text-slate-300">
+                  Cada módulo aporta orden a una parte del trabajo y permite que los equipos
+                  consulten lo que necesitan según su función.
+                </p>
+              )}
             </div>
-            <div className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {content.features.map(({ icon: Icon, title, description }) => (
-                <article key={title} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 transition hover:-translate-y-1 hover:border-sky-300/30">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Icon size={21} aria-hidden="true" /></span>
-                  <h3 className="mt-4 text-base font-extrabold text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
-                </article>
-              ))}
+            <div
+              className={`mt-8 grid gap-8 ${page === "home" ? "sm:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4"}`}
+            >
+              {content.features.map(({ icon: Icon, title, description }) =>
+                page === "home" ? (
+                  <article key={title} className="max-w-sm">
+                    <h3 className="text-lg font-semibold text-white">{title}</h3>
+                    <p className="mt-2 text-base leading-7 text-slate-300">{description}</p>
+                  </article>
+                ) : (
+                  <article
+                    key={title}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 transition hover:-translate-y-1 hover:border-sky-300/30"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200">
+                      <Icon size={21} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 text-base font-extrabold text-white">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+                  </article>
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -633,33 +701,99 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
         <section className="px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="workflow-title">
           <div className="mx-auto max-w-7xl">
             <div className="max-w-3xl">
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Una forma ordenada de avanzar</p>
-              <h2 id="workflow-title" className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{content.workflowTitle}</h2>
+              {page !== "home" && (
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">
+                  Una forma ordenada de avanzar
+                </p>
+              )}
+              <h2
+                id="workflow-title"
+                className={`${page === "home" ? "mt-0" : "mt-3"} text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl`}
+              >
+                {content.workflowTitle}
+              </h2>
             </div>
             <ol className="mt-9 grid gap-4 md:grid-cols-3">
               {content.steps.map((step, index) => (
-                <li key={step.title} className="relative rounded-2xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
-                  <span className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">Paso 0{index + 1}</span>
-                  <h3 className="mt-4 text-lg font-extrabold text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{step.description}</p>
+                <li
+                  key={step.title}
+                  className={
+                    page === "home"
+                      ? "max-w-sm"
+                      : "relative rounded-2xl border border-white/10 bg-white/[0.035] p-5 sm:p-6"
+                  }
+                >
+                  {page !== "home" && (
+                    <span className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">
+                      Paso 0{index + 1}
+                    </span>
+                  )}
+                  <h3
+                    className={`${page === "home" ? "" : "mt-4"} text-lg font-semibold text-white`}
+                  >
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-base leading-7 text-slate-300">{step.description}</p>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        <section className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="faq-title">
+        <section
+          className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+          aria-labelledby="faq-title"
+        >
           <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">Respuestas claras</p>
-              <h2 id="faq-title" className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{content.faqTitle}</h2>
-              <p className="mt-4 text-sm leading-6 text-slate-400">Explora también nuestras páginas sobre <a className="text-sky-200 underline underline-offset-4" href="/gestion-multisucursal">gestión multisucursal</a>, <a className="text-sky-200 underline underline-offset-4" href="/gestion-de-personas-y-turnos">personas y turnos</a> y <a className="text-sky-200 underline underline-offset-4" href="/seguridad-y-cumplimiento">seguridad operacional</a>.</p>
+              {page !== "home" && (
+                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">
+                  Respuestas claras
+                </p>
+              )}
+              <h2
+                id="faq-title"
+                className={`${page === "home" ? "mt-0" : "mt-3"} text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl`}
+              >
+                {content.faqTitle}
+              </h2>
+              {page !== "home" && (
+                <p className="mt-4 text-sm leading-6 text-slate-400">
+                  Explora también nuestras páginas sobre{" "}
+                  <a
+                    className="text-sky-200 underline underline-offset-4"
+                    href="/gestion-multisucursal"
+                  >
+                    gestión multisucursal
+                  </a>
+                  ,{" "}
+                  <a
+                    className="text-sky-200 underline underline-offset-4"
+                    href="/gestion-de-personas-y-turnos"
+                  >
+                    personas y turnos
+                  </a>{" "}
+                  y{" "}
+                  <a
+                    className="text-sky-200 underline underline-offset-4"
+                    href="/seguridad-y-cumplimiento"
+                  >
+                    seguridad operacional
+                  </a>
+                  .
+                </p>
+              )}
             </div>
             <div className="space-y-3">
               {content.faqs.map((faq) => (
-                <details key={faq.question} className="group rounded-xl border border-white/10 bg-slate-950/75 p-4 open:border-sky-300/25">
-                  <summary className="cursor-pointer list-none pr-7 text-sm font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">{faq.question}</summary>
-                  <p className="mt-3 text-sm leading-6 text-slate-400">{faq.answer}</p>
+                <details
+                  key={faq.question}
+                  className="group rounded-xl border border-white/10 bg-slate-950/75 p-4 open:border-sky-300/25"
+                >
+                  <summary className="cursor-pointer list-none pr-7 text-base font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">
+                    {faq.question}
+                  </summary>
+                  <p className="mt-3 text-base leading-7 text-slate-400">{faq.answer}</p>
                 </details>
               ))}
             </div>
@@ -667,32 +801,69 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
         </section>
 
         <section className="px-5 py-16 sm:py-20 lg:px-8" aria-labelledby="related-title">
-          <div className="mx-auto max-w-7xl rounded-3xl border border-sky-300/15 bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent p-6 sm:p-10 lg:p-12">
+          <div className="mx-auto max-w-7xl rounded-3xl bg-slate-900 p-6 sm:p-10 lg:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
               <div className="max-w-3xl">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">BJSIGAPP</p>
-                <h2 id="related-title" className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{isContactPage ? "Conversemos sobre tus prioridades" : "Empieza por ordenar lo que más necesita tu empresa"}</h2>
-                <p className="mt-4 text-base leading-7 text-slate-300">Solicita una demostración y revisa cómo organizar personas, sucursales, seguridad y procesos en una plataforma de gestión empresarial.</p>
+                {page !== "home" && (
+                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sky-300">
+                    BJSIGAPP
+                  </p>
+                )}
+                <h2
+                  id="related-title"
+                  className={`${page === "home" ? "mt-0" : "mt-3"} text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl`}
+                >
+                  {isContactPage
+                    ? "Conversemos sobre tus prioridades"
+                    : page === "home"
+                      ? "¿Qué proceso quieres ordenar?"
+                      : "Empieza por ordenar lo que más necesita tu empresa"}
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-300">
+                  {page === "home"
+                    ? "Cuéntanos cómo trabaja tu empresa y qué te gustaría conectar."
+                    : "Solicita una demostración y revisa cómo organizar personas, sucursales, seguridad y procesos en una plataforma de gestión empresarial."}
+                </p>
               </div>
-              <a href={demoUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-sky-300">
-                <MessageCircle size={17} aria-hidden="true" /> Hablar por WhatsApp <ArrowRight size={16} aria-hidden="true" />
+              <a
+                href={demoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-sky-300"
+              >
+                <MessageCircle size={17} aria-hidden="true" /> Hablar por WhatsApp{" "}
+                <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-xs font-semibold text-slate-300">
-              {pageLinks.map((link) => <a key={link.href} href={link.href} className="hover:text-white">{link.label}</a>)}
-              <a href="/contacto" className="hover:text-white">Contacto</a>
-            </div>
+            {page !== "home" && (
+              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-xs font-semibold text-slate-300">
+                {pageLinks.map((link) => (
+                  <a key={link.href} href={link.href} className="hover:text-white">
+                    {link.label}
+                  </a>
+                ))}
+                <a href="/contacto" className="hover:text-white">
+                  Contacto
+                </a>
+              </div>
+            )}
           </div>
         </section>
       </main>
 
       <footer className="border-t border-white/10 px-5 py-7 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} BJSIGAPP · Gestión empresarial y operacional.</p>
           <nav aria-label="Enlaces legales" className="flex gap-4">
-            <a href="/privacidad" className="hover:text-slate-300">Privacidad</a>
-            <a href="/terminos" className="hover:text-slate-300">Términos</a>
-            <a href="/contacto" className="hover:text-slate-300">Contacto</a>
+            <a href="/privacidad" className="hover:text-slate-300">
+              Privacidad
+            </a>
+            <a href="/terminos" className="hover:text-slate-300">
+              Términos
+            </a>
+            <a href="/contacto" className="hover:text-slate-300">
+              Contacto
+            </a>
           </nav>
         </div>
       </footer>
@@ -720,11 +891,16 @@ export function getSeoPageMetadata(page: SeoLandingPageKey) {
   };
   const descriptions: Record<SeoLandingPageKey, string> = {
     home: "Software SaaS multiempresa para administrar RR. HH., asistencia, turnos, prevención y documentos. Configura módulos, permisos e identidad para cada empresa.",
-    multisucursal: "Coordina personas, procesos y seguimiento entre sucursales con información organizada por sede, empresa y responsable.",
-    gestion: "Centraliza personas, turnos, prevención, EPP, documentación y seguimiento en un software de gestión empresarial.",
-    personas: "Organiza trabajadores, asistencia, turnos, documentos y solicitudes en todas tus sucursales con BJSIGAPP.",
-    seguridad: "Ordena incidentes, inspecciones, EPP, capacitaciones y evidencias para dar seguimiento a la prevención por sucursal.",
-    contacto: "Solicita una demostración de BJSIGAPP y conversa sobre cómo ordenar la gestión empresarial de tus sucursales.",
+    multisucursal:
+      "Coordina personas, procesos y seguimiento entre sucursales con información organizada por sede, empresa y responsable.",
+    gestion:
+      "Centraliza personas, turnos, prevención, EPP, documentación y seguimiento en un software de gestión empresarial.",
+    personas:
+      "Organiza trabajadores, asistencia, turnos, documentos y solicitudes en todas tus sucursales con BJSIGAPP.",
+    seguridad:
+      "Ordena incidentes, inspecciones, EPP, capacitaciones y evidencias para dar seguimiento a la prevención por sucursal.",
+    contacto:
+      "Solicita una demostración de BJSIGAPP y conversa sobre cómo ordenar la gestión empresarial de tus sucursales.",
   };
   return {
     path: paths[page],

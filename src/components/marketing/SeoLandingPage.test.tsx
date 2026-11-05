@@ -3,38 +3,47 @@ import { describe, expect, it } from "vitest";
 import { SeoLandingPage } from "./SeoLandingPage";
 
 describe("SeoLandingPage demo interactiva", () => {
-  it("permite explorar módulos y cambiar el alcance de sucursal", () => {
+  it("explica la propuesta y sincroniza el área seleccionada en las pantallas", () => {
     render(<SeoLandingPage page="home" />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Software multiempresa de RR. HH. y operaciones" }),
+      screen.getByRole("heading", { level: 1, name: "Conecta personas y prevención" }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("heading", {
-        level: 2,
-        name: "Administra personas y operaciones desde una plataforma SaaS",
-      }),
-    ).toBeTruthy();
-    expect(screen.getByText("Administra personas, asistencia, turnos, prevención, documentos y procesos internos. Configura módulos, permisos e identidad para cada empresa.")).toBeTruthy();
-
-    const demoHeading = screen.getByRole("heading", {
-      name: "Prueba la demo interactiva de cómo funciona BJSIGAPP por dentro",
-    });
-    expect(demoHeading).toBeTruthy();
-    expect(
-      demoHeading.closest("section")?.querySelector(
-        '[role="group"][aria-labelledby="device-showcase-caption"]',
+      screen.getByText(
+        "RR. HH., turnos y seguridad en una plataforma configurable por empresa y sucursal.",
       ),
     ).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Explorar la demo/ })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Solicitar un recorrido" })).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Explora la plataforma" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Preguntas frecuentes" })).toBeTruthy();
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Sucursales" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Sucursales" }));
+
+    expect(screen.getByRole("button", { name: "Sucursales" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
     expect(
-      screen.getByRole("heading", { name: "La gestión, organizada por sucursal" }),
+      screen.getByRole("img", { name: "Tablet: Sucursales, Todas las sucursales" }),
     ).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "Teléfono: Sucursales, Todas las sucursales" }),
+    ).toBeTruthy();
+  });
 
-    fireEvent.change(screen.getByLabelText("Alcance de ejemplo"), {
+  it("propaga el alcance de ejemplo a tablet y teléfono", () => {
+    render(<SeoLandingPage page="home" />);
+    fireEvent.click(screen.getByRole("button", { name: "Terreno" }));
+    fireEvent.change(screen.getByLabelText("Vista por sucursal"), {
       target: { value: "north" },
     });
-    expect(screen.getAllByText("Sucursal de ejemplo Norte", { exact: true }).length).toBeGreaterThan(1);
+
+    expect(
+      screen.getByRole("img", { name: "Tablet: Terreno, Sucursal de ejemplo Norte" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "Teléfono: Terreno, Sucursal de ejemplo Norte" }),
+    ).toBeTruthy();
   });
 });

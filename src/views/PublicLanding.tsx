@@ -162,12 +162,36 @@ const whatsappDemoUrl =
   "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
 
 const hooks = [
-  { tag: "Adiós al trabajo repetido", pain: "¿Planillas, carpetas y firmas a mano?", fix: "Asistencia, EPP y firmas se registran solos desde el celular." },
-  { tag: "Seguridad de tu empresa", pain: "¿Una fiscalización o un accidente te pillaría sin respaldo?", fix: "Evidencia ordenada, trazable y lista para mostrar." },
-  { tag: "Tu competencia ya avanzó", pain: "Las empresas líderes ya operan en digital.", fix: "Súmate y opera con el mismo nivel de control." },
-  { tag: "Innovación", pain: "¿Sigues dirigiendo con Excel?", fix: "Indicadores y alertas en tiempo real para decidir mejor." },
-  { tag: "Ahorro", pain: "Cada multa y cada hora perdida te quita margen.", fix: "Alertas de vencimientos antes de que se conviertan en multas." },
-  { tag: "Control total", pain: "¿Varias empresas, faenas y contratistas?", fix: "Multiempresa: todo en un solo panel, cada una con sus datos aislados." },
+  {
+    tag: "Adiós al trabajo repetido",
+    pain: "¿Planillas, carpetas y firmas a mano?",
+    fix: "Asistencia, EPP y firmas se registran solos desde el celular.",
+  },
+  {
+    tag: "Seguridad de tu empresa",
+    pain: "¿Una fiscalización o un accidente te pillaría sin respaldo?",
+    fix: "Evidencia ordenada, trazable y lista para mostrar.",
+  },
+  {
+    tag: "Tu competencia ya avanzó",
+    pain: "Las empresas líderes ya operan en digital.",
+    fix: "Súmate y opera con el mismo nivel de control.",
+  },
+  {
+    tag: "Innovación",
+    pain: "¿Sigues dirigiendo con Excel?",
+    fix: "Indicadores y alertas en tiempo real para decidir mejor.",
+  },
+  {
+    tag: "Ahorro",
+    pain: "Cada multa y cada hora perdida te quita margen.",
+    fix: "Alertas de vencimientos antes de que se conviertan en multas.",
+  },
+  {
+    tag: "Control total",
+    pain: "¿Varias empresas, faenas y contratistas?",
+    fix: "Multiempresa: todo en un solo panel, cada una con sus datos aislados.",
+  },
 ];
 
 const beforeAfter = [
@@ -175,7 +199,11 @@ const beforeAfter = [
   ["Entrega de EPP", "Papel firmado que se pierde", "Firma digital con historial por trabajador"],
   ["Capacitaciones", "Correos y listas sueltas", "Asignación, registro y alertas de vencimiento"],
   ["Documentos", "Carpetas y archivos dispersos", "Repositorio por empresa, siempre a mano"],
-  ["Denuncias / Ley Karin", "Proceso informal, sin trazabilidad", "Canal confidencial con seguimiento"],
+  [
+    "Denuncias / Ley Karin",
+    "Proceso informal, sin trazabilidad",
+    "Canal confidencial con seguimiento",
+  ],
 ];
 
 function LeadForm() {
@@ -187,21 +215,53 @@ function LeadForm() {
     const text = `Hola, quiero una demo de BJSIGAPP.\nNombre: ${form.name}\nEmpresa: ${form.company}\nContacto: ${form.contact}${form.size ? `\nTrabajadores: ${form.size}` : ""}`;
     window.open(`https://wa.me/56941228089?text=${encodeURIComponent(text)}`, "_blank", "noopener");
   };
-  const input = "min-h-11 w-full rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50 outline-none focus:border-white/60";
+  const input =
+    "min-h-11 w-full rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50 outline-none focus:border-white/60";
   return (
     <form onSubmit={submit} className="grid w-full max-w-md gap-2">
-      <input required maxLength={80} placeholder="Tu nombre" value={form.name} onChange={set("name")} className={input} />
-      <input required maxLength={100} placeholder="Empresa" value={form.company} onChange={set("company")} className={input} />
-      <input required maxLength={100} placeholder="WhatsApp o correo" value={form.contact} onChange={set("contact")} className={input} />
-      <input maxLength={10} inputMode="numeric" placeholder="N.º de trabajadores (opcional)" value={form.size} onChange={set("size")} className={input} />
-      <button type="submit" className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-blue-800 hover:bg-blue-50">
+      <input
+        required
+        maxLength={80}
+        placeholder="Tu nombre"
+        value={form.name}
+        onChange={set("name")}
+        className={input}
+      />
+      <input
+        required
+        maxLength={100}
+        placeholder="Empresa"
+        value={form.company}
+        onChange={set("company")}
+        className={input}
+      />
+      <input
+        required
+        maxLength={100}
+        placeholder="WhatsApp o correo"
+        value={form.contact}
+        onChange={set("contact")}
+        className={input}
+      />
+      <input
+        maxLength={10}
+        inputMode="numeric"
+        placeholder="N.º de trabajadores (opcional)"
+        value={form.size}
+        onChange={set("size")}
+        className={input}
+      />
+      <button
+        type="submit"
+        className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-blue-800 hover:bg-blue-50"
+      >
         Quiero mi demo gratis <ArrowRight size={16} />
       </button>
     </form>
   );
 }
 
-const previewViews = [
+export const previewViews = [
   {
     label: "Panorama",
     icon: BarChart3,
@@ -280,7 +340,16 @@ const previewViews = [
   },
 ] as const;
 
-function PreviewNavigation({
+export type PreviewScope = "all" | "north" | "center";
+
+export const getPreviewScopeLabel = (scope: PreviewScope) =>
+  scope === "north"
+    ? "Sucursal de ejemplo Norte"
+    : scope === "center"
+      ? "Sucursal de ejemplo Centro"
+      : "Todas las sucursales";
+
+export function PreviewNavigation({
   activeIndex,
   compact = false,
   onSelect,
@@ -292,8 +361,9 @@ function PreviewNavigation({
   return (
     <nav
       aria-label="Vistas de la demostración"
+      data-ui="area-selector"
       className={
-        compact ? "flex gap-1 overflow-x-auto pb-2 sm:hidden" : "hidden space-y-1 sm:block"
+        compact ? "grid grid-cols-4 gap-1.5 pb-2 sm:grid-cols-7" : "hidden space-y-1 sm:block"
       }
     >
       {previewViews.map(({ label, icon: Icon }, index) => (
@@ -302,7 +372,7 @@ function PreviewNavigation({
           type="button"
           aria-pressed={activeIndex === index}
           onClick={() => onSelect(index)}
-          className={`${compact ? "min-h-9 shrink-0 rounded-lg px-2.5" : "min-h-9 w-full rounded-md px-2"} flex items-center gap-2 text-left text-[11px] font-medium transition-colors ${activeIndex === index ? "bg-blue-100 text-blue-800" : "text-slate-600 hover:bg-white/70 hover:text-slate-900"}`}
+          className={`${compact ? "min-h-11 flex-col justify-center gap-0.5 rounded-lg px-1 text-center sm:min-h-10 sm:flex-row sm:gap-1.5 sm:px-2" : "min-h-9 w-full rounded-md px-2"} flex min-w-0 items-center text-[10px] font-medium leading-tight transition-colors sm:text-[11px] ${activeIndex === index ? "bg-white text-blue-800" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}
         >
           <Icon size={14} aria-hidden="true" />
           {label}
@@ -312,16 +382,25 @@ function PreviewNavigation({
   );
 }
 
-export function DashboardPreview() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [scope, setScope] = useState("all");
+export function DashboardPreview({
+  activeIndex: selectedIndex,
+  scope: selectedScope,
+  onScopeChange,
+  onSelect,
+}: {
+  activeIndex?: number;
+  scope?: PreviewScope;
+  onScopeChange?: (scope: PreviewScope) => void;
+  onSelect?: (index: number) => void;
+} = {}) {
+  const [localIndex, setLocalIndex] = useState(0);
+  const [localScope, setLocalScope] = useState<PreviewScope>("all");
+  const activeIndex = selectedIndex ?? localIndex;
+  const scope = selectedScope ?? localScope;
+  const selectView = onSelect ?? setLocalIndex;
+  const selectScope = onScopeChange ?? setLocalScope;
   const activeView = previewViews[activeIndex];
-  const scopeLabel =
-    scope === "north"
-      ? "Sucursal de ejemplo Norte"
-      : scope === "center"
-        ? "Sucursal de ejemplo Centro"
-        : "Todas las sucursales";
+  const scopeLabel = getPreviewScopeLabel(scope);
 
   return (
     <div
@@ -329,6 +408,11 @@ export function DashboardPreview() {
       aria-label="Demostración interactiva de módulos BJSIGAPP"
       data-ui="dashboard-preview"
     >
+      {selectedIndex === undefined && (
+        <div className="mb-2">
+          <PreviewNavigation compact activeIndex={activeIndex} onSelect={selectView} />
+        </div>
+      )}
       <div className="landing-preview-glow" />
       <div className="landing-preview">
         <div className="landing-window-bar">
@@ -352,14 +436,13 @@ export function DashboardPreview() {
               </span>
               BJSIGAPP
             </div>
-            <PreviewNavigation activeIndex={activeIndex} onSelect={setActiveIndex} />
+            <p className="text-[9px] text-white/60">{activeView.label}</p>
           </aside>
-          <div className="min-w-0 bg-slate-100 p-3 sm:p-5">
-            <PreviewNavigation compact activeIndex={activeIndex} onSelect={setActiveIndex} />
+          <div className="min-w-0 bg-slate-100 p-3 sm:p-4">
             <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
               <div>
                 <p className="text-[11px] font-semibold text-blue-700">
-                  Centro de control · demostración
+                  Área seleccionada · vista de ejemplo
                 </p>
                 <h3
                   className="mt-1 text-base font-bold text-slate-900 sm:text-lg"
@@ -369,10 +452,10 @@ export function DashboardPreview() {
                 </h3>
               </div>
               <label className="grid gap-1 text-[11px] font-medium text-slate-600">
-                Alcance de ejemplo
+                Vista por sucursal
                 <select
                   value={scope}
-                  onChange={(event) => setScope(event.target.value)}
+                  onChange={(event) => selectScope(event.target.value as PreviewScope)}
                   className="min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                 >
                   <option value="all">Todas las sucursales</option>
@@ -382,7 +465,7 @@ export function DashboardPreview() {
               </label>
             </div>
             <div
-              className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5"
+              className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4"
               aria-live="polite"
             >
               <div className="flex items-center gap-2 text-slate-800">
@@ -392,7 +475,7 @@ export function DashboardPreview() {
               <p className="mt-2 text-sm leading-5 text-slate-600">{activeView.description}</p>
               <p className="mt-4 text-xs font-semibold text-slate-700">Módulos relacionados</p>
               <ul className="mt-2 grid gap-x-4 gap-y-2 sm:grid-cols-2">
-                {activeView.modules.map((module) => (
+                {activeView.modules.slice(0, 4).map((module) => (
                   <li
                     key={module}
                     className="flex items-start gap-2 text-xs leading-4 text-slate-600"
@@ -550,7 +633,8 @@ export function PublicLanding() {
             →
           </button>
         </div>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={`${activeSection === 0 ? "" : "hidden"} relative isolate min-h-[calc(100vh-136px)] px-5 pb-20 pt-20 sm:pb-28 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32`}
         >
           <div className="landing-orb landing-orb-one" />
@@ -578,7 +662,10 @@ export function PublicLanding() {
                   ["24/7", "alertas de vencimientos"],
                   ["Días", "no meses, para partir"],
                 ].map(([n, t]) => (
-                  <div key={t} className="landing-card rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div
+                    key={t}
+                    className="landing-card rounded-xl border border-white/10 bg-white/[0.04] p-3"
+                  >
                     <p className="text-xl font-black text-cyan-300">{n}</p>
                     <p className="text-[11px] leading-4 text-white/55">{t}</p>
                   </div>
@@ -617,7 +704,8 @@ export function PublicLanding() {
             <DashboardPreview />
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={activeSection === 1 ? "bg-slate-950 px-5 py-16 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
@@ -627,8 +715,13 @@ export function PublicLanding() {
             </h2>
             <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {hooks.map(({ tag, pain, fix }) => (
-                <article key={tag} className="landing-card rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/80">{tag}</p>
+                <article
+                  key={tag}
+                  className="landing-card rounded-2xl border border-white/10 bg-white/[0.04] p-5"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/80">
+                    {tag}
+                  </p>
                   <h3 className="mt-3 text-base font-black leading-6">{pain}</h3>
                   <p className="mt-3 flex gap-2 text-xs leading-5 text-white/60">
                     <CheckCircle2 size={16} className="shrink-0 text-emerald-300" /> {fix}
@@ -636,12 +729,17 @@ export function PublicLanding() {
                 </article>
               ))}
             </div>
-            <button type="button" onClick={() => goToSection(8)} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-bold hover:bg-blue-400">
+            <button
+              type="button"
+              onClick={() => goToSection(8)}
+              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-bold hover:bg-blue-400"
+            >
               Quiero salir del Excel <ArrowRight size={16} />
             </button>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={
             activeSection === 2
               ? "border-y border-white/10 bg-white/[0.035] px-5 py-12 lg:px-8 lg:py-14"
@@ -707,7 +805,8 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           id="modulos"
           className={
             activeSection === 3 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
@@ -738,7 +837,8 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={activeSection === 4 ? "bg-white px-5 py-20 text-slate-900 lg:px-8" : "hidden"}
         >
           <div className="mx-auto max-w-7xl">
@@ -778,7 +878,10 @@ export function PublicLanding() {
                 <p className="p-3 text-emerald-200">Con BJSIGAPP</p>
               </div>
               {beforeAfter.map(([task, before, after]) => (
-                <div key={task} className="grid grid-cols-[1fr_1fr_1fr] border-t border-slate-200 text-xs">
+                <div
+                  key={task}
+                  className="grid grid-cols-[1fr_1fr_1fr] border-t border-slate-200 text-xs"
+                >
                   <p className="p-3 font-bold">{task}</p>
                   <p className="p-3 text-slate-500">{before}</p>
                   <p className="p-3 font-semibold text-blue-700">{after}</p>
@@ -787,11 +890,16 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing=""
-          className={activeSection === 5 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"}
+        <section
+          data-landing=""
+          className={
+            activeSection === 5 ? "bg-slate-100 px-5 py-16 text-slate-900 lg:px-8" : "hidden"
+          }
         >
           <div className="mx-auto max-w-7xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">Cómo funciona</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
+              Cómo funciona
+            </p>
             <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
               De la solicitud a tu operación digital en 3 pasos.
             </h2>
@@ -799,21 +907,34 @@ export function PublicLanding() {
               {[
                 ["Solicitas", "Pides tu demo en 30 segundos, por formulario o WhatsApp."],
                 ["Configuramos", "Cargamos tu empresa, tus módulos, tus faenas y tu marca."],
-                ["Operas", "Tus trabajadores entran con su RUT y tú controlas todo desde el panel."],
+                [
+                  "Operas",
+                  "Tus trabajadores entran con su RUT y tú controlas todo desde el panel.",
+                ],
               ].map(([t, d], i) => (
-                <article key={t} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">{i + 1}</span>
+                <article
+                  key={t}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">
+                    {i + 1}
+                  </span>
                   <h3 className="mt-5 text-lg font-black">{t}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-500">{d}</p>
                 </article>
               ))}
             </div>
-            <button type="button" onClick={() => goToSection(8)} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500">
+            <button
+              type="button"
+              onClick={() => goToSection(8)}
+              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
+            >
               Empezar el paso 1 <ArrowRight size={16} />
             </button>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={
             activeSection === 6 ? "bg-slate-50 px-5 py-14 text-slate-900 lg:px-8" : "hidden"
           }
@@ -845,7 +966,8 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           id="seguridad"
           className={activeSection === 7 ? "bg-slate-950 px-5 py-20 lg:px-8" : "hidden"}
         >
@@ -880,7 +1002,8 @@ export function PublicLanding() {
             </div>
           </div>
         </section>
-        <section data-landing=""
+        <section
+          data-landing=""
           className={
             activeSection === 8
               ? "landing-contact bg-gradient-to-br from-blue-700 to-slate-900 px-5 py-20 lg:px-8"
@@ -914,7 +1037,11 @@ export function PublicLanding() {
         </section>
       </main>
       {activeSection !== 8 && (
-        <button type="button" onClick={() => goToSection(8)} className="fixed inset-x-4 bottom-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 text-sm font-bold shadow-xl shadow-blue-600/30 sm:hidden">
+        <button
+          type="button"
+          onClick={() => goToSection(8)}
+          className="fixed inset-x-4 bottom-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 text-sm font-bold shadow-xl shadow-blue-600/30 sm:hidden"
+        >
           Pedir demo <ArrowRight size={16} />
         </button>
       )}
