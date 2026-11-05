@@ -648,11 +648,12 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
           </section>
         )}
 
-        <section
-          id="capacidades"
-          className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
-          aria-labelledby="features-title"
-        >
+        {!content.platformSection && (
+          <section
+            id="capacidades"
+            className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+            aria-labelledby="features-title"
+          >
           <div className="mx-auto max-w-7xl">
             <div className="max-w-3xl">
               {page !== "home" && (
@@ -676,7 +677,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             <div
               className={`mt-8 grid gap-8 ${page === "home" ? "sm:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4"}`}
             >
-              {content.features.map(({ icon: Icon, title, description }) =>
+              {content.features?.map(({ icon: Icon, title, description }) =>
                 page === "home" ? (
                   <article key={title} className="max-w-sm">
                     <h3 className="text-lg font-semibold text-white">{title}</h3>
@@ -715,7 +716,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
               </h2>
             </div>
             <ol className="mt-9 grid gap-4 md:grid-cols-3">
-              {content.steps.map((step, index) => (
+              {content.steps?.map((step, index) => (
                 <li
                   key={step.title}
                   className={
