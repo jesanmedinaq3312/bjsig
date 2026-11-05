@@ -2,11 +2,13 @@ import { DeviceShowcase } from "@/components/marketing/DeviceShowcase";
 import {
   ArrowRight,
   BarChart3,
+  Boxes,
   Building2,
   CalendarClock,
   ClipboardCheck,
   FileText,
   HardHat,
+  Layers,
   LockKeyhole,
   MessageCircle,
   ShieldCheck,
@@ -26,10 +28,16 @@ type PageContent = {
   introduction: string;
   challengeTitle: string;
   challenge: string;
-  featuresTitle: string;
-  features: Feature[];
-  workflowTitle: string;
-  steps: Step[];
+  featuresTitle?: string;
+  features?: Feature[];
+  workflowTitle?: string;
+  steps?: Step[];
+  platformSection?: {
+    title: string;
+    introduction: string;
+    items: Feature[];
+    note: string;
+  };
   faqTitle: string;
   faqs: Faq[];
   keywords: string[];
