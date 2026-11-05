@@ -643,18 +643,21 @@ export function PublicLanding() {
             <div className="max-w-xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-200">
                 <Sparkles size={12} className="text-cyan-300" />
-                Gestión operacional para empresas
+                Deja de perseguir papeles
               </div>
               <h1 className="landing-title text-4xl font-black leading-[1.04] tracking-tight sm:text-6xl">
-                Deja de perseguir papeles.{" "}
+                Software multiempresa de{" "}
                 <span className="landing-shimmer bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
-                  Controla todas tus empresas
-                </span>{" "}
-                desde un solo lugar.
+                  RR. HH. y operaciones
+                </span>
               </h1>
-              <p className="mt-7 max-w-lg text-base leading-7 text-white/60 sm:text-lg">
-                BJSIGAPP digitaliza asistencia, EPP, capacitaciones, documentos y Ley Karin. Tus
-                trabajadores firman y reportan desde el celular; tú ves todo en un panel.
+              <h2 className="mt-5 max-w-xl text-base font-semibold leading-7 text-white/80 sm:text-lg">
+                Administra personas, asistencia, turnos, prevención, documentos y procesos internos
+                desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa.
+              </h2>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-white/55 sm:text-base">
+                Tus trabajadores registran asistencia, EPP, capacitaciones y Ley Karin desde el
+                celular; tú ves todo en un panel por empresa.
               </p>
               <div className="mt-6 grid max-w-lg grid-cols-3 gap-2">
                 {[
