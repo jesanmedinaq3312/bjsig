@@ -2,11 +2,13 @@ import { DeviceShowcase } from "@/components/marketing/DeviceShowcase";
 import {
   ArrowRight,
   BarChart3,
+  Boxes,
   Building2,
   CalendarClock,
   ClipboardCheck,
   FileText,
   HardHat,
+  Layers,
   LockKeyhole,
   MessageCircle,
   ShieldCheck,
@@ -26,10 +28,16 @@ type PageContent = {
   introduction: string;
   challengeTitle: string;
   challenge: string;
-  featuresTitle: string;
-  features: Feature[];
-  workflowTitle: string;
-  steps: Step[];
+  featuresTitle?: string;
+  features?: Feature[];
+  workflowTitle?: string;
+  steps?: Step[];
+  platformSection?: {
+    title: string;
+    introduction: string;
+    items: Feature[];
+    note: string;
+  };
   faqTitle: string;
   faqs: Faq[];
   keywords: string[];
@@ -44,39 +52,32 @@ const pages: Record<SeoLandingPageKey, PageContent> = {
     challengeTitle: "Ordena todas tus sucursales desde una sola plataforma",
     challenge:
       "Cuando cada sede trabaja con planillas, correos y carpetas distintas, cuesta saber qué está pendiente y quién debe actuar. BJSIGAPP centraliza la información y ayuda a mantener el contexto de cada empresa, sucursal y responsable.",
-    featuresTitle: "Procesos que trabajan en conjunto",
-    features: [
-      {
-        icon: UsersRound,
-        title: "Personas",
-        description: "Fichas, asistencia, turnos y solicitudes.",
-      },
-      {
-        icon: ShieldCheck,
-        title: "Prevención",
-        description: "Incidentes, EPP, formación y evidencias.",
-      },
-      {
-        icon: Building2,
-        title: "Sucursales",
-        description: "Permisos y seguimiento según cada sede.",
-      },
-    ],
-    workflowTitle: "Empieza por lo prioritario",
-    steps: [
-      {
-        title: "Configura tu estructura",
-        description: "Empresas, sedes, equipos y permisos.",
-      },
-      {
-        title: "Activa lo que necesitas",
-        description: "Personas, turnos, prevención y otros módulos.",
-      },
-      {
-        title: "Da seguimiento",
-        description: "Avances, responsables y pendientes por sede.",
-      },
-    ],
+    platformSection: {
+      title: "Una plataforma SaaS para gestionar personas y operación por empresa",
+      introduction:
+        "BJSIGAPP permite administrar varias organizaciones desde un control de plataforma y trabajar dentro del contexto de cada empresa. Los módulos habilitados y los permisos definen qué funciones ve cada equipo.",
+      items: [
+        {
+          icon: Building2,
+          title: "Estructura",
+          description:
+            "Organizaciones, sucursales, áreas y responsables organizados según la estructura definida por cada empresa.",
+        },
+        {
+          icon: Layers,
+          title: "Módulos y accesos",
+          description:
+            "Planes, vistas y permisos configurables para que cada perfil utilice las funciones que le corresponden.",
+        },
+        {
+          icon: Boxes,
+          title: "Contexto separado",
+          description:
+            "La información operativa se asocia a la empresa activa y sus permisos, con branding y portales diferenciados según configuración.",
+        },
+      ],
+      note: "El alcance concreto depende del plan y los módulos habilitados para cada organización.",
+    },
     faqTitle: "Preguntas frecuentes",
     faqs: [
       {
@@ -647,11 +648,12 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
           </section>
         )}
 
-        <section
-          id="capacidades"
-          className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
-          aria-labelledby="features-title"
-        >
+        {!content.platformSection && (
+          <section
+            id="capacidades"
+            className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+            aria-labelledby="features-title"
+          >
           <div className="mx-auto max-w-7xl">
             <div className="max-w-3xl">
               {page !== "home" && (
@@ -675,7 +677,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             <div
               className={`mt-8 grid gap-8 ${page === "home" ? "sm:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4"}`}
             >
-              {content.features.map(({ icon: Icon, title, description }) =>
+              {content.features?.map(({ icon: Icon, title, description }) =>
                 page === "home" ? (
                   <article key={title} className="max-w-sm">
                     <h3 className="text-lg font-semibold text-white">{title}</h3>
@@ -714,7 +716,7 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
               </h2>
             </div>
             <ol className="mt-9 grid gap-4 md:grid-cols-3">
-              {content.steps.map((step, index) => (
+              {content.steps?.map((step, index) => (
                 <li
                   key={step.title}
                   className={
@@ -739,6 +741,46 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             </ol>
           </div>
         </section>
+        )}
+
+        {content.platformSection && (
+          <section
+            id="capacidades"
+            className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+            aria-labelledby="platform-title"
+          >
+            <div className="mx-auto max-w-7xl">
+              <div className="max-w-3xl">
+                <h2
+                  id="platform-title"
+                  className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl"
+                >
+                  {content.platformSection.title}
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-300">
+                  {content.platformSection.introduction}
+                </p>
+              </div>
+              <div className="mt-9 grid gap-4 md:grid-cols-3">
+                {content.platformSection.items.map(({ icon: Icon, title, description }) => (
+                  <article
+                    key={title}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 transition hover:-translate-y-1 hover:border-sky-300/30 sm:p-6"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200">
+                      <Icon size={21} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 text-base font-extrabold text-white">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+                  </article>
+                ))}
+              </div>
+              <p className="mt-6 max-w-3xl border-l-2 border-sky-300/30 pl-4 text-sm leading-6 text-slate-400">
+                {content.platformSection.note}
+              </p>
+            </div>
+          </section>
+        )}
 
         <section
           className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
