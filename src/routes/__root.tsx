@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "BJSIGAPP · Gestión integrada empresarial" },
       {
         name: "description",
-        content: "Gestión integrada de seguridad, operaciones y personas para empresas.",
+        content: "Plataforma de gestión empresarial multisucursal para ordenar personas, operaciones, seguridad y cumplimiento.",
       },
       { name: "author", content: "BJSIGAPP" },
       {
@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:description",
-        content: "Gestiona seguridad, operaciones, personas y cumplimiento en un solo lugar.",
+        content: "Ordena personas, turnos, prevención y procesos de todas tus sucursales desde una plataforma empresarial.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

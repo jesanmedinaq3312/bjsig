@@ -312,7 +312,7 @@ function PreviewNavigation({
   );
 }
 
-function DashboardPreview() {
+export function DashboardPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [scope, setScope] = useState("all");
   const activeView = previewViews[activeIndex];
@@ -354,7 +354,7 @@ function DashboardPreview() {
             </div>
             <PreviewNavigation activeIndex={activeIndex} onSelect={setActiveIndex} />
           </aside>
-          <main className="min-w-0 bg-slate-100 p-3 sm:p-5">
+          <div className="min-w-0 bg-slate-100 p-3 sm:p-5">
             <PreviewNavigation compact activeIndex={activeIndex} onSelect={setActiveIndex} />
             <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
               <div>
@@ -411,7 +411,7 @@ function DashboardPreview() {
               Alcance mostrado: <strong>{scopeLabel}</strong>. Las sucursales y textos de esta pieza
               son demostrativos.
             </p>
-          </main>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
-# TODO — BJSIGAPP import and preview
 
-- [x] Import the supplied BJSIGAPP ZIP, preserving its original source, project structure, functionality, and visual design.
-- [x] Install and use the supplied dependencies without replacing React 19, TypeScript, Vite/TanStack Start, or Supabase.
-- [x] Configure the Supabase URL and public publishable key for local Preview using project BJSIG; keep `.env.local` ignored by Git and do not commit the values.
-- [x] Start the development environment and make the existing BJSIGAPP available in live Preview. The homepage and declared route manifest respond successfully.
-- [x] Check the imported project with its existing TypeScript check and production build; both pass. No source-code fixes or redesign were needed.
+
+## Mensaje del home y tipografía (5 de noviembre de 2026)
+- [x] Usar el H1 «Software multiempresa de RR. HH. y operaciones» y un H2 breve que explique el resultado SaaS.
+- [x] Mantener el listado de personas, asistencia, turnos, prevención, documentos, procesos internos, módulos, permisos e identidad en el texto de apoyo.
+- [x] Aplicar DM Sans Variable autoalojada, con títulos de peso 500 y jerarquía sobria; conservar fallback y licencia OFL.
+- [x] Ajustar título y meta description, comprobar límites SEO, H1/H2 SSR, fuente cargada y 375/1280 px sin overflow; validar TypeScript, pruebas y build.
