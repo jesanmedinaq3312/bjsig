@@ -5,15 +5,17 @@ export const Route = createFileRoute("/$")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "BJSIGAPP · Gestión empresarial segura" },
+      { title: "Acceso y portales de BJSIGAPP" },
       {
         name: "description",
-        content: "Accede a tu empresa en BJSIGAPP: personas, prevención, operaciones y documentos.",
+        content: "Acceso privado a los portales de trabajadores y administración de BJSIGAPP.",
       },
-      { property: "og:title", content: "BJSIGAPP · Gestión empresarial segura" },
+      { name: "robots", content: "noindex,nofollow" },
+      { name: "googlebot", content: "noindex,nofollow" },
+      { property: "og:title", content: "Acceso y portales de BJSIGAPP" },
       {
         property: "og:description",
-        content: "Accede a tu empresa en BJSIGAPP: personas, prevención, operaciones y documentos.",
+        content: "Acceso privado a los portales de trabajadores y administración de BJSIGAPP.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

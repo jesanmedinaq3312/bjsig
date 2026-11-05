@@ -40,6 +40,37 @@ test("catálogo y detalle de módulo entregan HTML inicial con contenido indexab
   expect(unknownResponse.status()).toBe(404);
 });
 
+test("SEO publica robots, sitemap seguro y redirecciones de URLs antiguas", async ({ page }) => {
+  const robotsResponse = await page.request.get("/robots.txt");
+  expect(robotsResponse.status()).toBe(200);
+  const robots = await robotsResponse.text();
+  expect(robots).toContain("Disallow: /admin");
+  expect(robots).toContain("Disallow: /trabajador");
+
+  const sitemapResponse = await page.request.get("/sitemap.xml");
+  expect([200, 503]).toContain(sitemapResponse.status());
+  const sitemap = await sitemapResponse.text();
+  if (sitemapResponse.status() === 200) {
+    expect(sitemap).toContain("/modulos/portal-del-trabajador");
+    expect(sitemap).not.toContain("/admin");
+  } else {
+    expect(sitemap).toContain("VITE_PUBLIC_SITE_URL");
+  }
+
+  const redirects = [
+    ["/contacto", "/#contacto"],
+    ["/gestion-multisucursal", "/modulos/plataforma-multiempresa"],
+    ["/gestion-de-personas-y-turnos", "/modulos"],
+    ["/seguridad-y-cumplimiento", "/modulos/prevencion-de-riesgos"],
+    ["/software-de-gestion-empresarial", "/modulos/plataforma-multiempresa"],
+  ] as const;
+  for (const [path, location] of redirects) {
+    const response = await page.request.get(path, { maxRedirects: 0 });
+    expect(response.status(), path).toBe(308);
+    expect(response.headers().location, path).toBe(location);
+  }
+});
+
 test("landing muestra accesos y formulario de demo sin envío automático", async ({ page }) => {
   await page.goto("/");
   const cookieDialog = page.getByRole("dialog", { name: "Aviso de privacidad y cookies" });

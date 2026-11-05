@@ -46,6 +46,7 @@
     { "path": "/privacidad", "title": "Política de privacidad" },
     { "path": "/terminos", "title": "Términos y condiciones" },
     { "path": "/contacto", "title": "Contacto comercial" },
+    { "path": "/cookies", "title": "Política de cookies" },
     { "path": "/trabajador", "title": "Portal personal del trabajador" },
     { "path": "/portal-trabajador", "title": "Portal personal del trabajador" },
     { "path": "/:slug", "title": "Portal personal por empresa" },

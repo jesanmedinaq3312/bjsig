@@ -11,6 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ContactoRouteImport } from './routes/contacto'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as GestionDePersonasYTurnosRouteImport } from './routes/gestion-de-personas-y-turnos'
+import { Route as GestionMultisucursalRouteImport } from './routes/gestion-multisucursal'
+import { Route as ModulosRouteImport } from './routes/modulos'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SeguridadYCumplimientoRouteImport } from './routes/seguridad-y-cumplimiento'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SoftwareDeGestionEmpresarialRouteImport } from './routes/software-de-gestion-empresarial'
 import { Route as ModulosIndexRouteImport } from './routes/modulos/index'
 import { Route as ModulosSlugRouteImport } from './routes/modulos/$slug'
 
@@ -24,26 +33,90 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ModulosIndexRoute = ModulosIndexRouteImport.update({
-  id: '/modulos/',
-  path: '/modulos/',
+const ContactoRoute = ContactoRouteImport.update({
+  id: '/contacto',
+  path: '/contacto',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ModulosSlugRoute = ModulosSlugRouteImport.update({
-  id: '/modulos/$slug',
-  path: '/modulos/$slug',
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
+} as any)
+const GestionDePersonasYTurnosRoute =
+  GestionDePersonasYTurnosRouteImport.update({
+    id: '/gestion-de-personas-y-turnos',
+    path: '/gestion-de-personas-y-turnos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GestionMultisucursalRoute = GestionMultisucursalRouteImport.update({
+  id: '/gestion-multisucursal',
+  path: '/gestion-multisucursal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModulosRoute = ModulosRouteImport.update({
+  id: '/modulos',
+  path: '/modulos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeguridadYCumplimientoRoute = SeguridadYCumplimientoRouteImport.update({
+  id: '/seguridad-y-cumplimiento',
+  path: '/seguridad-y-cumplimiento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoftwareDeGestionEmpresarialRoute =
+  SoftwareDeGestionEmpresarialRouteImport.update({
+    id: '/software-de-gestion-empresarial',
+    path: '/software-de-gestion-empresarial',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ModulosIndexRoute = ModulosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ModulosRoute,
+} as any)
+const ModulosSlugRoute = ModulosSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ModulosRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/modulos': typeof ModulosRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
   '/modulos/$slug': typeof ModulosSlugRoute
   '/modulos/': typeof ModulosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
   '/modulos/$slug': typeof ModulosSlugRoute
   '/modulos': typeof ModulosIndexRoute
 }
@@ -51,22 +124,77 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/cookies': typeof CookiesRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/modulos': typeof ModulosRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
   '/modulos/$slug': typeof ModulosSlugRoute
   '/modulos/': typeof ModulosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/modulos/$slug' | '/modulos/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/cookies'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/modulos'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
+    | '/modulos/$slug'
+    | '/modulos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/modulos/$slug' | '/modulos'
-  id: '__root__' | '/' | '/$' | '/modulos/$slug' | '/modulos/'
+  to:
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/cookies'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
+    | '/modulos/$slug'
+    | '/modulos'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/cookies'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/modulos'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
+    | '/modulos/$slug'
+    | '/modulos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  ModulosSlugRoute: typeof ModulosSlugRoute
-  ModulosIndexRoute: typeof ModulosIndexRoute
+  ContactoRoute: typeof ContactoRoute
+  CookiesRoute: typeof CookiesRoute
+  GestionDePersonasYTurnosRoute: typeof GestionDePersonasYTurnosRoute
+  GestionMultisucursalRoute: typeof GestionMultisucursalRoute
+  ModulosRoute: typeof ModulosRouteWithChildren
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SeguridadYCumplimientoRoute: typeof SeguridadYCumplimientoRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SoftwareDeGestionEmpresarialRoute: typeof SoftwareDeGestionEmpresarialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,28 +213,111 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contacto': {
+      id: '/contacto'
+      path: '/contacto'
+      fullPath: '/contacto'
+      preLoaderRoute: typeof ContactoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestion-de-personas-y-turnos': {
+      id: '/gestion-de-personas-y-turnos'
+      path: '/gestion-de-personas-y-turnos'
+      fullPath: '/gestion-de-personas-y-turnos'
+      preLoaderRoute: typeof GestionDePersonasYTurnosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestion-multisucursal': {
+      id: '/gestion-multisucursal'
+      path: '/gestion-multisucursal'
+      fullPath: '/gestion-multisucursal'
+      preLoaderRoute: typeof GestionMultisucursalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/modulos': {
+      id: '/modulos'
+      path: '/modulos'
+      fullPath: '/modulos'
+      preLoaderRoute: typeof ModulosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguridad-y-cumplimiento': {
+      id: '/seguridad-y-cumplimiento'
+      path: '/seguridad-y-cumplimiento'
+      fullPath: '/seguridad-y-cumplimiento'
+      preLoaderRoute: typeof SeguridadYCumplimientoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/software-de-gestion-empresarial': {
+      id: '/software-de-gestion-empresarial'
+      path: '/software-de-gestion-empresarial'
+      fullPath: '/software-de-gestion-empresarial'
+      preLoaderRoute: typeof SoftwareDeGestionEmpresarialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/modulos/': {
       id: '/modulos/'
-      path: '/modulos'
+      path: '/'
       fullPath: '/modulos/'
       preLoaderRoute: typeof ModulosIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ModulosRoute
     }
     '/modulos/$slug': {
       id: '/modulos/$slug'
-      path: '/modulos/$slug'
+      path: '/$slug'
       fullPath: '/modulos/$slug'
       preLoaderRoute: typeof ModulosSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ModulosRoute
     }
   }
 }
 
+interface ModulosRouteChildren {
+  ModulosSlugRoute: typeof ModulosSlugRoute
+  ModulosIndexRoute: typeof ModulosIndexRoute
+}
+
+const ModulosRouteChildren: ModulosRouteChildren = {
+  ModulosSlugRoute: ModulosSlugRoute,
+  ModulosIndexRoute: ModulosIndexRoute,
+}
+
+const ModulosRouteWithChildren =
+  ModulosRoute._addFileChildren(ModulosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  ModulosSlugRoute: ModulosSlugRoute,
-  ModulosIndexRoute: ModulosIndexRoute,
+  ContactoRoute: ContactoRoute,
+  CookiesRoute: CookiesRoute,
+  GestionDePersonasYTurnosRoute: GestionDePersonasYTurnosRoute,
+  GestionMultisucursalRoute: GestionMultisucursalRoute,
+  ModulosRoute: ModulosRouteWithChildren,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SeguridadYCumplimientoRoute: SeguridadYCumplimientoRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SoftwareDeGestionEmpresarialRoute: SoftwareDeGestionEmpresarialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
