@@ -741,6 +741,46 @@ export function SeoLandingPage({ page }: { page: SeoLandingPageKey }) {
             </ol>
           </div>
         </section>
+        )}
+
+        {content.platformSection && (
+          <section
+            id="capacidades"
+            className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
+            aria-labelledby="platform-title"
+          >
+            <div className="mx-auto max-w-7xl">
+              <div className="max-w-3xl">
+                <h2
+                  id="platform-title"
+                  className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl"
+                >
+                  {content.platformSection.title}
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-300">
+                  {content.platformSection.introduction}
+                </p>
+              </div>
+              <div className="mt-9 grid gap-4 md:grid-cols-3">
+                {content.platformSection.items.map(({ icon: Icon, title, description }) => (
+                  <article
+                    key={title}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 transition hover:-translate-y-1 hover:border-sky-300/30 sm:p-6"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200">
+                      <Icon size={21} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 text-base font-extrabold text-white">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+                  </article>
+                ))}
+              </div>
+              <p className="mt-6 max-w-3xl border-l-2 border-sky-300/30 pl-4 text-sm leading-6 text-slate-400">
+                {content.platformSection.note}
+              </p>
+            </div>
+          </section>
+        )}
 
         <section
           className="border-y border-white/10 bg-slate-900/60 px-5 py-16 sm:py-20 lg:px-8"
