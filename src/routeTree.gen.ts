@@ -11,6 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ContactoRouteImport } from './routes/contacto'
+import { Route as GestionDePersonasYTurnosRouteImport } from './routes/gestion-de-personas-y-turnos'
+import { Route as GestionMultisucursalRouteImport } from './routes/gestion-multisucursal'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SeguridadYCumplimientoRouteImport } from './routes/seguridad-y-cumplimiento'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SoftwareDeGestionEmpresarialRouteImport } from './routes/software-de-gestion-empresarial'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +29,124 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactoRoute = ContactoRouteImport.update({
+  id: '/contacto',
+  path: '/contacto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GestionDePersonasYTurnosRoute =
+  GestionDePersonasYTurnosRouteImport.update({
+    id: '/gestion-de-personas-y-turnos',
+    path: '/gestion-de-personas-y-turnos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GestionMultisucursalRoute = GestionMultisucursalRouteImport.update({
+  id: '/gestion-multisucursal',
+  path: '/gestion-multisucursal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeguridadYCumplimientoRoute = SeguridadYCumplimientoRouteImport.update({
+  id: '/seguridad-y-cumplimiento',
+  path: '/seguridad-y-cumplimiento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoftwareDeGestionEmpresarialRoute =
+  SoftwareDeGestionEmpresarialRouteImport.update({
+    id: '/software-de-gestion-empresarial',
+    path: '/software-de-gestion-empresarial',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/contacto': typeof ContactoRoute
+  '/gestion-de-personas-y-turnos': typeof GestionDePersonasYTurnosRoute
+  '/gestion-multisucursal': typeof GestionMultisucursalRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/seguridad-y-cumplimiento': typeof SeguridadYCumplimientoRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/software-de-gestion-empresarial': typeof SoftwareDeGestionEmpresarialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$'
-  id: '__root__' | '/' | '/$'
+  to:
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/contacto'
+    | '/gestion-de-personas-y-turnos'
+    | '/gestion-multisucursal'
+    | '/robots.txt'
+    | '/seguridad-y-cumplimiento'
+    | '/sitemap.xml'
+    | '/software-de-gestion-empresarial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  ContactoRoute: typeof ContactoRoute
+  GestionDePersonasYTurnosRoute: typeof GestionDePersonasYTurnosRoute
+  GestionMultisucursalRoute: typeof GestionMultisucursalRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SeguridadYCumplimientoRoute: typeof SeguridadYCumplimientoRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SoftwareDeGestionEmpresarialRoute: typeof SoftwareDeGestionEmpresarialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +165,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contacto': {
+      id: '/contacto'
+      path: '/contacto'
+      fullPath: '/contacto'
+      preLoaderRoute: typeof ContactoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestion-de-personas-y-turnos': {
+      id: '/gestion-de-personas-y-turnos'
+      path: '/gestion-de-personas-y-turnos'
+      fullPath: '/gestion-de-personas-y-turnos'
+      preLoaderRoute: typeof GestionDePersonasYTurnosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestion-multisucursal': {
+      id: '/gestion-multisucursal'
+      path: '/gestion-multisucursal'
+      fullPath: '/gestion-multisucursal'
+      preLoaderRoute: typeof GestionMultisucursalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguridad-y-cumplimiento': {
+      id: '/seguridad-y-cumplimiento'
+      path: '/seguridad-y-cumplimiento'
+      fullPath: '/seguridad-y-cumplimiento'
+      preLoaderRoute: typeof SeguridadYCumplimientoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/software-de-gestion-empresarial': {
+      id: '/software-de-gestion-empresarial'
+      path: '/software-de-gestion-empresarial'
+      fullPath: '/software-de-gestion-empresarial'
+      preLoaderRoute: typeof SoftwareDeGestionEmpresarialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  ContactoRoute: ContactoRoute,
+  GestionDePersonasYTurnosRoute: GestionDePersonasYTurnosRoute,
+  GestionMultisucursalRoute: GestionMultisucursalRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SeguridadYCumplimientoRoute: SeguridadYCumplimientoRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SoftwareDeGestionEmpresarialRoute: SoftwareDeGestionEmpresarialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
