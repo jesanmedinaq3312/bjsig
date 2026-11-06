@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -73,10 +73,48 @@ const views = [
   },
 ];
 
+const LID_CLOSED_DEG = -95;
+const LID_SCROLL_RANGE = 560;
+
 export function DashboardPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [opening, setOpening] = useState(true);
+  const lidRef = useRef<HTMLDivElement>(null);
   const activeView = views[activeIndex];
   const ActiveIcon = activeView.icon;
+
+  // La tapa parte cerrada antes del primer pintado para que la transición la abra.
+  useLayoutEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setOpening(false);
+      return;
+    }
+    lidRef.current?.style.setProperty("transform", `rotateX(${LID_CLOSED_DEG}deg)`);
+  }, []);
+
+  useEffect(() => {
+    const lid = lidRef.current;
+    if (!lid || !opening) return;
+    let raf = 0;
+    const apply = () => {
+      const t = Math.min(1, Math.max(0, window.scrollY / LID_SCROLL_RANGE));
+      lid.style.transform = `rotateX(${LID_CLOSED_DEG * t}deg)`;
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    };
+    // Abre la tapa en el siguiente frame; luego el scroll la va cerrando.
+    raf = requestAnimationFrame(() => requestAnimationFrame(apply));
+    const timer = window.setTimeout(() => setOpening(false), 1500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
+  }, [opening]);
 
   return (
     <div
@@ -84,8 +122,10 @@ export function DashboardPreview() {
       role="group"
       aria-label="Vista demostrativa e interactiva de BJSIGAPP en laptop"
     >
-      <div className="landing-device-frame landing-device-frame--laptop">
-        <div className="landing-preview">
+      <div
+        className={`landing-device-frame landing-device-frame--laptop${opening ? " landing-laptop-opening" : ""}`}
+      >
+        <div className="landing-preview" ref={lidRef}>
           <div className="landing-window-bar flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-white/75">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
