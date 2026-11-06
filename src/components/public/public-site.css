@@ -244,6 +244,29 @@
   box-shadow: none;
 }
 
+@media (min-width: 641px) {
+  .landing-device-frame--laptop .landing-preview {
+    display: flex;
+    height: 230px;
+    flex-direction: column;
+  }
+
+  .landing-device-frame--laptop .landing-laptop-viewport {
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .landing-laptop-viewport > nav {
+    overflow-y: auto;
+  }
+
+  .landing-laptop-viewport > div {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 .landing-laptop-hinge {
   height: 0.25rem;
   margin-inline: 0.75rem;

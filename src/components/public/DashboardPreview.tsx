@@ -98,7 +98,7 @@ export function DashboardPreview() {
             </span>
           </div>
 
-          <div className="grid min-h-[360px] grid-cols-1 bg-slate-100 sm:grid-cols-[150px_1fr]">
+          <div className="landing-laptop-viewport grid min-h-[360px] grid-cols-1 bg-slate-100 sm:grid-cols-[150px_1fr]">
             <nav
               aria-label="Vistas del panel ilustrativo"
               className="hidden border-r border-slate-200 bg-slate-50 p-3 sm:block"

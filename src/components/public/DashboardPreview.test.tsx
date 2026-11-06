@@ -8,6 +8,7 @@ describe("DashboardPreview", () => {
     const frame = container.querySelector(".landing-device-frame");
 
     expect(frame).toHaveClass("landing-device-frame--laptop");
+    expect(container.querySelector(".landing-laptop-viewport")).toBeInTheDocument();
     expect(screen.getByText("Vista en laptop")).toBeVisible();
     expect(screen.getByText("Interfaz adaptable a")).toBeVisible();
 
