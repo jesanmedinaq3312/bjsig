@@ -51,7 +51,11 @@ function makeHarness(
     loginAttempts: [] as Array<Record<string, unknown>>,
     auditRows: [] as Array<Record<string, unknown>>,
     rpcCalls: [] as Array<{ name: string; args: Record<string, unknown> | undefined }>,
-    signIns: [] as Array<{ email: string; password: string }>,
+    signIns: [] as Array<{
+      email: string;
+      password: string;
+      options?: { captchaToken?: string };
+    }>,
     authOptions: [] as Array<{ url: string; key: string }>,
   };
 
@@ -125,7 +129,11 @@ function makeHarness(
     state.authOptions.push({ url, key });
     return {
       auth: {
-        signInWithPassword: async (credentials: { email: string; password: string }) => {
+        signInWithPassword: async (credentials: {
+          email: string;
+          password: string;
+          options?: { captchaToken?: string };
+        }) => {
           state.signIns.push(credentials);
           return {
             error: options.passwordValid === false ? new Error("invalid credentials") : null,
@@ -142,16 +150,22 @@ async function invoke(
   harness: ReturnType<typeof makeHarness>,
   currentPassword = TEMPORARY_PASSWORD,
   newPassword = NEW_PASSWORD,
+  authCaptchaToken = "synthetic-auth-captcha-token",
 ) {
   const request = new Request("https://example-project.supabase.co/functions/v1/worker-auth", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.10" },
     body: JSON.stringify({ action: "set_initial_password" }),
   });
   const response = await handleSetInitialPassword(
     harness.svc,
     request,
-    { email: EMAIL, current_password: currentPassword, new_password: newPassword },
+    {
+      email: EMAIL,
+      current_password: currentPassword,
+      new_password: newPassword,
+      auth_captcha_token: authCaptchaToken,
+    },
     {},
     SUPABASE_URL,
     ANON_KEY,
@@ -172,7 +186,7 @@ Deno.test(
     equal(harness.state.loginAttempts.length, 1, "failed attempt must be recorded");
     equal(
       harness.state.loginAttempts[0].identifier,
-      `${EMAIL}:set_password`,
+      `${EMAIL}:set_password:worker_login:203.0.113.10`,
       "rate-limit identifier",
     );
     equal(harness.state.loginAttempts[0].success, false, "attempt result");
@@ -201,6 +215,11 @@ Deno.test(
     equal(harness.state.loginAttempts.at(-1)?.success, true, "successful attempt record");
     equal(harness.state.authOptions[0].url, SUPABASE_URL, "Auth verification URL");
     equal(harness.state.authOptions[0].key, ANON_KEY, "Auth verification uses anon key");
+    equal(
+      harness.state.signIns[0].options?.captchaToken,
+      "synthetic-auth-captcha-token",
+      "Supabase Auth must receive the separate CAPTCHA token",
+    );
     const logged = JSON.stringify({
       attempts: harness.state.loginAttempts,
       audit: harness.state.auditRows,
@@ -209,6 +228,16 @@ Deno.test(
     assert(!logged.includes(NEW_PASSWORD), "new password must not appear in logs");
   },
 );
+
+Deno.test("fails closed when the separate Supabase Auth CAPTCHA token is missing", async () => {
+  const harness = makeHarness();
+  const { response } = await invoke(harness, TEMPORARY_PASSWORD, NEW_PASSWORD, "");
+
+  equal(response.status, 400, "status");
+  equal(harness.state.signIns.length, 0, "Supabase Auth must not be called without CAPTCHA");
+  equal(harness.state.authUpdates.length, 0, "Auth password must remain unchanged");
+  equal(harness.state.loginAttempts.length, 1, "missing CAPTCHA counts against the IP bucket");
+});
 
 Deno.test("rejects a second first-access request after the account flag is cleared", async () => {
   const harness = makeHarness({ mustChangePassword: false });

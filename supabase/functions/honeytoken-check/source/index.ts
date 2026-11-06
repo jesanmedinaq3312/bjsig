@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
-import { getCorsHeaders, resolveTenantId } from "../_shared/auth.ts";
+import { getCorsHeaders } from "../../_shared/auth.ts";
+import { resolveTenantId } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -17,10 +18,10 @@ Deno.serve(async (req: Request) => {
     const token = authHeader.replace("Bearer ", "");
 
     if (!token || token === anonKey) {
-      return new Response(
-        JSON.stringify({ error: "No autorizado: se requiere sesión activa." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "No autorizado: se requiere sesión activa." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const userClient = createClient(supabaseUrl, anonKey, {
@@ -29,10 +30,10 @@ Deno.serve(async (req: Request) => {
 
     const { data: userData, error: userErr } = await userClient.auth.getUser(token);
     if (userErr || !userData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Sesión inválida." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Sesión inválida." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const userEmail = userData.user.email ?? "unknown";
@@ -42,10 +43,10 @@ Deno.serve(async (req: Request) => {
     const context = typeof body?.context === "string" ? body.context : "unknown";
 
     if (!rut) {
-      return new Response(
-        JSON.stringify({ error: "Se requiere rut." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Se requiere rut." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
@@ -98,14 +99,14 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({ triggered }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ triggered }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: "Error interno del servidor." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Error interno del servidor." }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

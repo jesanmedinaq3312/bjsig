@@ -1,4 +1,4 @@
-import { Fingerprint, ShieldCheck, MapPin, Wifi } from "lucide-react";
+import { Fingerprint, ShieldCheck } from "lucide-react";
 import { formatRut } from "@/lib/rut";
 import { inputClass, ErrorBanner, SubmitButton, SectionTitle, FieldLabel } from "./ui";
 
@@ -21,7 +21,7 @@ export function RutForm({
         Validar Identidad
       </SectionTitle>
       <p className="text-xs text-white/50">
-        Ingresa tu RUT para verificar tu identidad y derivarte al portal correspondiente.
+        Ingresa tu RUT y luego el correo asociado. El acceso se valida con ambos datos juntos.
       </p>
       <div>
         <FieldLabel>RUT</FieldLabel>
@@ -55,17 +55,12 @@ export function RutForm({
           <div className="space-y-1">
             <p className="text-xs font-semibold text-white/70">Aviso de Privacidad y Monitoreo</p>
             <p className="text-xs text-white/50">
-              Al ingresar al portal, autorizas el monitoreo de tu dirección IP y geolocalización por
-              medidas de seguridad y cumplimiento de la Ley 19.628 (Datos Personales) y Ley 21.663
-              (Ciberseguridad). Tu correo electrónico es fuente oficial de contacto.
+              Esta etapa no confirma si un RUT está registrado. La validación se realiza junto con
+              el correo en el siguiente paso. La solicitud previa al inicio de sesión no incluye
+              ubicación GPS ni metadatos de huella del navegador, cookies, referrer, viewport o ID
+              de dispositivo.
             </p>
             <div className="flex flex-wrap gap-3 mt-1.5">
-              <span className="flex items-center gap-1 text-xs text-white/50">
-                <MapPin size={12} /> GPS
-              </span>
-              <span className="flex items-center gap-1 text-xs text-white/50">
-                <Wifi size={12} /> IP
-              </span>
               <span className="flex items-center gap-1 text-xs text-white/50">
                 <ShieldCheck size={12} /> Datos protegidos
               </span>

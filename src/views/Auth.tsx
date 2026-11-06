@@ -31,10 +31,9 @@ import { friendlyError } from "@/lib/networkError";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
 import { supabase } from "@/lib/supabase";
 import { SUPABASE_CONFIGURED } from "@/lib/supabaseConfig";
-import { refreshGpsCache, gpsSupported, type GpsPosition } from "@/lib/gps";
 import { audit } from "@/lib/audit";
 import { LOGIN_DISCLAIMER } from "@/lib/legal";
-import { GpsWidget, type GpsStatus } from "./worker-auth/GpsWidget";
+import { getTurnstileToken } from "@/lib/turnstile";
 import { WatermelonMfaCard } from "@/components/ui/watermelon-mfa";
 
 async function checkEmailRole(
@@ -62,7 +61,12 @@ async function checkEmailRole(
       if (!allowPasswordFallback) return { error };
       // V4 fallback: after a clean schema reset, authenticate first and read
       // only the caller's own allow-list row through authenticated RLS.
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const captchaToken = await getTurnstileToken("supabase_sign_in");
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken },
+      });
       if (!authError) {
         const { data: ownRow } = await supabase
           .from("allowed_emails")
@@ -122,26 +126,6 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   const [magicSent, setMagicSent] = useState(false);
   const [magicAvailable, setMagicAvailable] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
-  const [gpsStatus, setGpsStatus] = useState<GpsStatus>("idle");
-  const [gpsPosition, setGpsPosition] = useState<GpsPosition | null>(null);
-
-  const canUseGps = gpsSupported();
-  const gpsReady = canUseGps && gpsStatus === "active";
-
-  async function handleEnableGps() {
-    setGpsStatus("loading");
-    try {
-      const pos = await refreshGpsCache(10000);
-      if (pos) {
-        setGpsPosition(pos);
-        setGpsStatus("active");
-      } else {
-        setGpsStatus("denied");
-      }
-    } catch {
-      setGpsStatus("denied");
-    }
-  }
 
   // Enlace directo a WhatsApp con mensaje predeterminado y QR generado
   const whatsappNumber = "56941228089";
@@ -153,17 +137,10 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
   useEffect(() => {
     void (tenantSlug ? loadTenantBrandingBySlug(tenantSlug) : loadCompanyBranding());
-    if (canUseGps && gpsStatus === "idle") {
-      void handleEnableGps();
-    }
-  }, [tenantSlug]); // eslint-disable-line react-hooks/exhaustive-deps -- callbacks are intentionally stable per mount
+  }, [tenantSlug]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar el acceso.");
-      return;
-    }
     setError(null);
     setBusy(true);
     try {
@@ -205,15 +182,13 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
   async function handleForgotPassword(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar el acceso.");
-      return;
-    }
     setError(null);
     setBusy(true);
     try {
+      const captchaToken = await getTurnstileToken("supabase_password_recovery");
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
         redirectTo: `${window.location.origin}/admin`,
+        captchaToken,
       });
       if (resetError) throw resetError;
       setForgotSent(true);
@@ -226,10 +201,6 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   }
 
   async function handleMagicLink() {
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar el acceso.");
-      return;
-    }
     setError(null);
     setBusy(true);
     setMagicSent(false);
@@ -281,15 +252,6 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
         {/* Tarjeta de Login */}
         <div className="wm-login-card bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-950/60 border border-white/20 p-5 sm:p-7 [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.15),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-          <div className="mb-4">
-            <GpsWidget
-              gpsStatus={gpsStatus}
-              gpsPosition={gpsPosition}
-              onEnable={handleEnableGps}
-              supported={canUseGps}
-              accent="blue"
-            />
-          </div>
           {forgotMode ? (
             forgotSent ? (
               <div className="space-y-5 text-center py-4">
@@ -335,7 +297,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                     <input
                       type="email"
                       required
-                      disabled={!gpsReady || busy}
+                      disabled={busy}
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="admin@empresa.cl"
@@ -351,7 +313,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                 )}
                 <button
                   type="submit"
-                  disabled={busy || !gpsReady}
+                  disabled={busy}
                   className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99]"
                 >
                   {busy ? (
@@ -379,7 +341,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
           ) : (
             <>
               {mfaState.status !== "not_required" ? (
-                <fieldset disabled={!gpsReady} className="min-w-0 border-0 p-0">
+                <fieldset className="min-w-0 border-0 p-0">
                   <WatermelonMfaCard
                     mode={mfaState.status}
                     qrCode={mfaState.status === "enroll" ? mfaState.qrCode : undefined}
@@ -389,10 +351,6 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                     error={error}
                     onCodeChange={setMfaCode}
                     onVerify={async () => {
-                      if (!gpsReady) {
-                        setError("Activa el GPS para habilitar el acceso.");
-                        return;
-                      }
                       setBusy(true);
                       setError(null);
                       try {
@@ -420,7 +378,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                       <input
                         type="email"
                         required
-                        disabled={!gpsReady || busy}
+                        disabled={busy}
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
@@ -446,7 +404,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                         type={showPassword ? "text" : "password"}
                         required
                         minLength={6}
-                        disabled={!gpsReady || busy}
+                        disabled={busy}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
@@ -486,7 +444,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
                   <button
                     type="submit"
-                    disabled={busy || !gpsReady}
+                    disabled={busy}
                     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
                   >
                     {busy ? (
@@ -506,7 +464,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                   {magicAvailable && !magicSent && (
                     <button
                       type="button"
-                      disabled={busy || !email || !gpsReady}
+                      disabled={busy || !email}
                       onClick={() => void handleMagicLink()}
                       className="w-full rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-50"
                     >

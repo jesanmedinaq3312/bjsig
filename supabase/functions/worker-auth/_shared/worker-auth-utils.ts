@@ -1,29 +1,39 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
+import {
+  meetsPasswordPolicy,
+  PASSWORD_POLICY_MESSAGE,
+  PASSWORD_SYMBOLS,
+} from "../../_shared/password-policy.ts";
 
 export const RATE_LIMIT_MAX_ATTEMPTS = 5;
 export const RATE_LIMIT_WINDOW_MIN = 15;
 export const RUT_CHECK_MAX_ATTEMPTS = 3;
 export const RUT_CHECK_IP_MAX_ATTEMPTS = 10;
 export const DEFAULT_PASSWORD_EXPIRY_HOURS = 72;
-export const WORKER_PASSWORD_SYMBOLS = "!@#$%^&*()_+-=[]{};:,.?";
-export const WORKER_PASSWORD_POLICY_MESSAGE =
-  "La contraseña debe tener al menos 8 caracteres e incluir minúscula, mayúscula, número y símbolo permitido.";
-
-export function meetsWorkerPasswordPolicy(password: string): boolean {
-  return (
-    password.length >= 8 &&
-    /[a-z]/.test(password) &&
-    /[A-Z]/.test(password) &&
-    /\d/.test(password) &&
-    [...password].some((character) => WORKER_PASSWORD_SYMBOLS.includes(character))
-  );
-}
+export const WORKER_PASSWORD_SYMBOLS = PASSWORD_SYMBOLS;
+export const WORKER_PASSWORD_POLICY_MESSAGE = PASSWORD_POLICY_MESSAGE;
+export const meetsWorkerPasswordPolicy = meetsPasswordPolicy;
 
 export function generateRandomPassword(length = 16): string {
-  const charset = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const bytes = new Uint8Array(length);
+  if (length < 4) throw new Error("PASSWORD_LENGTH_TOO_SHORT");
+  const groups = [
+    "ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "abcdefghijkmnpqrstuvwxyz",
+    "23456789",
+    WORKER_PASSWORD_SYMBOLS,
+  ];
+  const bytes = new Uint32Array(length);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes).map((b) => charset[b % charset.length]).join("");
+  const charset = groups.join("");
+  const chars = groups.map((group, index) => group[bytes[index] % group.length]);
+  for (let index = groups.length; index < length; index += 1) {
+    chars.push(charset[bytes[index] % charset.length]);
+  }
+  for (let index = chars.length - 1; index > 0; index -= 1) {
+    const swapIndex = bytes[index] % (index + 1);
+    [chars[index], chars[swapIndex]] = [chars[swapIndex], chars[index]];
+  }
+  return chars.join("");
 }
 
 export function maskEmail(email: string): string {
@@ -46,7 +56,8 @@ export function validateRutModule11(rut: string): boolean {
   const body = clean.slice(0, -1);
   const dv = clean.slice(-1).toUpperCase();
   if (!/^\d+$/.test(body)) return false;
-  let sum = 0, multiplier = 2;
+  let sum = 0,
+    multiplier = 2;
   for (let i = body.length - 1; i >= 0; i--) {
     sum += parseInt(body[i], 10) * multiplier;
     multiplier = multiplier === 7 ? 2 : multiplier + 1;
@@ -63,12 +74,18 @@ export function normalizeRut(r: string): string {
 
 export async function getPasswordExpiryHours(svc: SupabaseClient): Promise<number> {
   try {
-    const { data } = await svc.from("system_config").select("value").eq("key", "worker_password_expiry_hours").maybeSingle();
+    const { data } = await svc
+      .from("system_config")
+      .select("value")
+      .eq("key", "worker_password_expiry_hours")
+      .maybeSingle();
     if (data?.value) {
       const h = parseInt(String(data.value), 10);
       if (!isNaN(h) && h > 0) return h;
     }
-  } catch { /* fall through to default */ }
+  } catch {
+    /* fall through to default */
+  }
   return DEFAULT_PASSWORD_EXPIRY_HOURS;
 }
 
@@ -85,7 +102,9 @@ export async function checkRateLimit(
     });
     if (error) return false;
     return !!data;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export function workerLoginRateLimitKey(email: string, ip: string | null): string {
@@ -107,77 +126,65 @@ export async function recordLoginAttempt(
       tenant_id: tenantId,
     });
     await Promise.resolve(svc.rpc("cleanup_login_attempts")).catch(() => {});
-  } catch { /* non-blocking */ }
+  } catch {
+    /* non-blocking */
+  }
 }
 
 export function clientInfo(req: Request): { ip: string | null; ua: string | null } {
-  const fwd = req.headers.get("x-forwarded-for");
-  const realIp = req.headers.get("x-real-ip");
   const cfIp = req.headers.get("cf-connecting-ip");
-  const ip = (fwd?.split(",")[0].trim()) || realIp || cfIp || null;
+  // Supabase Edge Functions are fronted by Cloudflare. Never trust the client-
+  // supplied X-Forwarded-For/X-Real-IP chain for authentication rate limits.
+  const ip = cfIp?.trim() || null;
   const ua = req.headers.get("user-agent") || null;
   return { ip, ua };
-}
-
-export function clientTracking(body: Record<string, unknown>): {
-  latitude: number | null;
-  longitude: number | null;
-  device_id: string | null;
-  fingerprint: string | null;
-  client_ua: string | null;
-  viewport: string | null;
-  referrer: string | null;
-  cookie_data: Record<string, unknown> | null;
-} {
-  return {
-    latitude: typeof body?.latitude === "number" ? body.latitude : null,
-    longitude: typeof body?.longitude === "number" ? body.longitude : null,
-    device_id: typeof body?.device_id === "string" ? body.device_id : null,
-    fingerprint: typeof body?.fingerprint === "string" ? body.fingerprint : null,
-    client_ua: typeof body?.client_ua === "string" ? body.client_ua : null,
-    viewport: typeof body?.viewport === "string" ? body.viewport : null,
-    referrer: typeof body?.referrer === "string" ? body.referrer : null,
-    cookie_data: (body?.cookie_data && typeof body.cookie_data === "object" && !Array.isArray(body.cookie_data))
-      ? body.cookie_data as Record<string, unknown>
-      : null,
-  };
 }
 
 export async function logAction(
   svc: SupabaseClient,
   req: Request,
   params: {
-    email: string; action: string; entity: string; entity_label?: string | null;
-    details?: Record<string, unknown> | null; role?: string | null; tenantId?: string | null;
-    latitude?: number | null; longitude?: number | null; device_id?: string | null;
-    fingerprint?: string | null; session_id?: string | null;
-    cookie_data?: Record<string, unknown> | null; session_duration?: number | null;
-    referrer?: string | null; viewport?: string | null; client_ua?: string | null;
+    email: string;
+    action: string;
+    entity: string;
+    entity_label?: string | null;
+    details?: Record<string, unknown> | null;
+    role?: string | null;
+    tenantId?: string | null;
   },
 ): Promise<void> {
   const { ip, ua } = clientInfo(req);
+  const safeString = (value: unknown, max: number): string | null =>
+    typeof value === "string" && value.length > 0 ? value.slice(0, max) : null;
+  const safeDetails: Record<string, string | number | boolean> = {};
+  const allowedDetailKeys = new Set([
+    "result",
+    "reason",
+    "must_change_password",
+    "elapsed_hours",
+    "expiry_hours",
+  ]);
+  for (const [key, value] of Object.entries(params.details ?? {})) {
+    if (!allowedDetailKeys.has(key)) continue;
+    if (typeof value === "string") safeDetails[key] = value.slice(0, 64);
+    else if (typeof value === "number" && Number.isFinite(value)) safeDetails[key] = value;
+    else if (typeof value === "boolean") safeDetails[key] = value;
+  }
   try {
     await svc.from("activity_logs").insert({
       tenant_id: params.tenantId ?? null,
-      user_email: params.email,
-      action: params.action,
-      entity: params.entity,
-      entity_label: params.entity_label ?? null,
-      details: params.details ?? null,
+      user_email: safeString(params.email, 254) ?? "unknown",
+      action: safeString(params.action, 64) ?? "worker.auth",
+      entity: safeString(params.entity, 64) ?? "auth",
+      entity_label: safeString(params.entity_label, 96),
+      details: Object.keys(safeDetails).length ? safeDetails : null,
       ip_hint: ip,
-      user_agent: params.client_ua ?? ua,
+      user_agent: safeString(ua, 256),
       user_role: params.role ?? "worker",
-      latitude: params.latitude ?? null,
-      longitude: params.longitude ?? null,
-      device_id: params.device_id ?? null,
-      fingerprint: params.fingerprint ?? null,
-      session_id: params.session_id ?? null,
-      cookie_data: params.cookie_data ?? null,
-      session_duration: params.session_duration ?? null,
-      referrer: params.referrer ?? null,
-      viewport: params.viewport ?? null,
     });
-  } catch { /* logging must never block the action */ }
+  } catch {
+    /* logging must never block the action */
+  }
 }
 
 export interface AuthUser {
@@ -212,7 +219,9 @@ export async function findAuthUserByEmail(
 export async function sha256(text: string): Promise<string> {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export function jsonResponse(

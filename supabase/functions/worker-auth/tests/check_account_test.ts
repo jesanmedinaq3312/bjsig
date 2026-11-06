@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { handleCheckAccount } from "../source/handlers/check_account.ts";
 import { handleRecordLoginFailure } from "../source/handlers/record_login_failure.ts";
+import { clientInfo } from "../_shared/worker-auth-utils.ts";
 
 const EMAIL = "worker.qa@example.test";
 const RUT = "12345678-5";
@@ -12,14 +13,12 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function equal(actual: unknown, expected: unknown, message: string): void {
   if (actual !== expected) {
-    throw new Error(
-      `${message}: expected ${String(expected)}, received ${String(actual)}`,
-    );
+    throw new Error(`${message}: expected ${String(expected)}, received ${String(actual)}`);
   }
 }
 
 function makeHarness(
-  options: { rateAllowed?: boolean; workerRut?: string } = {},
+  options: { rateAllowed?: boolean; workerRut?: string; authUserExists?: boolean } = {},
 ) {
   const state = {
     attempts: [] as Array<Record<string, unknown>>,
@@ -62,9 +61,7 @@ function makeHarness(
     },
     rpc(name: string) {
       return Promise.resolve({
-        data: name === "check_login_rate_limit"
-          ? (options.rateAllowed ?? true)
-          : null,
+        data: name === "check_login_rate_limit" ? (options.rateAllowed ?? true) : null,
         error: null,
       });
     },
@@ -72,11 +69,16 @@ function makeHarness(
       admin: {
         listUsers: async () => ({
           data: {
-            users: [{
-              id: "synthetic-auth-user",
-              email: EMAIL,
-              created_at: NOW,
-            }],
+            users:
+              options.authUserExists === false
+                ? []
+                : [
+                    {
+                      id: "synthetic-auth-user",
+                      email: EMAIL,
+                      created_at: NOW,
+                    },
+                  ],
           },
           error: null,
         }),
@@ -87,17 +89,35 @@ function makeHarness(
 }
 
 function request(): Request {
-  return new Request(
-    "https://example-project.supabase.co/functions/v1/worker-auth",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-forwarded-for": "203.0.113.10",
-      },
+  return new Request("https://example-project.supabase.co/functions/v1/worker-auth", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "cf-connecting-ip": "203.0.113.10",
+      "x-forwarded-for": "198.51.100.99",
     },
-  );
+  });
 }
+
+Deno.test("clientInfo trusts cf-connecting-ip and ignores a spoofed forwarded chain", () => {
+  const trusted = clientInfo(
+    new Request("https://example.test", {
+      headers: {
+        "cf-connecting-ip": "203.0.113.10",
+        "x-forwarded-for": "198.51.100.99",
+        "x-real-ip": "198.51.100.98",
+      },
+    }),
+  );
+  equal(trusted.ip, "203.0.113.10", "Cloudflare proxy IP");
+
+  const untrusted = clientInfo(
+    new Request("https://example.test", {
+      headers: { "x-forwarded-for": "198.51.100.99", "x-real-ip": "198.51.100.98" },
+    }),
+  );
+  equal(untrusted.ip, null, "untrusted forwarding headers must be ignored");
+});
 
 Deno.test("check_account validates the RUT server-side and never returns it", async () => {
   const harness = makeHarness();
@@ -110,54 +130,35 @@ Deno.test("check_account validates the RUT server-side and never returns it", as
   const body = await response.text();
 
   equal(response.status, 200, "status");
-  assert(
-    body.includes('"exists":true'),
-    "matching email and RUT should proceed",
-  );
+  assert(body.includes('"exists":true'), "matching email and RUT should proceed");
   assert(!body.includes(RUT), "full RUT must not be returned");
-  equal(
-    harness.state.attempts.length,
-    0,
-    "precheck must not be recorded as successful login",
-  );
-  assert(
-    !JSON.stringify(harness.state.auditRows).includes(RUT),
-    "audit must not store full RUT",
-  );
+  equal(harness.state.attempts.length, 0, "precheck must not be recorded as successful login");
+  assert(!JSON.stringify(harness.state.auditRows).includes(RUT), "audit must not store full RUT");
 });
 
-Deno.test("check_account gives a generic response and records a mismatched RUT as failure", async () => {
-  const harness = makeHarness();
-  const response = await handleCheckAccount(
-    harness.svc,
-    request(),
-    { email: EMAIL, rut: "11111111-1" },
-    {},
-  );
-  const body = await response.json() as Record<string, unknown>;
+Deno.test(
+  "check_account gives a generic response and records a mismatched RUT as failure",
+  async () => {
+    const harness = makeHarness();
+    const response = await handleCheckAccount(
+      harness.svc,
+      request(),
+      { email: EMAIL, rut: "11111111-1" },
+      {},
+    );
+    const body = (await response.json()) as Record<string, unknown>;
 
-  equal(response.status, 200, "status");
-  equal(body.exists, false, "mismatch must not reveal account state");
-  equal(
-    harness.state.attempts.length,
-    1,
-    "mismatch must count as a failed attempt",
-  );
-  equal(harness.state.attempts[0].success, false, "attempt result");
-  assert(
-    !JSON.stringify(body).includes(RUT),
-    "response must not reveal the stored RUT",
-  );
-});
+    equal(response.status, 200, "status");
+    equal(body.exists, false, "mismatch must not reveal account state");
+    equal(harness.state.attempts.length, 1, "mismatch must count as a failed attempt");
+    equal(harness.state.attempts[0].success, false, "attempt result");
+    assert(!JSON.stringify(body).includes(RUT), "response must not reveal the stored RUT");
+  },
+);
 
 Deno.test("record_login_failure uses the same account/IP key checked by preflight", async () => {
   const harness = makeHarness();
-  const response = await handleRecordLoginFailure(
-    harness.svc,
-    request(),
-    { email: EMAIL },
-    {},
-  );
+  const response = await handleRecordLoginFailure(harness.svc, request(), { email: EMAIL }, {});
 
   equal(response.status, 200, "status");
   equal(harness.state.attempts.length, 1, "failed login must be recorded");
@@ -171,17 +172,30 @@ Deno.test("record_login_failure uses the same account/IP key checked by prefligh
 
 Deno.test("record_login_failure rejects when the shared rate limit is exhausted", async () => {
   const harness = makeHarness({ rateAllowed: false });
-  const response = await handleRecordLoginFailure(
-    harness.svc,
-    request(),
-    { email: EMAIL },
-    {},
-  );
+  const response = await handleRecordLoginFailure(harness.svc, request(), { email: EMAIL }, {});
 
   equal(response.status, 429, "status");
-  equal(
-    harness.state.attempts.length,
-    0,
-    "blocked attempt must not add another row",
-  );
+  equal(harness.state.attempts.length, 0, "blocked attempt must not add another row");
 });
+
+Deno.test(
+  "check_account returns the same public body when a matching worker has no Auth identity",
+  async () => {
+    const harness = makeHarness({ authUserExists: false });
+    const response = await handleCheckAccount(
+      harness.svc,
+      request(),
+      { email: EMAIL, rut: RUT },
+      {},
+    );
+
+    equal(response.status, 200, "status");
+    equal(
+      await response.text(),
+      '{"exists":false,"is_worker":false}',
+      "no-Auth response must be generic",
+    );
+    equal(harness.state.attempts.length, 1, "missing Auth identity counts as failed preflight");
+    equal(harness.state.attempts[0].success, false, "attempt result");
+  },
+);

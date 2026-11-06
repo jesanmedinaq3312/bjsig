@@ -7,6 +7,7 @@ import { audit, syncQueuedAuditLogs, initAuditAutoSync } from "@/lib/audit";
 import { clearGpsCache, recordSessionStart, clearSessionStart } from "@/lib/gps";
 import { systemConfigRepo } from "@/lib/repositories";
 import { hasOperationalAccess } from "@/lib/authorization";
+import { getTurnstileToken } from "@/lib/turnstile";
 
 const DEFAULT_TIMEOUT_MINUTES = 30;
 export type EmailOtpStatus = "not_required" | "pending" | "verified";
@@ -330,7 +331,12 @@ export function useAuth() {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const captchaToken = await getTurnstileToken("supabase_sign_in");
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    });
     if (error) {
       // Log failed login attempt with full context
       await audit({
@@ -353,7 +359,12 @@ export function useAuth() {
       tenantSlug?: string | null,
       options: { allowWorkerPortal?: boolean } = {},
     ) => {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const captchaToken = await getTurnstileToken("supabase_sign_in");
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken },
+      });
       if (error) {
         await audit({
           action: "auth.signin_failed",
@@ -531,9 +542,14 @@ export function useAuth() {
   }, []);
 
   const signInWithMagicLink = useCallback(async (email: string, shouldCreateUser = false) => {
+    const captchaToken = await getTurnstileToken("supabase_sign_in_otp");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { emailRedirectTo: `${window.location.origin}/admin`, shouldCreateUser },
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin`,
+        shouldCreateUser,
+        captchaToken,
+      },
     });
     if (error) throw error;
     try {
@@ -544,9 +560,10 @@ export function useAuth() {
   }, []);
 
   const sendEmailOtp = useCallback(async (email: string) => {
+    const captchaToken = await getTurnstileToken("supabase_sign_in_otp");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false },
+      options: { shouldCreateUser: false, captchaToken },
     });
     if (error) throw error;
   }, []);
@@ -583,7 +600,12 @@ export function useAuth() {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const captchaToken = await getTurnstileToken("supabase_sign_up");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { captchaToken },
+    });
     if (error) throw error;
     return data;
   }, []);

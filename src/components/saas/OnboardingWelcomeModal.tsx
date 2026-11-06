@@ -90,6 +90,7 @@ export function OnboardingWelcomeModal({
 }: OnboardingWelcomeModalProps) {
   const [tab, setTab] = useState<"setup" | "preview">("setup");
   const [savedMessage, setSavedMessage] = useState("");
+  const [showTemporaryPassword, setShowTemporaryPassword] = useState(false);
   const update = (key: keyof OnboardingForm, value: string) => onChange({ ...form, [key]: value });
   const previewText = useMemo(
     () =>
@@ -98,7 +99,7 @@ export function OnboardingWelcomeModal({
   );
   const emailBody = useMemo(
     () =>
-      `${previewText}\n\nManual de uso: ${form.manual_url || "Descárgalo desde el panel DevTeam."}\nCentro de ayuda: ${form.help_path || "Por confirmar"}\nSoporte: ${form.support_email || "Por confirmar"} · ${form.support_phone || form.support_whatsapp || "Por confirmar"}\nHorario: ${form.support_hours || "Por confirmar"}\n\nCobranza y depósito:\n${form.provider_legal_name || "Proveedor SaaS"}${form.provider_rut ? ` · RUT ${form.provider_rut}` : ""}\n${form.bank_name || "Banco por confirmar"} · ${form.account_type || "Tipo de cuenta por confirmar"}\nTitular: ${form.account_holder || "Por confirmar"}${form.account_number ? `\nCuenta: ${form.account_number}` : ""}${form.billing_email ? `\nComprobantes: ${form.billing_email}` : ""}\n\n${form.billing_legal_notice || "Los avisos de cobro no reemplazan una factura electrónica ni un DTE."}${form.temporary_password ? `\n\nCONTRASEÑA TEMPORAL: ${form.temporary_password}\nCámbiala inmediatamente en el primer acceso y no la reenvíes.` : ""}`,
+      `${previewText}\n\nManual de uso: ${form.manual_url || "Descárgalo desde el panel DevTeam."}\nCentro de ayuda: ${form.help_path || "Por confirmar"}\nSoporte: ${form.support_email || "Por confirmar"} · ${form.support_phone || form.support_whatsapp || "Por confirmar"}\nHorario: ${form.support_hours || "Por confirmar"}\n\nCobranza y depósito:\n${form.provider_legal_name || "Proveedor SaaS"}${form.provider_rut ? ` · RUT ${form.provider_rut}` : ""}\n${form.bank_name || "Banco por confirmar"} · ${form.account_type || "Tipo de cuenta por confirmar"}\nTitular: ${form.account_holder || "Por confirmar"}${form.account_number ? `\nCuenta: ${form.account_number}` : ""}${form.billing_email ? `\nComprobantes: ${form.billing_email}` : ""}\n\n${form.billing_legal_notice || "Los avisos de cobro no reemplazan una factura electrónica ni un DTE."}`,
     [form, previewText],
   );
 
@@ -153,6 +154,14 @@ export function OnboardingWelcomeModal({
     setSavedMessage("Correo completo copiado.");
   }
 
+  async function copyTemporaryPassword() {
+    if (!form.temporary_password) return;
+    await navigator.clipboard?.writeText(form.temporary_password);
+    setSavedMessage(
+      "Credencial copiada. Compártela únicamente por un canal seguro separado del correo.",
+    );
+  }
+
   async function openPreferredEmail() {
     const result = await onSave(form);
     if (result.error) {
@@ -175,16 +184,34 @@ export function OnboardingWelcomeModal({
       size="xl"
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-xs text-amber-950">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-xs text-amber-950">
           <span>
             <ShieldCheck className="mr-1 inline" size={15} />
-            La contraseña temporal nunca se guarda en el perfil, el PDF ni la auditoría.
+            La contraseña temporal no se envía por correo ni se guarda en perfil, PDF o auditoría.
           </span>
-          <span className="font-bold">
-            {form.temporary_password
-              ? "Credencial temporal disponible en memoria"
-              : "Se prioriza enlace de activación"}
-          </span>
+          {form.temporary_password ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="rounded-lg bg-white px-2 py-1 font-bold">
+                {showTemporaryPassword ? form.temporary_password : "••••••••••••"}
+              </code>
+              <button
+                type="button"
+                onClick={() => setShowTemporaryPassword((visible) => !visible)}
+                className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold"
+              >
+                {showTemporaryPassword ? "Ocultar" : "Mostrar"}
+              </button>
+              <button
+                type="button"
+                onClick={copyTemporaryPassword}
+                className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold"
+              >
+                <Copy className="mr-1 inline" size={13} /> Copiar para canal seguro
+              </button>
+            </div>
+          ) : (
+            <span className="font-bold">Se prioriza enlace de activación</span>
+          )}
         </div>
         <div className="flex gap-2 border-b border-slate-100">
           <button

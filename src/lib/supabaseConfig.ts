@@ -1,17 +1,23 @@
 /**
- * These values are public browser configuration. Data protection belongs in
- * Supabase RLS policies; never place a secret/service-role key in this file.
+ * Browser-side Supabase settings are public configuration, not secrets.
+ * Never place a service-role or secret key here. Each environment must provide
+ * its own project URL and publishable key through Vite environment variables.
  */
-// Public configuration supplied for the imported app. Runtime environment
-// values take precedence so deployments can override the connected project.
-const DEFAULT_URL = "https://uoozvmrkbrbvbhsuphhm.supabase.co";
-const DEFAULT_KEY = "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
-
-export const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_URL;
-export const SUPABASE_ANON_KEY =
+const configuredUrl = (
+  import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  ""
+).trim();
+const configuredKey = (
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  DEFAULT_KEY;
+  ""
+).trim();
+
+// Harmless placeholders keep the application bundle/build loadable; they do
+// not route an unconfigured development environment to production.
+export const SUPABASE_URL = configuredUrl || "https://placeholder.supabase.co";
+export const SUPABASE_ANON_KEY = configuredKey || "placeholder-anon-key";
 export const SUPABASE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
-export const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+export const SUPABASE_CONFIGURED = Boolean(configuredUrl && configuredKey);

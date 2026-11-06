@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/auth.ts";
 
 type Payload = {
   tenant_id?: string | null;
@@ -15,18 +11,15 @@ type Payload = {
   details?: Record<string, unknown> | null;
 };
 
-function json(body: unknown, status: number) {
+function json(request: Request, body: unknown, status: number) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(request), "Content-Type": "application/json" },
   });
 }
 
 function firstForwardedIp(request: Request): string | null {
-  const value =
-    request.headers.get("cf-connecting-ip") ??
-    request.headers.get("x-real-ip") ??
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const value = request.headers.get("cf-connecting-ip");
   return value?.trim() || null;
 }
 
@@ -55,38 +48,41 @@ function safeUuid(value: string | null | undefined): string | null {
 }
 
 Deno.serve(async (request) => {
-  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: getCorsHeaders(request) });
+  }
   try {
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader) return json({ error: "Sesión requerida." }, 401);
+    if (!authHeader) return json(request, { error: "Sesión requerida." }, 401);
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !anonKey || !serviceKey)
-      return json({ error: "Configuración server-side incompleta." }, 503);
+      return json(request, { error: "Configuración server-side incompleta." }, 503);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userError } = await userClient.auth.getUser();
-    if (userError || !userData.user) return json({ error: "Sesión inválida." }, 401);
+    if (userError || !userData.user) return json(request, { error: "Sesión inválida." }, 401);
 
     // Audit events are an administrative control and require an AAL2 session.
     const { data: aal, error: aalError } =
       await userClient.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalError || aal?.currentLevel !== "aal2") return json({ error: "MFA_REQUIRED" }, 403);
+    if (aalError || aal?.currentLevel !== "aal2")
+      return json(request, { error: "MFA_REQUIRED" }, 403);
 
     const payload = (await request.json()) as Payload;
     if (!payload.action?.trim() || !payload.entity?.trim())
-      return json({ error: "action y entity son obligatorios." }, 400);
+      return json(request, { error: "action y entity son obligatorios." }, 400);
     const { data: isPlatformOwner } = await userClient.rpc("is_platform_owner");
     const { data: currentTenantId } = await userClient.rpc("current_tenant_id");
     const requestedTenant = safeUuid(payload.tenant_id);
     const tenantId =
       requestedTenant || (typeof currentTenantId === "string" ? currentTenantId : null);
-    if (!tenantId) return json({ error: "TENANT_REQUIRED" }, 400);
+    if (!tenantId) return json(request, { error: "TENANT_REQUIRED" }, 400);
     if (!isPlatformOwner && currentTenantId !== tenantId)
-      return json({ error: "TENANT_BOUNDARY_VIOLATION" }, 403);
+      return json(request, { error: "TENANT_BOUNDARY_VIOLATION" }, 403);
 
     const ip = firstForwardedIp(request);
     const admin = createClient(supabaseUrl, serviceKey);
@@ -94,7 +90,8 @@ Deno.serve(async (request) => {
       _tenant_id: tenantId,
       _ip: ip,
     });
-    if (decisionError) return json({ error: "No se pudo evaluar la política de IP." }, 503);
+    if (decisionError)
+      return json(request, { error: "No se pudo evaluar la política de IP." }, 503);
     const policy = Array.isArray(decision) ? decision[0] : decision;
     if (!policy?.allowed) {
       await admin.from("saas_data_audit_events").insert({
@@ -108,7 +105,7 @@ Deno.serve(async (request) => {
         user_agent: request.headers.get("user-agent"),
         metadata: { decision: policy?.decision ?? "deny", reason: policy?.reason ?? null },
       });
-      return json({ error: "IP_NOT_ALLOWED" }, 403);
+      return json(request, { error: "IP_NOT_ALLOWED" }, 403);
     }
 
     const { data: roleData } = await userClient.rpc("current_user_role");
@@ -131,9 +128,9 @@ Deno.serve(async (request) => {
             : "tenant_user",
       // No session identifiers, fingerprint, cookies, GPS, referrer or viewport are persisted.
     });
-    if (insertError) return json({ error: "No se pudo persistir el log." }, 500);
-    return json({ ok: true, decision: policy.decision }, 200);
+    if (insertError) return json(request, { error: "No se pudo persistir el log." }, 500);
+    return json(request, { ok: true, decision: policy.decision }, 200);
   } catch {
-    return json({ error: "No se pudo registrar actividad." }, 500);
+    return json(request, { error: "No se pudo registrar actividad." }, 500);
   }
 });

@@ -1,0 +1,25 @@
+project_id = "uoozvmrkbrbvbhsuphhm"
+
+[functions.admin-user-manage]
+verify_jwt = true
+
+[functions.check-email-allowed]
+verify_jwt = false
+
+[functions.harassment-report-submit]
+verify_jwt = true
+
+[functions.honeytoken-check]
+verify_jwt = true
+
+[functions.log-activity]
+verify_jwt = true
+
+[functions.send-tenant-onboarding]
+verify_jwt = true
+
+[functions.worker-auth]
+verify_jwt = false
+
+[functions.worker-gdpr]
+verify_jwt = true

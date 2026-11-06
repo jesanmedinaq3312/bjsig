@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { isOptionalHttpUrl } from "./validation/httpUrl";
 import type {
   Worker,
   EppLog,
@@ -59,6 +60,24 @@ import type {
   Supplier,
   EppDelivery,
 } from "./types";
+
+function normalizeOptionalHttpUrl(value: unknown, field: string): unknown {
+  if (value == null) return value;
+  if (typeof value !== "string") throw new Error(`${field} debe ser una URL http(s) válida.`);
+  const normalized = value.trim();
+  if (!normalized) return null;
+  if (!isOptionalHttpUrl(normalized)) throw new Error(`${field} debe ser una URL http(s) válida.`);
+  return normalized;
+}
+
+function normalizeUrlField<T extends Record<string, unknown>>(
+  input: T,
+  key: string,
+  label: string,
+): T {
+  if (!(key in input)) return input;
+  return { ...input, [key]: normalizeOptionalHttpUrl(input[key], label) };
+}
 
 export class VersionConflictError extends Error {
   constructor(message: string) {
@@ -220,6 +239,7 @@ export class WorkerRepository extends BaseRepository<Worker> {
   protected table = "workers";
 
   private toWorkerRow(input: Record<string, unknown>): Record<string, unknown> {
+    const normalizedInput = normalizeUrlField(input, "contract_url", "La URL del contrato");
     const columns = new Set([
       "rut",
       "full_name",
@@ -259,7 +279,7 @@ export class WorkerRepository extends BaseRepository<Worker> {
       "department_id",
       "reports_to",
     ]);
-    return Object.fromEntries(Object.entries(input).filter(([key]) => columns.has(key)));
+    return Object.fromEntries(Object.entries(normalizedInput).filter(([key]) => columns.has(key)));
   }
 
   async insert(row: Omit<Worker, "id" | "created_at" | "tenant_id">): Promise<Worker> {
@@ -696,6 +716,31 @@ export class PerformanceFeedbackRepository extends BaseRepository<PerformanceFee
 export class WorkerDocumentRepository extends BaseRepository<WorkerDocument> {
   protected table = "worker_documents";
 
+  async insert(
+    row: Omit<WorkerDocument, "id" | "created_at" | "tenant_id">,
+  ): Promise<WorkerDocument> {
+    const normalized = normalizeUrlField(
+      row as unknown as Record<string, unknown>,
+      "document_url",
+      "La URL del documento",
+    );
+    return super.insert(
+      normalized as unknown as Omit<WorkerDocument, "id" | "created_at" | "tenant_id">,
+    );
+  }
+
+  async update(
+    id: string,
+    patch: Partial<Omit<WorkerDocument, "tenant_id">>,
+  ): Promise<WorkerDocument> {
+    const normalized = normalizeUrlField(
+      patch as unknown as Record<string, unknown>,
+      "document_url",
+      "La URL del documento",
+    );
+    return super.update(id, normalized as unknown as Partial<Omit<WorkerDocument, "tenant_id">>);
+  }
+
   async getByWorker(rut: string): Promise<WorkerDocument[]> {
     const { data, error } = await supabase
       .from(this.table)
@@ -1057,6 +1102,31 @@ export const securityAlertRepo = new SecurityAlertRepository();
 export class MedicalLicenseRepository extends BaseRepository<MedicalLicense> {
   protected table = "medical_licenses";
   protected dateColumn = "start_date";
+
+  async insert(
+    row: Omit<MedicalLicense, "id" | "created_at" | "tenant_id">,
+  ): Promise<MedicalLicense> {
+    const normalized = normalizeUrlField(
+      row as unknown as Record<string, unknown>,
+      "document_url",
+      "La URL del documento",
+    );
+    return super.insert(
+      normalized as unknown as Omit<MedicalLicense, "id" | "created_at" | "tenant_id">,
+    );
+  }
+
+  async update(
+    id: string,
+    patch: Partial<Omit<MedicalLicense, "tenant_id">>,
+  ): Promise<MedicalLicense> {
+    const normalized = normalizeUrlField(
+      patch as unknown as Record<string, unknown>,
+      "document_url",
+      "La URL del documento",
+    );
+    return super.update(id, normalized as unknown as Partial<Omit<MedicalLicense, "tenant_id">>);
+  }
 }
 
 export const medicalLicenseRepo = new MedicalLicenseRepository();

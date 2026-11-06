@@ -10,6 +10,7 @@ import {
   meetsWorkerPasswordPolicy,
   recordLoginAttempt,
   WORKER_PASSWORD_POLICY_MESSAGE,
+  workerLoginRateLimitKey,
 } from "../../_shared/worker-auth-utils.ts";
 
 export type TemporaryPasswordAuthClient = Pick<SupabaseClient, "auth">;
@@ -41,6 +42,8 @@ export async function handleSetInitialPassword(
   const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
   const currentPassword = typeof body?.current_password === "string" ? body.current_password : "";
   const newPassword = typeof body?.new_password === "string" ? body.new_password : "";
+  const authCaptchaToken =
+    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
 
   if (!email || !currentPassword || !newPassword) {
     return jsonResponse(
@@ -65,7 +68,7 @@ export async function handleSetInitialPassword(
   }
 
   const { ip } = clientInfo(req);
-  const rateLimitKey = `${email}:set_password`;
+  const rateLimitKey = workerLoginRateLimitKey(`${email}:set_password`, ip);
   const rateOk = await checkRateLimit(svc, rateLimitKey);
   if (!rateOk) {
     return jsonResponse(
@@ -81,6 +84,10 @@ export async function handleSetInitialPassword(
     await recordLoginAttempt(svc, rateLimitKey, ip, false, tenantId);
     return jsonResponse(corsHeaders, { error: INVALID_INITIAL_ACCESS }, 400);
   };
+
+  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
+    return await rejectAttempt();
+  }
 
   const { data: allowed, error: allowError } = await svc
     .from("allowed_emails")
@@ -112,6 +119,7 @@ export async function handleSetInitialPassword(
   const { error: passwordError } = await verifier.auth.signInWithPassword({
     email,
     password: currentPassword,
+    options: { captchaToken: authCaptchaToken },
   });
   if (passwordError) return await rejectAttempt(allowed.tenant_id);
 

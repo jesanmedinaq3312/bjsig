@@ -53,6 +53,7 @@ import { provisionTenantUser } from "@/lib/tenantUsers";
 import { DEFAULT_PERMISSIONS } from "./constants";
 import { authorizationErrorMessage } from "@/lib/authorization";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
+import { isHttpUrl, isOptionalHttpUrl } from "@/lib/validation/httpUrl";
 import { useConfirm } from "@/hooks/useConfirm";
 import {
   OnboardingWelcomeModal,
@@ -714,9 +715,7 @@ export function SaaSControlPanel() {
   );
   // Solo empresas vigentes: excluye registros huérfanos (empresa eliminada) y archivadas.
   const visibleBranding = useMemo(() => {
-    const live = new Set(
-      liveTenants.map((t) => t.tenant_id),
-    );
+    const live = new Set(liveTenants.map((t) => t.tenant_id));
     return branding.filter((item) => live.has(item.tenant_id));
   }, [branding, liveTenants]);
   const selectedBranding =
@@ -1016,6 +1015,13 @@ export function SaaSControlPanel() {
   }
 
   async function saveOnboardingProfile(form: OnboardingForm): Promise<{ error?: string }> {
+    if (
+      !isHttpUrl(form.access_path) ||
+      !isOptionalHttpUrl(form.help_path) ||
+      !isOptionalHttpUrl(form.manual_url)
+    ) {
+      return { error: "Las rutas de acceso, ayuda y manual deben ser URLs http(s) válidas." };
+    }
     setBusy(true);
     const { data: userData } = await supabase.auth.getUser();
     const { data, error } = await supabase
@@ -1087,9 +1093,23 @@ export function SaaSControlPanel() {
   async function sendOnboarding(form: OnboardingForm): Promise<{ error?: string }> {
     const profileResult = await saveOnboardingProfile(form);
     if (profileResult.error) return profileResult;
+    const {
+      temporary_password: _temporaryPassword,
+      access_path,
+      help_path,
+      manual_url,
+      ...otherEmailFields
+    } = form;
+    void _temporaryPassword;
+    const emailPayload = {
+      ...otherEmailFields,
+      access_path: access_path.trim(),
+      help_path: help_path.trim() || undefined,
+      manual_url: manual_url.trim() || undefined,
+    };
     const { data, error } = await callEdgeFunction<{ ok: boolean; delivery_id?: string }>(
       "send-tenant-onboarding",
-      { ...form },
+      emailPayload,
     );
     if (error) {
       await saveOnboardingDraft(form);
@@ -1120,7 +1140,7 @@ export function SaaSControlPanel() {
       setMessage("Selecciona una empresa y completa el título del contrato.");
       return;
     }
-    if (!/^https?:\/\//i.test(contractForm.contract_url.trim())) {
+    if (!isHttpUrl(contractForm.contract_url)) {
       setMessage("El contrato debe tener un enlace http(s) válido.");
       return;
     }

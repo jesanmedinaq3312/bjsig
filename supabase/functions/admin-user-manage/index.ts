@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { getCorsHeaders, isOriginAllowed } from "../_shared/auth.ts";
 import {
   type Actor,
   actorFrom,
@@ -11,17 +12,11 @@ import {
   resolveTenant,
 } from "../_shared/authz.ts";
 import { isPreauthorizedCompanyOwner } from "./_shared/provisioning.ts";
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-const json = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, "Content-Type": "application/json" },
-  });
-const denied = (d: Decision) => (d.ok ? null : json({ error: d.code }, d.status));
+import {
+  meetsPasswordPolicy,
+  PASSWORD_POLICY_MESSAGE,
+  PASSWORD_SYMBOLS,
+} from "../_shared/password-policy.ts";
 const cleanEmail = (v: unknown) =>
   String(v ?? "")
     .trim()
@@ -31,7 +26,7 @@ const password = (n = 16) => {
     "ABCDEFGHJKLMNPQRSTUVWXYZ",
     "abcdefghijkmnpqrstuvwxyz",
     "23456789",
-    "!@#$%^&*()_+-=[]{};:'\"|<>?,./`~",
+    PASSWORD_SYMBOLS,
   ];
   if (n < groups.length) throw new Error("PASSWORD_LENGTH_TOO_SHORT");
   const random = new Uint32Array(n);
@@ -92,6 +87,7 @@ async function ensureAuthUser(svc: SupabaseClient, actor: Actor, email: string, 
       return { id: existing.id, temporaryPassword: undefined, reused: true };
     }
     const next = supplied || password();
+    if (!meetsPasswordPolicy(next)) throw new Error("PASSWORD_POLICY");
     const { error } = await svc.auth.admin.updateUserById(existing.id, {
       password: next,
       email_confirm: true,
@@ -104,6 +100,7 @@ async function ensureAuthUser(svc: SupabaseClient, actor: Actor, email: string, 
     };
   }
   const next = supplied || password();
+  if (!meetsPasswordPolicy(next)) throw new Error("PASSWORD_POLICY");
   const { data, error } = await svc.auth.admin.createUser({
     email,
     password: next,
@@ -117,9 +114,17 @@ async function ensureAuthUser(svc: SupabaseClient, actor: Actor, email: string, 
   };
 }
 Deno.serve(async (req) => {
+  const cors = getCorsHeaders(req);
+  const json = (body: Record<string, unknown>, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+  const denied = (d: Decision) => (d.ok ? null : json({ error: d.code }, d.status));
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: cors });
   }
+  if (!isOriginAllowed(req)) return json({ error: "ORIGIN_NOT_ALLOWED" }, 403);
   if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
   try {
     const auth = req.headers.get("Authorization");
@@ -138,6 +143,12 @@ Deno.serve(async (req) => {
     const { data: who, error: whoError } = await user.auth.getUser();
     if (whoError || !who.user?.email) {
       return json({ error: "Sesión inválida." }, 401);
+    }
+    const { data: verifiedClaims, error: claimsError } = await user.auth.getClaims(
+      auth.slice("Bearer ".length),
+    );
+    if (claimsError || verifiedClaims?.claims?.aal !== "aal2") {
+      return json({ error: "MFA_REQUIRED" }, 403);
     }
     const svc = createClient(url, key);
     const [{ data: role }, { data: tenant }, { data: owner }, { data: superadmin }] =
@@ -173,26 +184,36 @@ Deno.serve(async (req) => {
     if (action === "list_users") {
       const scope = listScope(actor);
       if (!scope) return json({ error: "PLATFORM_ROLE_REQUIRED" }, 403);
-      let q = svc.from("allowed_emails").select("*").limit(500);
-      if (!scope.all) {
-        q = q.in(
-          "tenant_id",
-          scope.tenantIds.length ? scope.tenantIds : ["00000000-0000-0000-0000-000000000000"],
-        );
+      const allowed: Array<{ email: string; [key: string]: unknown }> = [];
+      for (let page = 0; ; page += 1) {
+        let query = svc.from("allowed_emails").select("*");
+        if (!scope.all) {
+          query = query.in(
+            "tenant_id",
+            scope.tenantIds.length ? scope.tenantIds : ["00000000-0000-0000-0000-000000000000"],
+          );
+        }
+        const { data: pageAllowed, error: allowedError } = await query
+          .order("email")
+          .order("tenant_id")
+          .range(page * 500, page * 500 + 499);
+        if (allowedError) throw allowedError;
+        const pageRows = (pageAllowed ?? []) as Array<{ email: string; [key: string]: unknown }>;
+        allowed.push(...pageRows);
+        if (pageRows.length < 500) break;
       }
-      const { data: allowed, error: allowedError } = await q;
-      if (allowedError) throw allowedError;
-      const { data, error } = await svc.auth.admin.listUsers({
-        page: 1,
-        perPage: 500,
-      });
-      if (error) throw error;
+
+      const authUsers = [];
+      for (let page = 1; ; page += 1) {
+        const { data, error } = await svc.auth.admin.listUsers({ page, perPage: 500 });
+        if (error) throw error;
+        authUsers.push(...data.users);
+        if (data.users.length < 500) break;
+      }
       const visible = new Set(
         (allowed ?? []).map((a: { email: string }) => a.email?.toLowerCase()),
       );
-      const users = data.users.filter(
-        (u) => scope.all || visible.has(u.email?.toLowerCase() ?? ""),
-      );
+      const users = authUsers.filter((u) => scope.all || visible.has(u.email?.toLowerCase() ?? ""));
       return json({
         success: true,
         auth_users: users.map((u) => ({
@@ -206,19 +227,19 @@ Deno.serve(async (req) => {
     if (action === "create_user") {
       const target = cleanEmail(body.email);
       const targetRole = String(body.role ?? "operador");
+      const suppliedPassword =
+        typeof body.password === "string" && body.password.length ? body.password : undefined;
       if (!target) return json({ error: "Email es obligatorio." }, 400);
+      if (suppliedPassword && !meetsPasswordPolicy(suppliedPassword)) {
+        return json({ error: PASSWORD_POLICY_MESSAGE }, 400);
+      }
       const r = denied(canGrantTenantRole(actor, targetRole));
       if (r) return r;
       if (targetRole === "developer" || targetRole === "superadmin") {
         if (targetRole === "superadmin" && actor.kind !== "superadmin") {
           return json({ error: "SUPERADMIN_PROTECTED" }, 403);
         }
-        const a = await ensureAuthUser(
-          svc,
-          actor,
-          target,
-          body.password ? String(body.password) : undefined,
-        );
+        const a = await ensureAuthUser(svc, actor, target, suppliedPassword);
         return json({
           success: true,
           user_id: a.id,
@@ -250,12 +271,7 @@ Deno.serve(async (req) => {
         _permissions: body.permissions ?? {},
       });
       if (error) return json({ error: "PROVISION_DENIED" }, 403);
-      const a = await ensureAuthUser(
-        svc,
-        actor,
-        target,
-        body.password ? String(body.password) : undefined,
-      );
+      const a = await ensureAuthUser(svc, actor, target, suppliedPassword);
       return json({
         success: true,
         user_id: a.id,
@@ -266,11 +282,16 @@ Deno.serve(async (req) => {
     }
     if (action === "create_worker") {
       const target = cleanEmail(body.email);
+      const suppliedPassword =
+        typeof body.password === "string" && body.password.length ? body.password : undefined;
       const rut = String(body.worker_rut ?? "")
         .replace(/[.\s-]/g, "")
         .toUpperCase();
       if (!target || !rut) {
         return json({ error: "Email y RUT son obligatorios." }, 400);
+      }
+      if (suppliedPassword && !meetsPasswordPolicy(suppliedPassword)) {
+        return json({ error: PASSWORD_POLICY_MESSAGE }, 400);
       }
       const t = resolveTenant(actor, body.tenant_id);
       if (!t.ok) return json({ error: t.code }, t.status);
@@ -335,12 +356,7 @@ Deno.serve(async (req) => {
         },
       });
       if (error) return json({ error: "PROVISION_DENIED" }, 403);
-      const a = await ensureAuthUser(
-        svc,
-        actor,
-        target,
-        body.password ? String(body.password) : undefined,
-      );
+      const a = await ensureAuthUser(svc, actor, target, suppliedPassword);
       return json({
         success: true,
         user_id: a.id,
@@ -362,13 +378,8 @@ Deno.serve(async (req) => {
       }
       if (action === "set_password") {
         const next = String(body.password ?? "");
-        if (next.length < 8) {
-          return json(
-            {
-              error: "La contraseña debe tener al menos 8 caracteres.",
-            },
-            400,
-          );
+        if (!meetsPasswordPolicy(next)) {
+          return json({ error: PASSWORD_POLICY_MESSAGE }, 400);
         }
         const { error } = await svc.auth.admin.updateUserById(found.id, {
           password: next,
@@ -376,8 +387,6 @@ Deno.serve(async (req) => {
         if (error) throw error;
         return json({ success: true, message: "Contraseña actualizada." });
       }
-      const scope = (q: any) =>
-        actor.kind === "superadmin" ? q : q.in("tenant_id", actor.devTenantIds);
       if (action === "delete_user") {
         if (
           actor.kind === "superadmin" ||
@@ -386,19 +395,27 @@ Deno.serve(async (req) => {
           const { error } = await svc.auth.admin.deleteUser(found.id);
           if (error) throw error;
         }
-        await scope(svc.from("allowed_emails").delete().eq("email", target));
+        const deleteQuery = svc.from("allowed_emails").delete().eq("email", target);
+        const scopedDeleteQuery =
+          actor.kind === "superadmin"
+            ? deleteQuery
+            : deleteQuery.in("tenant_id", actor.devTenantIds);
+        const { error: deleteError } = await scopedDeleteQuery;
+        if (deleteError) throw deleteError;
         return json({ success: true });
       }
       const { error } = await svc.auth.admin.updateUserById(found.id, {
         ban_duration: action === "ban" ? "876000h" : "none",
       });
       if (error) throw error;
-      await scope(
-        svc
-          .from("allowed_emails")
-          .update({ active: action === "unban" })
-          .eq("email", target),
-      );
+      const updateQuery = svc
+        .from("allowed_emails")
+        .update({ active: action === "unban" })
+        .eq("email", target);
+      const scopedUpdateQuery =
+        actor.kind === "superadmin" ? updateQuery : updateQuery.in("tenant_id", actor.devTenantIds);
+      const { error: updateError } = await scopedUpdateQuery;
+      if (updateError) throw updateError;
       return json({ success: true });
     }
     return json({ error: `Acción no reconocida: ${action}` }, 400);

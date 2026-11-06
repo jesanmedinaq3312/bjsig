@@ -122,18 +122,18 @@ function resolveOrigin(req: Request): string | null {
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = resolveOrigin(req);
   return {
-    "Access-Control-Allow-Origin": origin ?? "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
   };
 }
 
 export function authErrorResponse(err: unknown, req?: Request): Response {
-  const corsH = req ? getCorsHeaders(req) : {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-  };
+  const corsH = req
+    ? getCorsHeaders(req)
+    : {
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+      };
   if (err instanceof AuthError) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: err.status,

@@ -9,6 +9,7 @@ import {
   findAuthUserByEmail,
   meetsWorkerPasswordPolicy,
   WORKER_PASSWORD_POLICY_MESSAGE,
+  workerLoginRateLimitKey,
 } from "../../_shared/worker-auth-utils.ts";
 
 export async function handleChangePassword(
@@ -29,6 +30,8 @@ export async function handleChangePassword(
     .trim();
   const currentPassword = String(body?.current_password ?? "");
   const newPassword = String(body?.new_password ?? "");
+  const authCaptchaToken =
+    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
 
   if (!email || !currentPassword || !newPassword) {
     return jsonResponse(
@@ -49,7 +52,14 @@ export async function handleChangePassword(
   }
 
   const { ip } = clientInfo(req);
-  const rateLimitKey = `changepw:${email}`;
+  if (!ip) {
+    return jsonResponse(
+      corsHeaders,
+      { error: "El servicio de verificación no está disponible." },
+      503,
+    );
+  }
+  const rateLimitKey = workerLoginRateLimitKey(`changepw:${email}`, ip);
   const rateOk = await checkRateLimit(svc, rateLimitKey);
   if (!rateOk) {
     return jsonResponse(
@@ -59,6 +69,9 @@ export async function handleChangePassword(
       },
       429,
     );
+  }
+  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
+    return jsonResponse(corsHeaders, { error: "No se pudo validar la solicitud." }, 400);
   }
 
   const { data: allowed, error: allowErr } = await svc
@@ -78,6 +91,7 @@ export async function handleChangePassword(
   const { error: signInErr } = await userClient.auth.signInWithPassword({
     email,
     password: currentPassword,
+    options: { captchaToken: authCaptchaToken },
   });
   if (signInErr) {
     await recordLoginAttempt(svc, rateLimitKey, ip, false, allowed.tenant_id ?? null);

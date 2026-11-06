@@ -6,7 +6,6 @@ import { CompanyLogo } from "@/components/CompanyLogo";
 import { normalizeRut, isValidRut } from "@/lib/rut";
 import { friendlyError } from "@/lib/networkError";
 import { RateLimitError } from "@/lib/rateLimit";
-import { refreshGpsCache, gpsSupported, type GpsPosition } from "@/lib/gps";
 import {
   callWorkerAuth,
   validatePassword,
@@ -16,7 +15,6 @@ import {
 } from "./worker-auth/api";
 import { audit } from "@/lib/audit";
 import { LOGIN_DISCLAIMER } from "@/lib/legal";
-import { GpsWidget, type GpsStatus } from "./worker-auth/GpsWidget";
 import { RutForm } from "./worker-auth/RutForm";
 import { LoginForm } from "./worker-auth/LoginForm";
 import { FirstPasswordForm } from "./worker-auth/FirstPasswordForm";
@@ -43,11 +41,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [, setAccountInfo] = useState<AccountCheck | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
-  const [gpsStatus, setGpsStatus] = useState<GpsStatus>("idle");
-  const [gpsPosition, setGpsPosition] = useState<GpsPosition | null>(null);
-
-  const canUseGps = gpsSupported();
-  const gpsReady = canUseGps && gpsStatus === "active";
 
   useEffect(() => {
     if (!retryAt) return;
@@ -65,30 +58,12 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     setError(friendlyError(err));
   }
 
-  async function handleEnableGps() {
-    setGpsStatus("loading");
-    try {
-      const pos = await refreshGpsCache(10000);
-      if (pos) {
-        setGpsPosition(pos);
-        setGpsStatus("active");
-      } else {
-        setGpsStatus("denied");
-      }
-    } catch {
-      setGpsStatus("denied");
-    }
-  }
-
   useEffect(() => {
     void (workerPortalSlug ? loadTenantBrandingBySlug(workerPortalSlug) : loadCompanyBranding());
     if (window.location.pathname === "/admin") {
       window.history.replaceState(null, "", "/trabajador");
     }
-    if (canUseGps && gpsStatus === "idle") {
-      void handleEnableGps();
-    }
-  }, [workerPortalSlug]); // eslint-disable-line react-hooks/exhaustive-deps -- callbacks are intentionally stable per mount
+  }, [workerPortalSlug]);
 
   function resetState() {
     setError(null);
@@ -113,10 +88,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleRutCheck(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar los campos de acceso.");
-      return;
-    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     if (!rutInput.trim()) {
@@ -154,10 +125,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar los campos de acceso.");
-      return;
-    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     setBusy(true);
@@ -231,10 +198,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleSetFirstPassword(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar los campos de acceso.");
-      return;
-    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     if (newPassword !== confirmPassword) {
@@ -269,10 +232,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleResetRequest(e: React.FormEvent) {
     e.preventDefault();
-    if (!gpsReady) {
-      setError("Activa el GPS para habilitar los campos de acceso.");
-      return;
-    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     setBusy(true);
@@ -315,21 +274,13 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
         </div>
 
         <div className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-950/60 border border-white/20 p-7 [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.15),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-          <div className="mb-4">
-            <GpsWidget
-              gpsStatus={gpsStatus}
-              gpsPosition={gpsPosition}
-              onEnable={handleEnableGps}
-              supported={canUseGps}
-            />
-          </div>
           {remainingSeconds > 0 && (
             <p role="status" className="mb-4 text-sm text-muted-foreground">
               Podrás reintentar en {Math.floor(remainingSeconds / 60)}:
               {String(remainingSeconds % 60).padStart(2, "0")}.
             </p>
           )}
-          <fieldset disabled={remainingSeconds > 0 || !gpsReady} className="min-w-0">
+          <fieldset disabled={remainingSeconds > 0} className="min-w-0">
             {mode === "rut" && (
               <RutForm
                 rutInput={rutInput}

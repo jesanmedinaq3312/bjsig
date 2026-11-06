@@ -7,4 +7,4 @@ Esta información no se utiliza para ventas, marketing, publicidad ni data cruza
 
 El desarrollador de este sistema no se hace responsable del mal uso, mal trato de datos, pérdida de información, ni de las decisiones administrativas tomadas a partir de los reportes generados. La responsabilidad del uso correcto de la información y del cumplimiento normativo recae exclusivamente sobre la empresa administradora del sistema.`;
 
-export const LOGIN_DISCLAIMER = `Al iniciar sesión, aceptas que el sistema registre tu ubicación GPS, datos del dispositivo y cookies exclusivamente para fines de seguridad, control de asistencia y trazabilidad operacional. Esta información no se utiliza para ventas ni se comparte con terceros.`;
+export const LOGIN_DISCLAIMER = `Para autenticarte, se envían al servicio de acceso los datos que ingresas. La solicitud previa al inicio de sesión no incluye ubicación GPS ni metadatos de huella del navegador, cookies, referrer, viewport o ID de dispositivo.`;

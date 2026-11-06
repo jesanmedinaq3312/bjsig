@@ -14,13 +14,8 @@ export async function handleRecordLoginFailure(
   body: Record<string, unknown>,
   corsHeaders: Record<string, string>,
 ): Promise<Response> {
-  const email = typeof body?.email === "string"
-    ? body.email.toLowerCase().trim()
-    : "";
-  if (
-    !email || email.length > 254 ||
-    !/^[^\s@%_]+@[^\s@%_]+\.[^\s@%_]+$/.test(email)
-  ) {
+  const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
+  if (!email || email.length > 254 || !/^[^\s@%_]+@[^\s@%_]+\.[^\s@%_]+$/.test(email)) {
     return jsonResponse(corsHeaders, { error: "Correo inválido." }, 400);
   }
 
@@ -30,8 +25,7 @@ export async function handleRecordLoginFailure(
     return jsonResponse(
       corsHeaders,
       {
-        error:
-          `Demasiados intentos fallidos. Intenta nuevamente en ${RATE_LIMIT_WINDOW_MIN} minutos.`,
+        error: `Demasiados intentos fallidos. Intenta nuevamente en ${RATE_LIMIT_WINDOW_MIN} minutos.`,
       },
       429,
     );

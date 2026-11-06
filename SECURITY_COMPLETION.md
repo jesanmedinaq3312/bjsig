@@ -52,3 +52,24 @@ Las políticas MFA y de aislamiento multi-tenant permanecen activas en las tabla
 - `supabase/migrations/20260923224500_enforce_mfa_and_auth_guards.sql`: cierre de bypass MFA, guardias de sesión y revocación de RPC obsoleta.
 - `scripts/audit_security_definer.sql`: inventario y clasificación reproducible de funciones privilegiadas.
 - `package.json` y `package-lock.json`: override seguro de `uuid`.
+
+
+## Remediación local adicional — 6 de noviembre de 2026
+
+Este bloque documenta cambios preparados en el checkout local; **no significa que se hayan desplegado en Supabase ni publicado en GitHub**.
+
+- Se integró Cloudflare Turnstile en las acciones públicas de `worker-auth`, en login con contraseña, OTP/magic link, signup y recuperación de Supabase Auth. Los resets de trabajador usan dos tokens distintos porque el token validado por la Edge Function no puede reutilizarse en Supabase Auth. La configuración del CAPTCHA en el Dashboard todavía requiere una acción operativa.
+- Se reforzaron anti-enumeración y rate limits combinados con IP confiable, redirects fijos/allowlist, CORS por allowlist, AAL2 en funciones privilegiadas, validación de URL en Zod, credenciales de onboarding fuera del correo, política de contraseñas compartida, protección de tarjetas QR y eliminación de datos de ubicación/tracking pre-login.
+- Se retiraron valores productivos por defecto del cliente Supabase. Se añadieron headers HTTP, Dependabot, CI, comprobación de catálogo RLS y E2E multi-tenant autenticado condicional, habilitables únicamente con credenciales de staging.
+
+| Verificación local | Resultado |
+|---|---:|
+| `bun run typecheck` | **0** |
+| `bun run test` | **29 passed** |
+| `deno test --allow-env --allow-net supabase/functions/worker-auth/tests` | **18 passed** |
+| `bun run lint` | **0 errores**, 2 warnings no bloqueantes de Fast Refresh |
+| `bun run build` | **0** |
+| `bun audit --production` | **0 vulnerabilidades** |
+| `bun audit` completo | **1 advisory moderado** transitivo de `minimatch` en dependencias de desarrollo |
+
+Antes del despliegue siguen pendientes la configuración de CAPTCHA/redirects/signups en Supabase Auth, secretos y allowlists de Edge Functions, rotación de secretos afectados y ejecución de staging. La CI de RLS y E2E autenticado sólo se activan al configurar sus variables/secrets de staging. Los plazos de retención y la integración/umbrales de alertas requieren una política y un proveedor aprobados; no se inventaron ni se configuraron desde el checkout local. Ver `SECURITY_DEPLOYMENT_CHECKLIST.md`.

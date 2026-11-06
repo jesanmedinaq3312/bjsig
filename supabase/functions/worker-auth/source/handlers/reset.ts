@@ -1,6 +1,42 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { logAction, clientTracking, jsonResponse } from "../../_shared/worker-auth-utils.ts";
+import {
+  checkRateLimit,
+  clientInfo,
+  jsonResponse,
+  logAction,
+  RATE_LIMIT_WINDOW_MIN,
+  recordLoginAttempt,
+  workerLoginRateLimitKey,
+} from "../../_shared/worker-auth-utils.ts";
+
+const GENERIC_SUCCESS = {
+  success: true,
+  message: "Si el correo existe, recibirá un enlace de restablecimiento en breve.",
+};
+
+function getSafeRedirectUrl(): string | null {
+  const configuredOrigin = Deno.env.get("WORKER_AUTH_REDIRECT_ORIGIN")?.trim();
+  const allowedOrigins = (Deno.env.get("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS") ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (!configuredOrigin || allowedOrigins.length === 0) return null;
+
+  try {
+    const url = new URL(configuredOrigin);
+    if (
+      url.protocol !== "https:" ||
+      url.origin !== configuredOrigin ||
+      !allowedOrigins.includes(url.origin)
+    ) {
+      return null;
+    }
+    return new URL("/trabajador", url.origin).toString();
+  } catch {
+    return null;
+  }
+}
 
 export async function handleRequestReset(
   svc: SupabaseClient,
@@ -8,48 +44,74 @@ export async function handleRequestReset(
   body: Record<string, unknown>,
   corsHeaders: Record<string, string>,
 ): Promise<Response> {
-  const email = String(body?.email ?? "").toLowerCase().trim();
-  if (!email) {
-    return jsonResponse(corsHeaders, { error: "Email es obligatorio." }, 400);
+  const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
+  const authCaptchaToken =
+    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
+  if (!email || email.length > 254 || !/^[^\s@%_]+@[^\s@%_]+\.[^\s@%_]+$/.test(email)) {
+    return jsonResponse(corsHeaders, GENERIC_SUCCESS);
   }
 
-  const ct = clientTracking(body);
-
-  const { data: allowed, error: allowErr } = await svc
-    .from("allowed_emails")
-    .select("role, active, tenant_id")
-    .ilike("email", email)
-    .maybeSingle();
-  if (allowErr) throw allowErr;
-
-  const genericSuccess = jsonResponse(corsHeaders, {
-    success: true,
-    message: "Si el correo existe, recibirá un enlace de restablecimiento en breve.",
-  });
-
-  if (!allowed || !allowed.active) {
-    return genericSuccess;
+  const { ip } = clientInfo(req);
+  // Combine account and proxy-derived IP so one caller cannot freeze resets for
+  // a worker from every network. The caller receives the same payload either way.
+  const rateLimitKey = workerLoginRateLimitKey(`reset:${email}`, ip);
+  const rateLimitAllowed = await checkRateLimit(svc, rateLimitKey);
+  if (!rateLimitAllowed) {
+    return jsonResponse(corsHeaders, GENERIC_SUCCESS);
+  }
+  await recordLoginAttempt(svc, rateLimitKey, ip, false, null);
+  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
+    return jsonResponse(corsHeaders, GENERIC_SUCCESS);
   }
 
-  const referer = req.headers.get("referer");
-  const appOrigin = referer ? new URL(referer).origin : new URL(req.url).origin;
-  const isWorker = allowed.role === "worker";
-  const defaultPath = isWorker ? "/trabajador" : "/admin";
-  const redirectTo = `${appOrigin}${defaultPath}`;
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const anonClient = createClient(supabaseUrl, anonKey);
-
-  const { error: resetErr } = await anonClient.auth.resetPasswordForEmail(email, {
-    redirectTo,
-  });
-  if (resetErr) {
-    await logAction(svc, req, { email, action: "worker.request_reset_failed", entity: "auth", entity_label: email, details: { error: resetErr.message }, tenantId: allowed?.tenant_id ?? null, ...ct });
-    throw resetErr;
+  const redirectTo = getSafeRedirectUrl();
+  if (!redirectTo) {
+    // Configuration is intentionally fail-closed, but the public response is
+    // indistinguishable from a successful reset request.
+    await logAction(svc, req, {
+      email: "unknown",
+      action: "worker.request_reset_unavailable",
+      entity: "auth",
+      details: { reason: "redirect_not_configured" },
+    });
+    return jsonResponse(corsHeaders, GENERIC_SUCCESS);
   }
 
-  await logAction(svc, req, { email, action: "worker.request_reset", entity: "auth", entity_label: email, tenantId: allowed?.tenant_id ?? null, ...ct });
+  try {
+    const { data: allowed, error: allowErr } = await svc
+      .from("allowed_emails")
+      .select("role, active, tenant_id")
+      .ilike("email", email)
+      .maybeSingle();
+    if (allowErr) throw allowErr;
 
-  return genericSuccess;
+    if (allowed?.active && allowed.role === "worker") {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+      if (!supabaseUrl || !anonKey) throw new Error("SUPABASE_AUTH_NOT_CONFIGURED");
+      const anonClient = createClient(supabaseUrl, anonKey);
+      const { error } = await anonClient.auth.resetPasswordForEmail(email, {
+        redirectTo,
+        captchaToken: authCaptchaToken,
+      });
+      if (error) throw error;
+    }
+
+    await logAction(svc, req, {
+      email: "unknown",
+      action: "worker.request_reset",
+      entity: "auth",
+      tenantId: allowed?.tenant_id ?? null,
+    });
+  } catch {
+    // Do not expose whether the identity exists or whether Supabase rejected it.
+    await logAction(svc, req, {
+      email: "unknown",
+      action: "worker.request_reset_failed",
+      entity: "auth",
+      details: { reason: "provider_error" },
+    });
+  }
+
+  return jsonResponse(corsHeaders, GENERIC_SUCCESS);
 }
