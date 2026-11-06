@@ -373,6 +373,48 @@ export function DashboardPreview() {
                     </p>
                   </div>
                 </div>
+                <dl className="mt-4 grid grid-cols-3 gap-2">
+                  {activeView.stats.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
+                    >
+                      <dt className="text-[10px] font-medium leading-3 text-slate-500">
+                        {stat.label}
+                      </dt>
+                      <dd className="mt-1 text-base font-bold leading-5 text-slate-900">
+                        {stat.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <ul className="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                  {activeView.records.map((record) => (
+                    <li key={record.name} className="flex items-center gap-2.5 px-3 py-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-slate-800">
+                          {record.name}
+                        </p>
+                        <p className="truncate text-[11px] leading-4 text-slate-500">
+                          {record.detail}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          record.tone === "ok"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : record.tone === "warn"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-blue-50 text-blue-700"
+                        }`}
+                      >
+                        {record.status}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
                 <ul className="mt-4 divide-y divide-slate-100 border-t border-slate-100">
                   {activeView.modules.map((module) => (
                     <li
@@ -389,7 +431,7 @@ export function DashboardPreview() {
                   ))}
                 </ul>
                 <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] leading-4 text-slate-600">
-                  Alcance ilustrativo. Los módulos y accesos se configuran por empresa.
+                  Datos de demostración. Los módulos y accesos se configuran por empresa.
                 </p>
               </section>
             </div>
