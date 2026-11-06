@@ -85,7 +85,9 @@ export function DashboardPreview() {
 
   // La tapa parte cerrada antes del primer pintado para que la transición la abra.
   useLayoutEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
       setOpening(false);
       return;
