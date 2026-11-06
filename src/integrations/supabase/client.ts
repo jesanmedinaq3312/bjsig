@@ -3,11 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { brokeredPreviewStorage } from "./previewAuthStorage";
 
-// Fall back to harmless placeholders so the app still boots (and can show a
-// clear configuration message) when the Supabase env vars are not set yet.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
+// The publishable key is safe in browser code. Environment variables still take precedence.
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -35,9 +36,6 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     return fetch(input, { ...init, headers });
   };
 }
-
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   global: {

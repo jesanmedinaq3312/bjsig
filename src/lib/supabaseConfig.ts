@@ -15,9 +15,9 @@ const configuredKey = (
   "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC"
 ).trim();
 
-// Harmless placeholders keep the application bundle/build loadable; they do
-// not route an unconfigured development environment to production.
-export const SUPABASE_URL = configuredUrl || "https://placeholder.supabase.co";
-export const SUPABASE_ANON_KEY = configuredKey || "placeholder-anon-key";
+// The publishable key is safe in browser code. Environment variables still take precedence.
+export const SUPABASE_URL = configuredUrl || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
+export const SUPABASE_ANON_KEY =
+  configuredKey || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
 export const SUPABASE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
-export const SUPABASE_CONFIGURED = Boolean(configuredUrl && configuredKey);
+export const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
