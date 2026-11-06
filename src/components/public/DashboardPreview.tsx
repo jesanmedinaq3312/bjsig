@@ -12,13 +12,53 @@ import {
   Users,
 } from "lucide-react";
 
-const views = [
+type DemoRecord = {
+  name: string;
+  detail: string;
+  status: string;
+  tone: "ok" | "warn" | "info";
+};
+
+const views: Array<{
+  label: string;
+  icon: typeof BarChart3;
+  title: string;
+  description: string;
+  modules: string[];
+  stats: Array<{ label: string; value: string }>;
+  records: DemoRecord[];
+}> = [
   {
     label: "Panorama",
     icon: BarChart3,
     title: "La operación, en contexto",
     description: "Consulta la actividad y los pendientes visibles para la empresa seleccionada.",
     modules: ["Dashboard", "Historial y Calendario", "Indicadores ACHS / CPHS"],
+    stats: [
+      { label: "Asistencia hoy", value: "94%" },
+      { label: "Alertas activas", value: "3" },
+      { label: "Docs. por vencer", value: "7" },
+    ],
+    records: [
+      {
+        name: "Turno mañana · Planta Norte",
+        detail: "38 de 40 trabajadores presentes",
+        status: "Al día",
+        tone: "ok",
+      },
+      {
+        name: "Contrato de J. Pérez",
+        detail: "Vence en 12 días · renovación pendiente",
+        status: "Por vencer",
+        tone: "warn",
+      },
+      {
+        name: "Indicadores ACHS",
+        detail: "Tasa de accidentalidad actualizada",
+        status: "Informe",
+        tone: "info",
+      },
+    ],
   },
   {
     label: "Empresas",
@@ -26,6 +66,31 @@ const views = [
     title: "La gestión, organizada por empresa",
     description: "Ordena sucursales, equipos y responsables dentro de cada organización.",
     modules: ["Empresas y sucursales", "Departamentos", "Organigrama", "Roles y permisos"],
+    stats: [
+      { label: "Empresas activas", value: "4" },
+      { label: "Sucursales", value: "11" },
+      { label: "Trabajadores", value: "286" },
+    ],
+    records: [
+      {
+        name: "Constructora Andina SpA",
+        detail: "5 sucursales · 142 trabajadores",
+        status: "Activa",
+        tone: "ok",
+      },
+      {
+        name: "Logística del Sur Ltda.",
+        detail: "3 sucursales · 89 trabajadores",
+        status: "Activa",
+        tone: "ok",
+      },
+      {
+        name: "Organigrama · Planta Norte",
+        detail: "Actualizado por RR. HH. esta semana",
+        status: "Revisión",
+        tone: "info",
+      },
+    ],
   },
   {
     label: "Personas",
@@ -39,6 +104,31 @@ const views = [
       "Capacitaciones",
       "Portal del Trabajador",
     ],
+    stats: [
+      { label: "Turnos esta semana", value: "312" },
+      { label: "Vacaciones activas", value: "9" },
+      { label: "Solicitudes", value: "5" },
+    ],
+    records: [
+      {
+        name: "María González · Vacaciones",
+        detail: "12 al 26 de febrero · aprobada",
+        status: "Aprobada",
+        tone: "ok",
+      },
+      {
+        name: "Turno noche · Faena 2",
+        detail: "Falta asignar 1 reemplazo",
+        status: "Pendiente",
+        tone: "warn",
+      },
+      {
+        name: "Capacitación altura física",
+        detail: "24 inscritos · viernes 09:00",
+        status: "Programada",
+        tone: "info",
+      },
+    ],
   },
   {
     label: "Terreno",
@@ -50,6 +140,31 @@ const views = [
       "Incidentes DS 44",
       "EPP & Bodega",
       "Charlas de Seguridad DIT",
+    ],
+    stats: [
+      { label: "Controles hoy", value: "18" },
+      { label: "EPP entregados", value: "46" },
+      { label: "Incidentes abiertos", value: "1" },
+    ],
+    records: [
+      {
+        name: "Entrega EPP · Cuadrilla 3",
+        detail: "12 cascos y guantes con firma digital",
+        status: "Entregado",
+        tone: "ok",
+      },
+      {
+        name: "Incidente DS 44 · Faena 2",
+        detail: "Investigación en curso · sin lesiones",
+        status: "En curso",
+        tone: "warn",
+      },
+      {
+        name: "Charla DIT · Uso de arnés",
+        detail: "15 asistentes registrados con QR",
+        status: "Realizada",
+        tone: "info",
+      },
     ],
   },
   {
@@ -63,6 +178,31 @@ const views = [
       "Documentación Normativa",
       "Canal de Denuncias Ley Karin",
     ],
+    stats: [
+      { label: "Documentos vigentes", value: "128" },
+      { label: "Por vencer (30 días)", value: "6" },
+      { label: "Denuncias activas", value: "2" },
+    ],
+    records: [
+      {
+        name: "Matriz IPER · Planta Norte",
+        detail: "Versión 4 aprobada y vigente",
+        status: "Vigente",
+        tone: "ok",
+      },
+      {
+        name: "Protocolo MINSAL",
+        detail: "Vence en 18 días · actualizar firma",
+        status: "Por vencer",
+        tone: "warn",
+      },
+      {
+        name: "Caso Ley Karin #2026-014",
+        detail: "Derivado a investigación externa",
+        status: "En curso",
+        tone: "info",
+      },
+    ],
   },
   {
     label: "Trazabilidad",
@@ -70,6 +210,31 @@ const views = [
     title: "Permisos claros y actividad trazable",
     description: "Separa accesos por rol y conserva contexto para controles internos.",
     modules: ["Configuración", "Registro de Actividad", "MFA administrativo", "Datos por empresa"],
+    stats: [
+      { label: "Usuarios con MFA", value: "100%" },
+      { label: "Roles definidos", value: "14" },
+      { label: "Eventos hoy", value: "231" },
+    ],
+    records: [
+      {
+        name: "Admin. empresa · R. Soto",
+        detail: "Aprobó 3 solicitudes de vacaciones",
+        status: "09:42",
+        tone: "info",
+      },
+      {
+        name: "Prevencionista · L. Díaz",
+        detail: "Cerró incidente DS 44 #118",
+        status: "09:15",
+        tone: "ok",
+      },
+      {
+        name: "Intento de acceso sin MFA",
+        detail: "Bloqueado · se notificó al usuario",
+        status: "Bloqueado",
+        tone: "warn",
+      },
+    ],
   },
 ];
 
