@@ -6,13 +6,13 @@
 const configuredUrl = (
   import.meta.env.VITE_SUPABASE_URL ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
-  ""
+  "https://uoozvmrkbrbvbhsuphhm.supabase.co"
 ).trim();
 const configuredKey = (
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  ""
+  "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC"
 ).trim();
 
 // Harmless placeholders keep the application bundle/build loadable; they do

@@ -5,9 +5,9 @@ import { brokeredPreviewStorage } from "./previewAuthStorage";
 
 // Fall back to harmless placeholders so the app still boots (and can show a
 // clear configuration message) when the Supabase env vars are not set yet.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://placeholder.supabase.co";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "placeholder-anon-key";
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
