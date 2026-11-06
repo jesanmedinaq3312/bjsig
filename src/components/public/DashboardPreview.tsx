@@ -293,18 +293,6 @@ export function DashboardPreview() {
         className={`landing-device-frame landing-device-frame--laptop${opening ? " landing-laptop-opening" : ""}`}
       >
         <div className="landing-preview" ref={lidRef}>
-          <div className="landing-window-bar flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs text-white/75">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
-                B
-              </span>
-              <span className="font-semibold">BJSIGAPP · panel de gestión</span>
-            </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-white/70">
-              <Laptop size={12} aria-hidden="true" /> Vista en laptop
-            </span>
-          </div>
-
           <div className="landing-laptop-viewport grid min-h-[360px] grid-cols-1 bg-slate-100 sm:grid-cols-[150px_1fr]">
             <nav
               aria-label="Vistas del panel ilustrativo"
