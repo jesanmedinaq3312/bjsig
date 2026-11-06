@@ -739,7 +739,10 @@ export function Layout({
 
       <div className={`flex-1 ${hideSidebar ? "" : mainOffsetClass} flex flex-col min-w-0`}>
         {/* Topbar */}
-        <header className="sticky top-0 z-20 glass-topbar px-4 lg:px-8 py-3 flex items-center justify-between">
+        <header
+          className="sticky top-0 z-20 glass-topbar bg-cover bg-center px-4 lg:px-8 py-3 flex items-center justify-between"
+          style={{ backgroundImage: "var(--brand-header-image)" }}
+        >
           <div className={`flex items-center gap-3 ${sidebarPos === "right" ? "order-2" : ""}`}>
             <div>
               <h1 className="text-base lg:text-lg font-semibold text-slate-800 dark:text-slate-100">

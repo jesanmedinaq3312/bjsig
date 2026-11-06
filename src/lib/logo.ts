@@ -20,11 +20,19 @@ function getLogoPath(tenantId: string): string {
 type Branding = {
   logoUrl: string;
   companyName: string;
+  faviconUrl: string;
+  headerImageUrl: string;
+  heroImageUrl: string;
+  heroOpacity: number;
 };
 
 let branding: Branding = {
   logoUrl: DEFAULT_COMPANY_LOGO_URL,
   companyName: "Empresa",
+  faviconUrl: "",
+  headerImageUrl: "",
+  heroImageUrl: "",
+  heroOpacity: 0.8,
 };
 let loaded = false;
 let fallbackCompanyName = "Empresa";
@@ -45,10 +53,18 @@ const listeners = new Set<() => void>();
 function applyDynamicBranding(b: Branding): void {
   if (typeof document === "undefined") return;
   document.title = `${b.companyName} — SIG`;
-  if (b.logoUrl) {
-    const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (iconLink) iconLink.setAttribute("href", b.logoUrl);
-  }
+  const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (iconLink) iconLink.setAttribute("href", b.faviconUrl || b.logoUrl || "/favicon.ico");
+  const root = document.documentElement;
+  root.style.setProperty(
+    "--brand-header-image",
+    b.headerImageUrl ? `url("${b.headerImageUrl}")` : "none",
+  );
+  root.style.setProperty(
+    "--brand-hero-image",
+    b.heroImageUrl ? `url("${b.heroImageUrl}")` : "none",
+  );
+  root.style.setProperty("--brand-hero-opacity", String(b.heroOpacity));
 }
 
 function notify(): void {
@@ -84,6 +100,10 @@ export async function loadCompanyBranding(force = false): Promise<void> {
       branding = {
         logoUrl: logoUrl?.trim() || DEFAULT_COMPANY_LOGO_URL,
         companyName: companyName?.trim() || fallbackCompanyName,
+        faviconUrl: "",
+        headerImageUrl: "",
+        heroImageUrl: "",
+        heroOpacity: 0.8,
       };
       loaded = true;
       applyDynamicBranding(branding);
@@ -104,7 +124,7 @@ export async function loadTenantBranding(tenantId: string): Promise<void> {
   try {
     const { data, error } = await supabase
       .from("tenant_branding")
-      .select("company_name, logo_url, color_theme, glass_opacity")
+      .select("company_name, logo_url, color_theme, glass_opacity, visual_assets")
       .eq("tenant_id", tenantId)
       .maybeSingle();
     if (error) throw error;
@@ -114,9 +134,10 @@ export async function loadTenantBranding(tenantId: string): Promise<void> {
       logo_url?: string | null;
       color_theme?: string | null;
       glass_opacity?: string | null;
+      visual_assets?: VisualAssets | null;
     } | null;
     if (row) {
-      setBrandingCache(row.logo_url ?? null, row.company_name ?? null);
+      setBrandingCache(row.logo_url ?? null, row.company_name ?? null, row.visual_assets);
       applyTenantTheme(row.color_theme, row.glass_opacity);
       return;
     }
@@ -145,11 +166,12 @@ export async function loadTenantBrandingBySlug(slug: string): Promise<boolean> {
     logo_url?: string | null;
     color_theme?: string | null;
     glass_opacity?: string | null;
+    visual_assets?: VisualAssets | null;
   } | null;
   if (!row) return false;
 
   setBrandingFallbackName(row.company_name);
-  setBrandingCache(row.logo_url ?? null, row.company_name ?? null);
+  setBrandingCache(row.logo_url ?? null, row.company_name ?? null, row.visual_assets);
   applyTenantTheme(row.color_theme, row.glass_opacity);
   return true;
 }
@@ -172,10 +194,32 @@ export function getCompanyName(): string {
   return branding.companyName;
 }
 
-export function setBrandingCache(logoUrl: string | null, companyName: string | null): void {
+export type VisualAssets = {
+  favicon_url?: string;
+  header_image_url?: string;
+  hero_image_url?: string;
+  hero_opacity?: number;
+};
+
+function normalizeVisualAssets(assets?: VisualAssets | null) {
+  const opacity = Number(assets?.hero_opacity);
+  return {
+    faviconUrl: assets?.favicon_url?.trim() || "",
+    headerImageUrl: assets?.header_image_url?.trim() || "",
+    heroImageUrl: assets?.hero_image_url?.trim() || "",
+    heroOpacity: Number.isFinite(opacity) && opacity >= 0 && opacity <= 1 ? opacity : 0.8,
+  };
+}
+
+export function setBrandingCache(
+  logoUrl: string | null,
+  companyName: string | null,
+  visualAssets?: VisualAssets | null,
+): void {
   branding = {
     logoUrl: logoUrl?.trim() || DEFAULT_COMPANY_LOGO_URL,
     companyName: companyName?.trim() || fallbackCompanyName,
+    ...normalizeVisualAssets(visualAssets),
   };
   loaded = true;
   applyDynamicBranding(branding);

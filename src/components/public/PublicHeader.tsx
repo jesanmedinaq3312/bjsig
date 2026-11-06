@@ -16,7 +16,10 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="public-header sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 text-white backdrop-blur-sm">
+    <header
+      className="public-header sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 bg-cover bg-center text-white backdrop-blur-sm"
+      style={{ backgroundImage: "var(--brand-header-image)" }}
+    >
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a
           href="/"

@@ -152,7 +152,13 @@ export function PublicLanding() {
       </a>
       <PublicHeader />
       <main id="contenido">
-        <section className="public-hero bg-slate-950 px-4 pb-16 pt-14 text-white sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24">
+        <section
+          className="public-hero bg-slate-950 bg-cover bg-center px-4 pb-16 pt-14 text-white sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(2,6,23,var(--brand-hero-opacity)),rgba(2,6,23,var(--brand-hero-opacity))),var(--brand-hero-image)",
+          }}
+        >
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <div className="max-w-2xl">
               <h1 className="public-h1 text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">

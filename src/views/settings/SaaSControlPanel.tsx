@@ -233,6 +233,12 @@ interface TenantBranding {
   logo_url: string;
   color_theme: string;
   glass_opacity: string;
+  visual_assets: {
+    favicon_url?: string;
+    header_image_url?: string;
+    hero_image_url?: string;
+    hero_opacity?: number;
+  };
   landing_enabled?: boolean;
   landing_cta_label?: string;
 }
@@ -943,6 +949,7 @@ export function SaaSControlPanel() {
       _glass_opacity: selectedBranding.glass_opacity,
       _landing_enabled: selectedBranding.landing_enabled ?? true,
       _landing_cta_label: selectedBranding.landing_cta_label || "Solicitar una demo",
+      _visual_assets: selectedBranding.visual_assets ?? {},
     });
     if (error) setMessage(error.message);
     else {
@@ -3315,6 +3322,81 @@ export function SaaSControlPanel() {
                       className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     />
                   </label>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                    <div className="mb-3">
+                      <h4 className="text-xs font-black text-slate-800">Recursos visuales</h4>
+                      <p className="mt-1 text-[11px] font-normal leading-5 text-slate-500">
+                        Enlaza imágenes públicas por componente. Se guardan por empresa y se aplican
+                        al volver a iniciar sesión.
+                      </p>
+                    </div>
+                    {(
+                      [
+                        ["favicon_url", "Favicon", "https://.../favicon.png"],
+                        ["header_image_url", "Imagen del header", "https://.../header.jpg"],
+                        ["hero_image_url", "Imagen del hero", "https://.../hero.jpg"],
+                      ] as const
+                    ).map(([key, label, placeholder]) => (
+                      <label
+                        key={key}
+                        className="mb-3 block text-xs font-bold text-slate-700 last:mb-0"
+                      >
+                        {label}
+                        <input
+                          type="url"
+                          value={selectedBranding.visual_assets?.[key] ?? ""}
+                          onChange={(e) =>
+                            setBranding((rows) =>
+                              rows.map((row) =>
+                                row.tenant_id === selectedBranding.tenant_id
+                                  ? {
+                                      ...row,
+                                      visual_assets: {
+                                        ...(row.visual_assets ?? {}),
+                                        [key]: e.target.value,
+                                      },
+                                    }
+                                  : row,
+                              ),
+                            )
+                          }
+                          placeholder={placeholder}
+                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                        />
+                      </label>
+                    ))}
+                    <label className="mt-3 block text-xs font-bold text-slate-700">
+                      Opacidad de imagen hero
+                      <div className="mt-1 flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={selectedBranding.visual_assets?.hero_opacity ?? 0.8}
+                          onChange={(e) =>
+                            setBranding((rows) =>
+                              rows.map((row) =>
+                                row.tenant_id === selectedBranding.tenant_id
+                                  ? {
+                                      ...row,
+                                      visual_assets: {
+                                        ...(row.visual_assets ?? {}),
+                                        hero_opacity: Number(e.target.value),
+                                      },
+                                    }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="min-w-0 flex-1 accent-blue-600"
+                        />
+                        <span className="w-10 text-right font-mono text-[11px] text-slate-500">
+                          {Math.round((selectedBranding.visual_assets?.hero_opacity ?? 0.8) * 100)}%
+                        </span>
+                      </div>
+                    </label>
+                  </div>
                   <label className="block text-xs font-bold text-slate-700">
                     Paleta de color
                     <select
