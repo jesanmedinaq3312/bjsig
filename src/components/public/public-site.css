@@ -236,18 +236,26 @@
   border-radius: 1.2rem 1.2rem 0.35rem 0.35rem;
   background: linear-gradient(145deg, #334155, #1e293b 70%);
   box-shadow: 0 28px 70px -32px rgb(2 6 23 / 85%);
+  perspective: 1400px;
 }
 
 .landing-device-frame--laptop .landing-preview {
   border: 0;
   border-radius: 0.7rem 0.7rem 0.125rem 0.125rem;
   box-shadow: none;
+  backface-visibility: hidden;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.landing-laptop-opening .landing-preview {
+  transition: transform 1.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @media (min-width: 641px) {
   .landing-device-frame--laptop .landing-preview {
     display: flex;
-    height: 230px;
+    height: 276px;
     flex-direction: column;
   }
 
@@ -324,14 +332,6 @@
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .landing-device-frame {
-    transition: transform 220ms ease-out;
-  }
-
-  .landing-device-frame:hover {
-    transform: translateY(-3px);
-  }
-
   .landing-device-frame .landing-preview:hover {
     transform: none;
   }
