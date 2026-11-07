@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../../_shared/auth.ts";
 import { resolveTenantId } from "../_shared/auth.ts";
 
