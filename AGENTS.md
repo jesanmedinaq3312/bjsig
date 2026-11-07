@@ -10,4 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Preserve HTTP 429 retry metadata with the shared rate-limit error so worker authentication can pause submissions without weakening the remote service's protection.
+- Keep administrator CAPTCHA policy in a separate browser helper from strict worker Turnstile enforcement so temporary administrator changes cannot bypass worker endpoint protections.
 - Gate all activity-log requests, including unload requests, on the current token's AAL2 claim and on no prior server MFA_REQUIRED rejection of that same token; keep MFA_REQUIRED separate from permission denial; this avoids repeated pre-MFA requests and permanent audit shutdown while leaving server verification authoritative.

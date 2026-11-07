@@ -8,6 +8,7 @@ import { clearGpsCache, recordSessionStart, clearSessionStart } from "@/lib/gps"
 import { systemConfigRepo } from "@/lib/repositories";
 import { hasOperationalAccess } from "@/lib/authorization";
 import { getTurnstileToken } from "@/lib/turnstile";
+import { getAdminCaptchaToken } from "@/lib/adminCaptcha";
 
 const DEFAULT_TIMEOUT_MINUTES = 30;
 export type EmailOtpStatus = "not_required" | "pending" | "verified";
@@ -331,7 +332,7 @@ export function useAuth() {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const captchaToken = await getTurnstileToken("supabase_sign_in");
+    const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -359,7 +360,7 @@ export function useAuth() {
       tenantSlug?: string | null,
       options: { allowWorkerPortal?: boolean } = {},
     ) => {
-      const captchaToken = await getTurnstileToken("supabase_sign_in");
+      const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -542,7 +543,7 @@ export function useAuth() {
   }, []);
 
   const signInWithMagicLink = useCallback(async (email: string, shouldCreateUser = false) => {
-    const captchaToken = await getTurnstileToken("supabase_sign_in_otp");
+    const captchaToken = await getAdminCaptchaToken("supabase_sign_in_otp");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
@@ -560,7 +561,7 @@ export function useAuth() {
   }, []);
 
   const sendEmailOtp = useCallback(async (email: string) => {
-    const captchaToken = await getTurnstileToken("supabase_sign_in_otp");
+    const captchaToken = await getAdminCaptchaToken("supabase_sign_in_otp");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: { shouldCreateUser: false, captchaToken },
