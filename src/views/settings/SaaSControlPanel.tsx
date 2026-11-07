@@ -245,6 +245,12 @@ interface TenantBranding {
     header_image_url?: string;
     hero_image_url?: string;
     hero_opacity?: number;
+    icon_urls?: {
+      brand?: string;
+      hero?: string;
+      feature?: string;
+      cta?: string;
+    };
   };
   landing_enabled?: boolean;
   landing_cta_label?: string;
@@ -483,6 +489,7 @@ export function SaaSControlPanel() {
     | "devteam"
     | "cartera"
     | "branding"
+    | "landing"
     | "backup"
     | "governance"
   >("overview");
@@ -2104,6 +2111,7 @@ export function SaaSControlPanel() {
         { key: "containers", label: "Directorio" },
         { key: "settings", label: "Planes y módulos" },
         { key: "branding", label: "Identidad visual" },
+        { key: "landing", label: "Edición de landing" },
       ],
     },
     {
@@ -3242,6 +3250,248 @@ export function SaaSControlPanel() {
           </section>
         )}
 
+        {activeSection === "landing" && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-600">
+                    Editor público
+                  </p>
+                  <h2 className="mt-1 text-xl font-black text-slate-950">Edición de landing</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                    Controla los recursos visuales que se propagan a la landing principal y al
+                    acceso de cada empresa. Los enlaces se guardan en la identidad visual activa.
+                  </p>
+                </div>
+                <ImageOff size={22} className="text-blue-600" aria-hidden="true" />
+              </div>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.7fr)_minmax(0,1.3fr)]">
+              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 px-5 py-4">
+                  <h3 className="text-sm font-black text-slate-900">Empresa</h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Selecciona el contexto que quieres editar.
+                  </p>
+                </div>
+                <div className="divide-y divide-slate-100">
+                  {visibleBranding.map((item) => (
+                    <button
+                      key={item.tenant_id}
+                      type="button"
+                      onClick={() => setBrandingTenantId(item.tenant_id)}
+                      className={`flex w-full items-center gap-3 px-4 py-3 text-left ${selectedBranding?.tenant_id === item.tenant_id ? "bg-blue-50" : "hover:bg-slate-50"}`}
+                    >
+                      <CompanyIdentityAvatar
+                        name={item.tenant_name}
+                        logoUrl={item.logo_url}
+                        size={36}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <strong className="block truncate text-xs text-slate-800">
+                          {item.tenant_name}
+                        </strong>
+                        <span className="text-[10px] text-slate-500">
+                          {item.landing_enabled === false
+                            ? "Landing desactivada"
+                            : "Landing activa"}
+                        </span>
+                      </span>
+                      <ChevronRight size={15} className="text-slate-400" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {selectedBranding ? (
+                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <CompanyIdentityAvatar
+                      name={selectedBranding.tenant_name}
+                      logoUrl={selectedBranding.logo_url}
+                      size={48}
+                    />
+                    <div>
+                      <h3 className="text-base font-black text-slate-900">
+                        {selectedBranding.tenant_name}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Recursos visuales de la landing pública
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    {(
+                      [
+                        ["favicon_url", "Favicon del sitio", "https://.../favicon.png"],
+                        ["header_image_url", "Imagen del header", "https://.../header.jpg"],
+                        ["hero_image_url", "Imagen del hero", "https://.../hero.jpg"],
+                      ] as const
+                    ).map(([key, label, placeholder]) => (
+                      <label key={key} className="block text-xs font-bold text-slate-700">
+                        {label}
+                        <input
+                          type="url"
+                          value={selectedBranding.visual_assets?.[key] ?? ""}
+                          onChange={(e) =>
+                            setBranding((rows) =>
+                              rows.map((row) =>
+                                row.tenant_id === selectedBranding.tenant_id
+                                  ? {
+                                      ...row,
+                                      visual_assets: {
+                                        ...(row.visual_assets ?? {}),
+                                        [key]: e.target.value,
+                                      },
+                                    }
+                                  : row,
+                              ),
+                            )
+                          }
+                          placeholder={placeholder}
+                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                    <h4 className="text-xs font-black text-slate-800">Iconos propagados</h4>
+                    <p className="mt-1 text-[11px] leading-5 text-slate-500">
+                      Cada URL reemplaza el icono de respaldo en el componente indicado; si queda
+                      vacío se mantiene el icono del sistema.
+                    </p>
+                    <div className="mt-3 grid gap-3 md:grid-cols-2">
+                      {(
+                        [
+                          ["brand", "Icono de marca / header"],
+                          ["hero", "Icono del hero"],
+                          ["feature", "Icono de beneficios"],
+                          ["cta", "Icono de llamada a la acción"],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <label key={key} className="block text-xs font-bold text-slate-700">
+                          {label}
+                          <input
+                            type="url"
+                            value={selectedBranding.visual_assets?.icon_urls?.[key] ?? ""}
+                            onChange={(e) =>
+                              setBranding((rows) =>
+                                rows.map((row) =>
+                                  row.tenant_id === selectedBranding.tenant_id
+                                    ? {
+                                        ...row,
+                                        visual_assets: {
+                                          ...(row.visual_assets ?? {}),
+                                          icon_urls: {
+                                            ...(row.visual_assets?.icon_urls ?? {}),
+                                            [key]: e.target.value,
+                                          },
+                                        },
+                                      }
+                                    : row,
+                                ),
+                              )
+                            }
+                            placeholder="https://.../icon.svg"
+                            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="mt-4 block text-xs font-bold text-slate-700">
+                    Opacidad de la imagen hero
+                    <div className="mt-1 flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={selectedBranding.visual_assets?.hero_opacity ?? 0.8}
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? {
+                                    ...row,
+                                    visual_assets: {
+                                      ...(row.visual_assets ?? {}),
+                                      hero_opacity: Number(e.target.value),
+                                    },
+                                  }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="min-w-0 flex-1 accent-blue-600"
+                      />
+                      <span className="w-10 text-right font-mono text-[11px] text-slate-500">
+                        {Math.round((selectedBranding.visual_assets?.hero_opacity ?? 0.8) * 100)}%
+                      </span>
+                    </div>
+                  </label>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Texto del botón principal
+                      <input
+                        value={selectedBranding.landing_cta_label || "Solicitar una demo"}
+                        maxLength={100}
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? { ...row, landing_cta_label: e.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-bold text-slate-700">
+                      <span>
+                        <span className="block">Landing pública activa</span>
+                        <span className="mt-0.5 block font-normal text-slate-400">
+                          Permite mostrar esta identidad en la landing.
+                        </span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={selectedBranding.landing_enabled ?? true}
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? { ...row, landing_enabled: e.target.checked }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="h-5 w-5 accent-blue-600"
+                      />
+                    </label>
+                  </div>
+                  <Button
+                    className="mt-5"
+                    onClick={() => void saveBranding()}
+                    disabled={brandingSaving}
+                  >
+                    {brandingSaving ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <CheckCircle2 size={14} />
+                    )}{" "}
+                    Guardar edición de landing
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex min-h-64 items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
+                  No hay empresas con identidad visual disponible.
+                </div>
+              )}
+            </div>
+          </section>
+        )}
         {activeSection === "branding" && (
           <section className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">

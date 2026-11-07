@@ -6,6 +6,7 @@ import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { getPublicModulePath } from "@/lib/publicModules";
+import { useCompanyBranding } from "@/lib/logo";
 
 const demoUrl =
   "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
@@ -145,6 +146,8 @@ function SoftwareStructuredData() {
 }
 
 export function PublicLanding() {
+  const { iconUrls } = useCompanyBranding();
+
   return (
     <div className="public-site min-h-screen bg-white text-slate-900">
       <a href="#contenido" className="public-skip-link">
@@ -161,6 +164,13 @@ export function PublicLanding() {
         >
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <div className="max-w-2xl">
+              {iconUrls.hero && (
+                <img
+                  src={iconUrls.hero}
+                  alt=""
+                  className="mb-5 h-12 w-12 rounded-xl object-cover"
+                />
+              )}
               <h1 className="public-h1 text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
                 Software multiempresa de RR. HH. y operaciones
               </h1>
@@ -180,7 +190,12 @@ export function PublicLanding() {
                   href="/trabajador"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white/90 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
                 >
-                  <ShieldCheck size={16} aria-hidden="true" /> Acceso trabajador
+                  {iconUrls.hero ? (
+                    <img src={iconUrls.hero} alt="" className="h-4 w-4 rounded object-cover" />
+                  ) : (
+                    <ShieldCheck size={16} aria-hidden="true" />
+                  )}{" "}
+                  Acceso trabajador
                 </a>
               </div>
               <ul
@@ -190,7 +205,16 @@ export function PublicLanding() {
                 {["Gestión por empresa", "Módulos configurables", "Permisos por perfil"].map(
                   (item) => (
                     <li key={item} className="inline-flex items-center gap-2">
-                      <Check size={15} className="text-cyan-300" aria-hidden="true" /> {item}
+                      {iconUrls.feature ? (
+                        <img
+                          src={iconUrls.feature}
+                          alt=""
+                          className="h-4 w-4 rounded object-cover"
+                        />
+                      ) : (
+                        <Check size={15} className="text-cyan-300" aria-hidden="true" />
+                      )}{" "}
+                      {item}
                     </li>
                   ),
                 )}
@@ -366,7 +390,12 @@ export function PublicLanding() {
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-cyan-300 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
               >
-                Abrir WhatsApp <ArrowUpRight size={15} aria-hidden="true" />
+                Abrir WhatsApp{" "}
+                {iconUrls.cta ? (
+                  <img src={iconUrls.cta} alt="" className="h-4 w-4 rounded object-cover" />
+                ) : (
+                  <ArrowUpRight size={15} aria-hidden="true" />
+                )}
               </a>
             </div>
             <div className="rounded-2xl bg-white p-5 text-slate-900 sm:p-8">

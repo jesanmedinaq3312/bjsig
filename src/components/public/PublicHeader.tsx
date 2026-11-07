@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, Menu, ShieldCheck, X } from "lucide-react";
+import { useCompanyBranding } from "@/lib/logo";
 
 type PublicHeaderProps = {
   active?: "home" | "module";
@@ -14,6 +15,7 @@ const navigation = [
 
 export function PublicHeader({ active = "home" }: PublicHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { iconUrls } = useCompanyBranding();
 
   return (
     <header
@@ -26,8 +28,12 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
           aria-label="BJSIGAPP, página de inicio"
           className="inline-flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
-            <ShieldCheck size={20} aria-hidden="true" />
+          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-white">
+            {iconUrls.brand ? (
+              <img src={iconUrls.brand} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <ShieldCheck size={20} aria-hidden="true" />
+            )}
           </span>
           <span className="text-base font-bold tracking-tight sm:text-lg">BJSIGAPP</span>
         </a>

@@ -24,6 +24,12 @@ type Branding = {
   headerImageUrl: string;
   heroImageUrl: string;
   heroOpacity: number;
+  iconUrls: {
+    brand: string;
+    hero: string;
+    feature: string;
+    cta: string;
+  };
 };
 
 let branding: Branding = {
@@ -33,6 +39,7 @@ let branding: Branding = {
   headerImageUrl: "",
   heroImageUrl: "",
   heroOpacity: 0.8,
+  iconUrls: { brand: "", hero: "", feature: "", cta: "" },
 };
 let loaded = false;
 let fallbackCompanyName = "Empresa";
@@ -104,6 +111,7 @@ export async function loadCompanyBranding(force = false): Promise<void> {
         headerImageUrl: "",
         heroImageUrl: "",
         heroOpacity: 0.8,
+        iconUrls: { brand: "", hero: "", feature: "", cta: "" },
       };
       loaded = true;
       applyDynamicBranding(branding);
@@ -199,6 +207,12 @@ export type VisualAssets = {
   header_image_url?: string;
   hero_image_url?: string;
   hero_opacity?: number;
+  icon_urls?: {
+    brand?: string;
+    hero?: string;
+    feature?: string;
+    cta?: string;
+  };
 };
 
 function normalizeVisualAssets(assets?: VisualAssets | null) {
@@ -208,6 +222,12 @@ function normalizeVisualAssets(assets?: VisualAssets | null) {
     headerImageUrl: assets?.header_image_url?.trim() || "",
     heroImageUrl: assets?.hero_image_url?.trim() || "",
     heroOpacity: Number.isFinite(opacity) && opacity >= 0 && opacity <= 1 ? opacity : 0.8,
+    iconUrls: {
+      brand: assets?.icon_urls?.brand?.trim() || "",
+      hero: assets?.icon_urls?.hero?.trim() || "",
+      feature: assets?.icon_urls?.feature?.trim() || "",
+      cta: assets?.icon_urls?.cta?.trim() || "",
+    },
   };
 }
 
