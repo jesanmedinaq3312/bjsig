@@ -48,7 +48,9 @@ function loadTurnstile(): Promise<TurnstileApi> {
 export async function getTurnstileToken(action: string): Promise<string> {
   const sitekey = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim();
   if (!sitekey) {
-    throw new Error("La verificación de seguridad no está configurada. Contacta al administrador.");
+    // Temporary demo mode: Supabase Auth remains responsible for authentication.
+    // Restore a real Turnstile site key before using this deployment in production.
+    return "";
   }
 
   const turnstile = await loadTurnstile();
