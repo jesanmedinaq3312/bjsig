@@ -484,6 +484,7 @@ export function SaaSControlPanel() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [showLandingPreview, setShowLandingPreview] = useState(false);
   const [activeSection, setActiveSection] = useState<
     | "overview"
     | "containers"
@@ -3269,7 +3270,14 @@ export function SaaSControlPanel() {
                     acceso de cada empresa. Los enlaces se guardan en la identidad visual activa.
                   </p>
                 </div>
-                <ImageOff size={22} className="text-blue-600" aria-hidden="true" />
+                <button
+                  type="button"
+                  onClick={() => setShowLandingPreview((visible) => !visible)}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                >
+                  <Eye size={15} aria-hidden="true" />
+                  {showLandingPreview ? "Ocultar vista previa" : "Previsualizar landing"}
+                </button>
               </div>
             </div>
             <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.7fr)_minmax(0,1.3fr)]">
@@ -3564,6 +3572,75 @@ export function SaaSControlPanel() {
                 </div>
               )}
             </div>
+            {showLandingPreview && selectedBranding && (
+              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">
+                      Vista previa en tiempo real
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Muestra los cambios actuales del formulario. Todavía no se publican hasta
+                      guardar.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">
+                    Borrador local
+                  </span>
+                </div>
+                <div
+                  className="relative min-h-[380px] overflow-hidden bg-slate-950 bg-cover bg-center px-6 py-8 text-white sm:px-10 sm:py-12"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(2,6,23,${selectedBranding.visual_assets?.hero_opacity ?? 0.8}),rgba(2,6,23,${selectedBranding.visual_assets?.hero_opacity ?? 0.8})), ${selectedBranding.visual_assets?.hero_image_url ? `url("${selectedBranding.visual_assets.hero_image_url}")` : "none"}`,
+                  }}
+                >
+                  <div className="absolute inset-x-0 top-0 flex min-h-14 items-center border-b border-white/10 bg-slate-950/80 px-6 backdrop-blur-sm sm:px-10">
+                    <span className="flex items-center gap-2 text-sm font-bold">
+                      {selectedBranding.visual_assets?.icon_urls?.brand ? (
+                        <img
+                          src={selectedBranding.visual_assets.icon_urls.brand}
+                          alt=""
+                          className="h-7 w-7 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
+                          B
+                        </span>
+                      )}
+                      {selectedBranding.company_name || selectedBranding.tenant_name}
+                    </span>
+                  </div>
+                  <div className="relative z-10 mt-14 max-w-2xl">
+                    {selectedBranding.visual_assets?.icon_urls?.hero && (
+                      <img
+                        src={selectedBranding.visual_assets.icon_urls.hero}
+                        alt=""
+                        className="mb-4 h-10 w-10 rounded-xl object-cover"
+                      />
+                    )}
+                    <h4 className="text-3xl font-black leading-tight sm:text-4xl">
+                      {selectedBranding.visual_assets?.landing?.hero_title ||
+                        "Software multiempresa de RR. HH. y operaciones"}
+                    </h4>
+                    <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
+                      {selectedBranding.visual_assets?.landing?.hero_description ||
+                        "Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa."}
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-700 px-4 py-2 text-xs font-bold">
+                        {selectedBranding.visual_assets?.landing?.cta_label ||
+                          selectedBranding.landing_cta_label ||
+                          "Solicitar una demo"}
+                        <ArrowUpRight size={14} aria-hidden="true" />
+                      </span>
+                      <span className="inline-flex min-h-10 items-center rounded-xl border border-white/20 px-4 py-2 text-xs font-semibold text-white/85">
+                        Acceso trabajador
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         )}
         {activeSection === "branding" && (
