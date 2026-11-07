@@ -9,8 +9,12 @@ describe("DashboardPreview", () => {
 
     expect(frame).toHaveClass("landing-device-frame--laptop");
     expect(container.querySelector(".landing-laptop-viewport")).toBeInTheDocument();
-    expect(screen.getByText("Vista en laptop")).toBeVisible();
-    expect(screen.getByText("Interfaz adaptable a")).toBeVisible();
+    expect(
+      screen.getByRole("group", {
+        name: "Vista demostrativa e interactiva de BJSIGAPP en laptop",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "La operación, en contexto" })).toBeVisible();
 
     fireEvent.click(screen.getAllByRole("button", { name: "Personas" })[0]);
     expect(screen.getByRole("heading", { name: "Personas y procesos de RR. HH." })).toBeVisible();
