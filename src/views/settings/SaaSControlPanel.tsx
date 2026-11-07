@@ -44,6 +44,12 @@ import {
 import { Button, Modal, Select, Spinner } from "@/components/ui";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { supabase } from "@/lib/supabase";
+import {
+  addCalendarDays,
+  calculateBillingCollectionTotals,
+  getEffectiveBillingNoticeStatus,
+  toLocalDateString,
+} from "@/lib/saasBilling";
 import { audit } from "@/lib/audit";
 import { setActiveTenant } from "@/lib/tenant";
 import { buildAdminPath, navigateTo } from "@/lib/appRoute";
@@ -141,6 +147,7 @@ interface SaasBillingNotice {
   notes: string | null;
   pdf_generated_at: string | null;
   metadata: Record<string, unknown> | null;
+  created_at: string;
 }
 
 interface SaasInternalNotification {
@@ -207,7 +214,7 @@ interface SaasOnboardingDelivery {
 const CARTERA_COLUMNS =
   "id, tenant_id, payment_status, next_payment_date, monthly_amount, iva_amount, notes, company_rut, legal_representative_name, legal_representative_rut, billing_email, billing_phone, billing_address, payment_day";
 const BILLING_NOTICE_COLUMNS =
-  "id, tenant_id, account_id, folio, period_start, period_end, issue_date, due_date, status, description, net_amount, tax_rate, tax_amount, total_amount, recipient_name, recipient_rut, recipient_email, notes, pdf_generated_at, metadata";
+  "id, tenant_id, account_id, folio, period_start, period_end, issue_date, due_date, status, description, net_amount, tax_rate, tax_amount, total_amount, recipient_name, recipient_rut, recipient_email, notes, pdf_generated_at, metadata, created_at";
 const CONTRACT_COLUMNS =
   "id, tenant_id, title, contract_url, status, counterparty_name, counterparty_rut, signed_at, expires_at, notes";
 const NOTIFICATION_COLUMNS =
@@ -357,6 +364,14 @@ function formatShortDate(value: string | null | undefined): string {
   return new Intl.DateTimeFormat("es-CL", { day: "2-digit", month: "short" }).format(
     new Date(`${value}T12:00:00`),
   );
+}
+
+function billingNoticeStatusPresentation(status: string): { label: string; className: string } {
+  if (status === "paid") return { label: "Pagado", className: "bg-emerald-50 text-emerald-700" };
+  if (status === "overdue") return { label: "Vencido", className: "bg-red-50 text-red-700" };
+  if (status === "draft") return { label: "Borrador", className: "bg-slate-100 text-slate-600" };
+  if (status === "cancelled") return { label: "Anulado", className: "bg-slate-100 text-slate-500" };
+  return { label: "Pendiente", className: "bg-amber-50 text-amber-700" };
 }
 
 function formatBytes(value: number | null | undefined): string {
@@ -663,8 +678,8 @@ export function SaaSControlPanel() {
   );
   const billingMetrics = useMemo(() => {
     const today = new Date();
-    const horizon = new Date(today);
-    horizon.setDate(horizon.getDate() + 30);
+    const todayDate = toLocalDateString(today);
+    const horizonDate = toLocalDateString(addCalendarDays(today, 30));
     const activeAccounts = cartera.filter((account) => account.payment_status !== "paused");
     const monthlyNet = activeAccounts.reduce(
       (total, account) => total + Number(account.monthly_amount ?? 0),
@@ -675,24 +690,18 @@ export function SaaSControlPanel() {
       0,
     );
     const monthlyGross = monthlyNet + monthlyTax;
-    const upcoming = billingNotices.filter(
-      (notice) =>
-        ["pending", "draft"].includes(notice.status) &&
-        new Date(`${notice.due_date}T23:59:59`) >= today &&
-        new Date(`${notice.due_date}T23:59:59`) <= horizon,
-    );
+    const upcoming = billingNotices
+      .filter(
+        (notice) =>
+          notice.status === "pending" &&
+          notice.due_date >= todayDate &&
+          notice.due_date <= horizonDate,
+      )
+      .sort((left, right) => left.due_date.localeCompare(right.due_date));
     const overdue = billingNotices.filter(
-      (notice) =>
-        ["pending", "overdue"].includes(notice.status) &&
-        new Date(`${notice.due_date}T23:59:59`) < today,
+      (notice) => ["pending", "overdue"].includes(notice.status) && notice.due_date < todayDate,
     );
-    const paidTotal = billingNotices
-      .filter((notice) => notice.status === "paid")
-      .reduce((total, notice) => total + Number(notice.total_amount ?? 0), 0);
-    const billedTotal = billingNotices.reduce(
-      (total, notice) => total + Number(notice.total_amount ?? 0),
-      0,
-    );
+    const collectionTotals = calculateBillingCollectionTotals(billingNotices);
     return {
       activeAccounts: activeAccounts.length,
       monthlyNet,
@@ -700,8 +709,8 @@ export function SaaSControlPanel() {
       monthlyGross,
       upcoming,
       overdue,
-      paidTotal,
-      collectionRate: billedTotal > 0 ? paidTotal / billedTotal : null,
+      paidTotal: collectionTotals.paidTotal,
+      collectionRate: collectionTotals.collectionRate,
       projection90: monthlyGross * 3,
       projection365: monthlyGross * 12,
     };
@@ -813,7 +822,7 @@ export function SaaSControlPanel() {
         supabase
           .from("saas_billing_notices")
           .select(BILLING_NOTICE_COLUMNS)
-          .order("due_date", { ascending: true })
+          .order("created_at", { ascending: false })
           .limit(1000),
         supabase
           .from("saas_customer_notifications")
@@ -1837,8 +1846,7 @@ export function SaaSControlPanel() {
       tenant_id: account?.tenant_id ?? tenants[0]?.tenant_id ?? "",
       payment_status: account?.payment_status ?? "pending",
       next_payment_date:
-        account?.next_payment_date ??
-        new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+        account?.next_payment_date ?? toLocalDateString(addCalendarDays(new Date(), 30)),
       monthly_amount: String(amount),
       iva_amount: String(account?.iva_amount ?? Math.round(Number(amount) * 0.19)),
       notes: account?.notes ?? "",
@@ -1905,9 +1913,7 @@ export function SaaSControlPanel() {
     const issueDate = new Date();
     const periodStart = new Date(issueDate.getFullYear(), issueDate.getMonth(), 1);
     const periodEnd = new Date(issueDate.getFullYear(), issueDate.getMonth() + 1, 0);
-    const dueDate =
-      account.next_payment_date ??
-      new Date(issueDate.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+    const dueDate = account.next_payment_date ?? toLocalDateString(addCalendarDays(issueDate, 30));
     const net = Number(account.monthly_amount ?? 0);
     const tax = Number(account.iva_amount ?? Math.round(net * 0.19));
     const total = net + tax;
@@ -1916,9 +1922,9 @@ export function SaaSControlPanel() {
       tenant_id: account.tenant_id,
       account_id: account.id,
       folio,
-      period_start: periodStart.toISOString().slice(0, 10),
-      period_end: periodEnd.toISOString().slice(0, 10),
-      issue_date: issueDate.toISOString().slice(0, 10),
+      period_start: toLocalDateString(periodStart),
+      period_end: toLocalDateString(periodEnd),
+      issue_date: toLocalDateString(issueDate),
       due_date: dueDate,
       status: "pending",
       description: "Servicio SaaS y soporte mensual",
@@ -2401,7 +2407,7 @@ export function SaaSControlPanel() {
                   </strong>
                   <span className="mt-1 block text-[10px] text-emerald-800/70">
                     {billingMetrics.collectionRate === null
-                      ? "requiere avisos pagados"
+                      ? "sin avisos emitidos"
                       : `pagado acumulado ${formatClp(billingMetrics.paidTotal)}`}
                   </span>
                 </div>
@@ -3970,6 +3976,12 @@ export function SaaSControlPanel() {
                 <div className="mt-3 grid gap-2 lg:grid-cols-2">
                   {billingNotices.slice(0, 6).map((notice) => {
                     const tenant = tenants.find((item) => item.tenant_id === notice.tenant_id);
+                    const effectiveStatus = getEffectiveBillingNoticeStatus(
+                      notice.status,
+                      notice.due_date,
+                      toLocalDateString(new Date()),
+                    );
+                    const statusPresentation = billingNoticeStatusPresentation(effectiveStatus);
                     return (
                       <div
                         key={notice.id}
@@ -3985,13 +3997,9 @@ export function SaaSControlPanel() {
                           </span>
                         </div>
                         <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-bold ${notice.status === "paid" ? "bg-emerald-50 text-emerald-700" : notice.status === "overdue" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}
+                          className={`rounded-full px-2 py-1 text-[10px] font-bold ${statusPresentation.className}`}
                         >
-                          {notice.status === "paid"
-                            ? "Pagado"
-                            : notice.status === "overdue"
-                              ? "Vencido"
-                              : "Pendiente"}
+                          {statusPresentation.label}
                         </span>
                       </div>
                     );
