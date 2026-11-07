@@ -105,9 +105,18 @@ export function WorkerPortal({
   if (loading) return <Spinner />;
   if (error) return <EmptyState message={`Error: ${error}`} icon={<AlertTriangle size={32} />} />;
   if (!data) return <EmptyState message="No se pudieron cargar tus datos." />;
+  if (!data.profile) {
+    return (
+      <EmptyState
+        message="No se encontró la ficha laboral de esta persona en la empresa activa, por lo que no se puede mostrar su cargo. Verifica la asignación de empresa o contacta al administrador."
+        icon={<AlertTriangle size={32} />}
+      />
+    );
+  }
 
   const p = data.profile;
   const fullName = p?.full_name ?? "Trabajador";
+  const positionLabel = p.position.trim() || "Cargo no informado";
 
   const SENSITIVE_KEYWORDS = [
     "enfermedad",
@@ -177,7 +186,7 @@ export function WorkerPortal({
           <div className="text-center sm:text-left flex-1 min-w-0">
             <h2 className="text-lg font-semibold text-slate-800 truncate">{fullName}</h2>
             <p className="text-sm text-slate-500">
-              {p?.position ?? "Sin cargo"} · {p?.department_name ?? "Sin departamento"}
+              {positionLabel} · {p.department_name ?? "Sin departamento"}
             </p>
             <p className="text-xs text-slate-400 mt-0.5">
               RUT: {p?.rut ? formatRut(p.rut) : formatRut(workerRut)}

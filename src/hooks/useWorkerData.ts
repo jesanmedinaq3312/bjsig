@@ -406,8 +406,13 @@ export function useWorkerData(workerRut: string | null) {
   });
   // Los módulos secundarios pueden no estar habilitados o tener esquemas distintos
   // entre tenants; no deben bloquear el flujo principal de solicitudes del trabajador.
-  const loading = profileQuery.isLoading || requestsQuery.isLoading;
-  const error = requestsQuery.error;
+  const waitingForTenant = !!workerRut && tenantContext?.loading === true;
+  const loading = waitingForTenant || profileQuery.isLoading || requestsQuery.isLoading;
+  const tenantResolutionError =
+    workerRut !== null && workerRut.length > 0 && !tenantContext?.loading && !tenantId
+      ? new Error("No se pudo determinar la empresa activa para cargar tu perfil.")
+      : null;
+  const error = profileQuery.error ?? requestsQuery.error ?? tenantResolutionError;
 
   const data: WorkerPortalData | null = workerRut
     ? {
