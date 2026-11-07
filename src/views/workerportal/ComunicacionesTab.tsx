@@ -12,6 +12,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Badge, Button, EmptyState } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 import { circularAckRepo } from "@/lib/repositories";
 import type { WorkerPortalData } from "@/hooks/useWorkerData";
 import type { CircularCategory } from "@/lib/types";
@@ -64,6 +65,7 @@ export function ComunicacionesTab({
   data: WorkerPortalData;
   workerRut: string;
 }) {
+  const toast = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [localAcked, setLocalAcked] = useState<Set<string>>(
@@ -88,9 +90,10 @@ export function ComunicacionesTab({
       await circularAckRepo.ackCircular(circularId, workerRut);
       setLocalAcked((previous) => new Set(previous).add(circularId));
     } catch {
-      // el acuse se reintentará en la próxima interacción
+      toast.error("No se pudo confirmar la lectura", "Intenta nuevamente en unos momentos.");
+    } finally {
+      setBusyId(null);
     }
-    setBusyId(null);
   }
 
   function toggleCollapse(cat: string) {

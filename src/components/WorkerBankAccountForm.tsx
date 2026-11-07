@@ -54,7 +54,7 @@ export function WorkerBankAccountForm({
     async function load() {
       setLoading(true);
       try {
-        const data = await workerBankAccountRepo.getByWorker(normalizeRut(workerRut));
+        const data = await workerBankAccountRepo.getActiveByWorker(normalizeRut(workerRut));
         if (data) {
           const acct = data as unknown as BankAccount;
           setAccount(acct);

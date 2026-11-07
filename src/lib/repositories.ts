@@ -1297,9 +1297,11 @@ export class CircularRepository extends BaseRepository<Circular> {
   protected table = "circulars";
 
   async getAllWithAcks(): Promise<(Circular & { acks?: CircularAcknowledgment[] })[]> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
       .select("*, acks:circular_acknowledgments(*)")
+      .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
@@ -1309,9 +1311,10 @@ export class CircularRepository extends BaseRepository<Circular> {
   async createWithAcks(
     row: Partial<Circular>,
   ): Promise<Circular & { acks?: CircularAcknowledgment[] }> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
-      .insert(row)
+      .insert({ ...row, tenant_id: tenantId })
       .select("*, acks:circular_acknowledgments(*)")
       .single();
     if (error) throw new Error(error.message);
@@ -1319,7 +1322,12 @@ export class CircularRepository extends BaseRepository<Circular> {
   }
 
   async removeById(id: string): Promise<void> {
-    const { error } = await supabase.from(this.table).delete().eq("id", id);
+    const tenantId = await this.resolveTenant();
+    const { error } = await supabase
+      .from(this.table)
+      .delete()
+      .eq("tenant_id", tenantId)
+      .eq("id", id);
     if (error) throw new Error(error.message);
   }
 }
@@ -1328,9 +1336,11 @@ export class CircularAcknowledgmentRepository extends BaseRepository<CircularAck
   protected table = "circular_acknowledgments";
 
   async getByCircular(circularId: string): Promise<CircularAcknowledgment[]> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("circular_id", circularId)
       .order("acknowledged_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -1338,11 +1348,12 @@ export class CircularAcknowledgmentRepository extends BaseRepository<CircularAck
   }
 
   async ackCircular(circularId: string, workerRut: string): Promise<CircularAcknowledgment> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
       .upsert(
-        { circular_id: circularId, worker_rut: workerRut },
-        { onConflict: "circular_id,worker_rut" },
+        { tenant_id: tenantId, circular_id: circularId, worker_rut: workerRut },
+        { onConflict: "tenant_id,circular_id,worker_rut" },
       )
       .select()
       .single();
@@ -1487,9 +1498,11 @@ export class WorkerBankAccountRepository extends BaseRepository<WorkerBankAccoun
   protected table = "worker_bank_accounts";
 
   async getActiveByWorker(rut: string): Promise<WorkerBankAccount | null> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("worker_rut", rut)
       .eq("is_active", true)
       .maybeSingle();
@@ -1498,9 +1511,11 @@ export class WorkerBankAccountRepository extends BaseRepository<WorkerBankAccoun
   }
 
   async getByWorker(rut: string): Promise<WorkerBankAccount | null> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
       .select("*")
+      .eq("tenant_id", tenantId)
       .eq("worker_rut", rut)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -1510,9 +1525,13 @@ export class WorkerBankAccountRepository extends BaseRepository<WorkerBankAccoun
   async upsertForWorker(
     row: Partial<WorkerBankAccount> & { worker_rut: string; account_number: string },
   ): Promise<WorkerBankAccount> {
+    const tenantId = await this.resolveTenant();
     const { data, error } = await supabase
       .from(this.table)
-      .upsert(row, { onConflict: "worker_rut,account_number" })
+      .upsert(
+        { ...row, tenant_id: tenantId },
+        { onConflict: "tenant_id,worker_rut,account_number" },
+      )
       .select()
       .single();
     if (error) throw new Error(error.message);

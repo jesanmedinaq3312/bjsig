@@ -64,7 +64,7 @@ export function useWorkerData(workerRut: string | null) {
   const queryClient = useQueryClient();
   const tenantContext = useTenantOptional();
   const tenantId = tenantContext?.tenantId ?? null;
-  const enabled = !!workerRut && !!tenantId;
+  const enabled = !!workerRut && !!tenantId && tenantContext?.loading !== true;
 
   useEffect(() => {
     if (!tenantId) return;
@@ -374,31 +374,46 @@ export function useWorkerData(workerRut: string | null) {
   const circularsQuery = useQuery({
     queryKey: ["worker_circulars", tenantId, workerRut],
     queryFn: async () => {
-      const { data: workerData } = await supabase
+      const { data: workerData, error: workerError } = await supabase
         .from("workers")
         .select("department_id")
         .eq("tenant_id", tenantId!)
         .eq("rut", workerRut!)
         .maybeSingle();
+      if (workerError) throw new Error(workerError.message);
       const deptId = (workerData as Record<string, unknown> | null)?.department_id as string | null;
 
       const { data, error } = await supabase
         .from("circulars")
-        .select("*, acks:circular_acknowledgments(worker_rut)")
+        .select("*")
         .eq("tenant_id", tenantId!)
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw new Error(error.message);
 
-      const all = (data ?? []) as (Circular & { acks?: { worker_rut: string }[] })[];
+      const all = (data ?? []) as Circular[];
+      const ackedCircularIds = new Set<string>();
+      const circularIds = all.map((circular) => circular.id);
+      if (circularIds.length > 0) {
+        const { data: acknowledgments, error: acknowledgmentsError } = await supabase
+          .from("circular_acknowledgments")
+          .select("circular_id")
+          .eq("tenant_id", tenantId!)
+          .eq("worker_rut", workerRut!)
+          .in("circular_id", circularIds)
+          .limit(100);
+        if (acknowledgmentsError) throw new Error(acknowledgmentsError.message);
+        for (const acknowledgment of acknowledgments ?? []) {
+          if (acknowledgment.circular_id) ackedCircularIds.add(acknowledgment.circular_id);
+        }
+      }
       const visible = all.filter((c) => {
         if (c.target_audience === "todos") return true;
         return c.department_id === deptId;
       });
       return visible.map((c) => ({
         ...c,
-        acked: (c.acks ?? []).some((a) => a.worker_rut === workerRut),
-        acks: undefined,
+        acked: ackedCircularIds.has(c.id),
       })) as (Circular & { acked?: boolean })[];
     },
     enabled,
