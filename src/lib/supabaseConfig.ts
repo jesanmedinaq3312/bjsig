@@ -17,7 +17,6 @@ const configuredKey = (
 
 // The publishable key is safe in browser code. Environment variables still take precedence.
 export const SUPABASE_URL = configuredUrl || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
-export const SUPABASE_ANON_KEY =
-  configuredKey || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
+export const SUPABASE_ANON_KEY = configuredKey || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
 export const SUPABASE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 export const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);

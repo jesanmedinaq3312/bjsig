@@ -7,8 +7,7 @@ import { brokeredPreviewStorage } from "./previewAuthStorage";
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL || "https://uoozvmrkbrbvbhsuphhm.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_HsfNRe21AWHzL0liyUwYvQ_1mBRPKdC";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
