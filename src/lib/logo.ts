@@ -30,6 +30,11 @@ type Branding = {
     feature: string;
     cta: string;
   };
+  landingContent: {
+    heroTitle: string;
+    heroDescription: string;
+    ctaLabel: string;
+  };
 };
 
 let branding: Branding = {
@@ -40,6 +45,7 @@ let branding: Branding = {
   heroImageUrl: "",
   heroOpacity: 0.8,
   iconUrls: { brand: "", hero: "", feature: "", cta: "" },
+  landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
 };
 let loaded = false;
 let fallbackCompanyName = "Empresa";
@@ -112,6 +118,7 @@ export async function loadCompanyBranding(force = false): Promise<void> {
         heroImageUrl: "",
         heroOpacity: 0.8,
         iconUrls: { brand: "", hero: "", feature: "", cta: "" },
+        landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
       };
       loaded = true;
       applyDynamicBranding(branding);
@@ -213,6 +220,11 @@ export type VisualAssets = {
     feature?: string;
     cta?: string;
   };
+  landing?: {
+    hero_title?: string;
+    hero_description?: string;
+    cta_label?: string;
+  };
 };
 
 function normalizeVisualAssets(assets?: VisualAssets | null) {
@@ -227,6 +239,11 @@ function normalizeVisualAssets(assets?: VisualAssets | null) {
       hero: assets?.icon_urls?.hero?.trim() || "",
       feature: assets?.icon_urls?.feature?.trim() || "",
       cta: assets?.icon_urls?.cta?.trim() || "",
+    },
+    landingContent: {
+      heroTitle: assets?.landing?.hero_title?.trim() || "",
+      heroDescription: assets?.landing?.hero_description?.trim() || "",
+      ctaLabel: assets?.landing?.cta_label?.trim() || "",
     },
   };
 }

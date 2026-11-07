@@ -251,6 +251,11 @@ interface TenantBranding {
       feature?: string;
       cta?: string;
     };
+    landing?: {
+      hero_title?: string;
+      hero_description?: string;
+      cta_label?: string;
+    };
   };
   landing_enabled?: boolean;
   landing_cta_label?: string;
@@ -3321,6 +3326,61 @@ export function SaaSControlPanel() {
                     </div>
                   </div>
                   <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <label className="block text-xs font-bold text-slate-700 md:col-span-2">
+                      Título principal de la landing
+                      <input
+                        value={selectedBranding.visual_assets?.landing?.hero_title ?? ""}
+                        maxLength={160}
+                        placeholder="Software multiempresa de RR. HH. y operaciones"
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? {
+                                    ...row,
+                                    visual_assets: {
+                                      ...(row.visual_assets ?? {}),
+                                      landing: {
+                                        ...(row.visual_assets?.landing ?? {}),
+                                        hero_title: e.target.value,
+                                      },
+                                    },
+                                  }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold text-slate-700 md:col-span-2">
+                      Descripción principal de la landing
+                      <textarea
+                        value={selectedBranding.visual_assets?.landing?.hero_description ?? ""}
+                        maxLength={400}
+                        rows={3}
+                        placeholder="Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS."
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? {
+                                    ...row,
+                                    visual_assets: {
+                                      ...(row.visual_assets ?? {}),
+                                      landing: {
+                                        ...(row.visual_assets?.landing ?? {}),
+                                        hero_description: e.target.value,
+                                      },
+                                    },
+                                  }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="mt-1 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-6"
+                      />
+                    </label>
                     {(
                       [
                         ["favicon_url", "Favicon del sitio", "https://.../favicon.png"],
@@ -3434,13 +3494,27 @@ export function SaaSControlPanel() {
                     <label className="block text-xs font-bold text-slate-700">
                       Texto del botón principal
                       <input
-                        value={selectedBranding.landing_cta_label || "Solicitar una demo"}
+                        value={
+                          selectedBranding.visual_assets?.landing?.cta_label ??
+                          selectedBranding.landing_cta_label ??
+                          ""
+                        }
                         maxLength={100}
                         onChange={(e) =>
                           setBranding((rows) =>
                             rows.map((row) =>
                               row.tenant_id === selectedBranding.tenant_id
-                                ? { ...row, landing_cta_label: e.target.value }
+                                ? {
+                                    ...row,
+                                    landing_cta_label: e.target.value,
+                                    visual_assets: {
+                                      ...(row.visual_assets ?? {}),
+                                      landing: {
+                                        ...(row.visual_assets?.landing ?? {}),
+                                        cta_label: e.target.value,
+                                      },
+                                    },
+                                  }
                                 : row,
                             ),
                           )

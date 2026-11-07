@@ -146,7 +146,7 @@ function SoftwareStructuredData() {
 }
 
 export function PublicLanding() {
-  const { iconUrls } = useCompanyBranding();
+  const { iconUrls, landingContent } = useCompanyBranding();
 
   return (
     <div className="public-site min-h-screen bg-white text-slate-900">
@@ -172,19 +172,19 @@ export function PublicLanding() {
                 />
               )}
               <h1 className="public-h1 text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
-                Software multiempresa de RR. HH. y operaciones
+                {landingContent.heroTitle || "Software multiempresa de RR. HH. y operaciones"}
               </h1>
               <p className="public-lead mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-                Administra personas, asistencia, turnos, prevención, documentos y procesos internos
-                desde una plataforma SaaS. Configura módulos, permisos e identidad para cada
-                empresa.
+                {landingContent.heroDescription ||
+                  "Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa."}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#contacto"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  Solicitar una demo <ArrowRight size={16} aria-hidden="true" />
+                  {landingContent.ctaLabel || "Solicitar una demo"}{" "}
+                  <ArrowRight size={16} aria-hidden="true" />
                 </a>
                 <a
                   href="/trabajador"
