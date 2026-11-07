@@ -33,6 +33,8 @@ import {
   Check,
   Clock3,
   ExternalLink,
+  EyeOff,
+  Globe2,
   ImageOff,
   Link2,
   Mail,
@@ -66,6 +68,7 @@ import {
   type OnboardingForm,
 } from "@/components/saas/OnboardingWelcomeModal";
 import { DataGovernancePanel } from "@/components/saas/DataGovernancePanel";
+import { SaasLandingEditor } from "@/components/saas/SaasLandingEditor";
 
 const WorkerPortal = lazy(() =>
   import("@/views/WorkerPortal").then((module) => ({
@@ -485,6 +488,7 @@ export function SaaSControlPanel() {
     | "branding"
     | "backup"
     | "governance"
+    | "landing"
   >("overview");
   const [enteringTenantId, setEnteringTenantId] = useState<string | null>(null);
   const [captadores, setCaptadores] = useState<
@@ -1600,14 +1604,6 @@ export function SaaSControlPanel() {
             : item,
         ),
       );
-      await audit({
-        action: `saas.tenant.${nextStatus === "cortada" ? "archive" : nextStatus === "suspendida" ? "suspend" : "reactivate"}`,
-        entity: "tenant",
-        entity_id: tenant.tenant_id,
-        entity_label: tenant.tenant_name,
-        tenant_id: tenant.tenant_id,
-        details: { status: nextStatus, reason: reason.trim() },
-      });
       if (nextStatus === "cortada") {
         setShowTrash(true);
         setActiveSection("containers");
@@ -1618,6 +1614,39 @@ export function SaaSControlPanel() {
         `${tenant.tenant_name} ${nextStatus === "activa" ? "fue restaurada" : nextStatus === "suspendida" ? "quedó suspendida" : "se movió a la Papelera"}. Los datos se conservaron.`,
       );
       await load();
+    } catch (error) {
+      setMessage(authorizationErrorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setTenantLandingEnabled(tenant: TenantOverview, enabled: boolean) {
+    if (!enabled) {
+      const ok = await confirm({
+        title: "¿Desactivar landing pública?",
+        message: `La página /empresa/${tenant.tenant_slug} dejará de estar disponible. El acceso al sistema se controla por separado.`,
+        confirmText: "Desactivar landing",
+        type: "warning",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const { error } = await supabase.rpc("set_saas_tenant_landing_enabled", {
+        _tenant_id: tenant.tenant_id,
+        _enabled: enabled,
+      });
+      if (error) throw error;
+      setBranding((rows) =>
+        rows.map((row) =>
+          row.tenant_id === tenant.tenant_id ? { ...row, landing_enabled: enabled } : row,
+        ),
+      );
+      setMessage(
+        `Landing de ${tenant.tenant_name}: ${enabled ? "activada" : "desactivada"}. El sistema operativo no cambió.`,
+      );
     } catch (error) {
       setMessage(authorizationErrorMessage(error));
     } finally {
@@ -2105,6 +2134,12 @@ export function SaaSControlPanel() {
         { key: "settings", label: "Planes y módulos" },
         { key: "branding", label: "Identidad visual" },
       ],
+    },
+    {
+      key: "website",
+      label: "Sitio público",
+      icon: Globe2,
+      items: [{ key: "landing", label: "Landing SaaS" }],
     },
     {
       key: "operations",
@@ -2965,6 +3000,59 @@ export function SaaSControlPanel() {
                     >
                       <Edit3 size={13} /> Editar
                     </button>
+                    {!showTrash && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void setTenantLandingEnabled(
+                              tenant,
+                              !(
+                                branding.find((row) => row.tenant_id === tenant.tenant_id)
+                                  ?.landing_enabled ?? true
+                              ),
+                            )
+                          }
+                          disabled={busy}
+                          title="Controla la página pública de la empresa; no altera el acceso al sistema"
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50 ${(branding.find((row) => row.tenant_id === tenant.tenant_id)?.landing_enabled ?? true) ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100" : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                        >
+                          {(branding.find((row) => row.tenant_id === tenant.tenant_id)
+                            ?.landing_enabled ?? true) ? (
+                            <Eye size={13} />
+                          ) : (
+                            <EyeOff size={13} />
+                          )}
+                          {(branding.find((row) => row.tenant_id === tenant.tenant_id)
+                            ?.landing_enabled ?? true)
+                            ? "Landing activa"
+                            : "Landing desactivada"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void setTenantLifecycle(
+                              tenant,
+                              tenant.tenant_active ? "suspendida" : "activa",
+                            )
+                          }
+                          disabled={busy}
+                          title={
+                            tenant.tenant_active
+                              ? "Suspender sistema por impago o pausa manual"
+                              : "Reactivar sistema y accesos de la empresa"
+                          }
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50 ${tenant.tenant_active ? "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100" : "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"}`}
+                        >
+                          {tenant.tenant_active ? (
+                            <PauseCircle size={13} />
+                          ) : (
+                            <RotateCcw size={13} />
+                          )}
+                          {tenant.tenant_active ? "Pausar sistema" : "Reactivar sistema"}
+                        </button>
+                      </>
+                    )}
                     {tenant.tenant_status === "cortada" ? (
                       <button
                         type="button"
@@ -3534,6 +3622,8 @@ export function SaaSControlPanel() {
             )}
           </section>
         )}
+
+        {activeSection === "landing" && <SaasLandingEditor />}
 
         {activeSection === "portal" && (
           <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">

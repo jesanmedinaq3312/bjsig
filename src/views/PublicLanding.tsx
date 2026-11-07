@@ -6,9 +6,7 @@ import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { getPublicModulePath } from "@/lib/publicModules";
-
-const demoUrl =
-  "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
+import { buildWhatsAppUrl, type SaasLandingSettings } from "@/lib/saasLanding";
 
 const questions = [
   {
@@ -38,7 +36,7 @@ const questions = [
   },
 ];
 
-function LeadForm() {
+function LeadForm({ whatsappPhone }: { whatsappPhone: string }) {
   const [form, setForm] = useState({ name: "", company: "", contact: "", teamSize: "" });
   const update = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement>) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -57,11 +55,7 @@ function LeadForm() {
     ]
       .filter(Boolean)
       .join("\n");
-    window.open(
-      `https://wa.me/56941228089?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    window.open(buildWhatsAppUrl(whatsappPhone, message), "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -144,7 +138,40 @@ function SoftwareStructuredData() {
   );
 }
 
-export function PublicLanding() {
+export function PublicLanding({ initialLanding }: { initialLanding: SaasLandingSettings | null }) {
+  if (!initialLanding) {
+    return (
+      <main className="public-site flex min-h-screen items-center justify-center bg-slate-950 px-5 text-white">
+        <section className="max-w-lg text-center">
+          <h1 className="text-3xl font-black tracking-tight">BJSIGAPP</h1>
+          <p className="mt-4 text-base leading-7 text-slate-300">
+            El sitio público está temporalmente no disponible. Los portales de empresa y trabajador
+            mantienen sus enlaces de acceso habituales.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  const landing = initialLanding;
+
+  if (!landing.enabled) {
+    return (
+      <main className="public-site flex min-h-screen items-center justify-center bg-slate-950 px-5 text-white">
+        <section className="max-w-lg text-center">
+          <h1 className="text-3xl font-black tracking-tight">BJSIGAPP</h1>
+          <p className="mt-4 text-base leading-7 text-slate-300">
+            El sitio público está temporalmente no disponible. Los accesos de empresa y trabajador
+            continúan en sus enlaces habituales.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  const demoMessage = "Hola, quiero solicitar una demostración de BJSIGAPP.";
+  const demoUrl = buildWhatsAppUrl(landing.whatsappPhone, demoMessage);
+
   return (
     <div className="public-site min-h-screen bg-white text-slate-900">
       <a href="#contenido" className="public-skip-link">
@@ -162,19 +189,17 @@ export function PublicLanding() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <div className="max-w-2xl">
               <h1 className="public-h1 text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
-                Software multiempresa de RR. HH. y operaciones
+                {landing.heroTitle}
               </h1>
               <p className="public-lead mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-                Administra personas, asistencia, turnos, prevención, documentos y procesos internos
-                desde una plataforma SaaS. Configura módulos, permisos e identidad para cada
-                empresa.
+                {landing.heroDescription}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#contacto"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  Solicitar una demo <ArrowRight size={16} aria-hidden="true" />
+                  {landing.primaryCtaLabel} <ArrowRight size={16} aria-hidden="true" />
                 </a>
                 <a
                   href="/trabajador"
@@ -370,7 +395,7 @@ export function PublicLanding() {
               </a>
             </div>
             <div className="rounded-2xl bg-white p-5 text-slate-900 sm:p-8">
-              <LeadForm />
+              <LeadForm whatsappPhone={landing.whatsappPhone} />
             </div>
           </div>
         </section>
