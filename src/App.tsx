@@ -293,7 +293,11 @@ export function App() {
 
   const requiredPerm = VIEW_PERMISSIONS[view];
   const unrestricted = isPlatformRole(userRole);
-  const hasPermission = canAccessPermission(requiredPerm, permissions, userRole);
+  // DevTeam opera en cualquier tenant habilitado. Este bypass solo resuelve el
+  // guard visual; TenantProvider y RPC/RLS siguen validando el tenant en servidor.
+  const hasPermission = canAccessPermission(requiredPerm, permissions, userRole, {
+    platformContext: unrestricted && route.kind === "admin",
+  });
   const isPlatformView = view === "saas";
   const effectiveView: ViewKey =
     unrestricted && isPlatformView && hasPermission ? "saas" : hasPermission ? view : "dashboard";
