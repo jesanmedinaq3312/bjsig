@@ -259,7 +259,7 @@
     overflow: hidden;
   }
 
-  .landing-laptop-viewport > nav:not(.hidden) {
+  .landing-laptop-viewport > nav {
     overflow-y: auto;
   }
 
