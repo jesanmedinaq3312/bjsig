@@ -246,10 +246,10 @@
   transition: transform 1.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@media (min-width: 641px) {
+@media (min-width: 0px) {
   .landing-device-frame--laptop .landing-preview {
     display: flex;
-    height: 276px;
+    height: clamp(230px, 62vw, 276px);
     flex-direction: column;
   }
 
@@ -440,6 +440,14 @@
 
   .landing-device-frame--laptop .landing-preview {
     border-radius: 0.55rem 0.55rem 0.125rem 0.125rem;
+  }
+
+  .landing-device-frame--laptop .landing-laptop-viewport {
+    min-height: 0;
+  }
+
+  .landing-laptop-viewport > div {
+    padding: 0.75rem;
   }
 
   .landing-laptop-base {
