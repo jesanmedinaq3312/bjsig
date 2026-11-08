@@ -259,7 +259,7 @@
     overflow: hidden;
   }
 
-  .landing-laptop-viewport > nav {
+  .landing-laptop-viewport > nav:not(.hidden) {
     overflow-y: auto;
   }
 
@@ -442,16 +442,12 @@
     border-radius: 0.55rem 0.55rem 0.125rem 0.125rem;
   }
 
-  .landing-device-frame--laptop .landing-laptop-viewport > nav {
-    display: flex;
-    flex-shrink: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
+  .landing-device-frame--laptop .landing-laptop-viewport {
+    min-height: 0;
   }
 
-  .landing-device-frame--laptop .landing-laptop-viewport > nav button {
-    white-space: nowrap;
+  .landing-laptop-viewport > div {
+    padding: 0.75rem;
   }
 
   .landing-laptop-base {
