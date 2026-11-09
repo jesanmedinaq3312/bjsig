@@ -40,6 +40,7 @@ import {
   X,
   ShieldCheck,
   LockKeyhole,
+  Globe2,
 } from "lucide-react";
 import { Button, Modal, Select, Spinner } from "@/components/ui";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
@@ -66,6 +67,7 @@ import {
   type OnboardingForm,
 } from "@/components/saas/OnboardingWelcomeModal";
 import { DataGovernancePanel } from "@/components/saas/DataGovernancePanel";
+import { PublicLandingSettingsEditor } from "./PublicLandingSettingsEditor";
 
 const WorkerPortal = lazy(() =>
   import("@/views/WorkerPortal").then((module) => ({
@@ -496,6 +498,7 @@ export function SaaSControlPanel() {
     | "cartera"
     | "branding"
     | "landing"
+    | "main-landing"
     | "backup"
     | "governance"
   >("overview");
@@ -2110,6 +2113,12 @@ export function SaaSControlPanel() {
       items: [{ key: "overview", label: "Resumen" }],
     },
     {
+      key: "public-site",
+      label: "Sitio público",
+      icon: Globe2,
+      items: [{ key: "main-landing", label: "Landing principal" }],
+    },
+    {
       key: "companies",
       label: "Empresas",
       icon: Container,
@@ -3255,6 +3264,8 @@ export function SaaSControlPanel() {
             </div>
           </section>
         )}
+
+        {activeSection === "main-landing" && <PublicLandingSettingsEditor />}
 
         {activeSection === "landing" && (
           <section className="space-y-5">

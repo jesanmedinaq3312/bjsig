@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, ShieldCheck } from "lucide-react";
 import { CookieConsent } from "@/components/CookieConsent";
 import { DashboardPreview } from "@/components/public/DashboardPreview";
@@ -6,7 +6,9 @@ import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { getPublicModulePath } from "@/lib/publicModules";
-import { useCompanyBranding } from "@/lib/logo";
+import { loadPublicLandingBranding, useCompanyBranding } from "@/lib/logo";
+
+const PREVIEW_STORAGE_KEY = "bjsig-public-landing-preview";
 
 const demoUrl =
   "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
@@ -147,9 +149,41 @@ function SoftwareStructuredData() {
 
 export function PublicLanding() {
   const { iconUrls, landingContent } = useCompanyBranding();
+  const [previewMode, setPreviewMode] = useState(false);
+
+  useEffect(() => {
+    let previewAssets: unknown;
+    if (new URLSearchParams(window.location.search).get("landing-preview") === "1") {
+      try {
+        const stored = window.sessionStorage.getItem(PREVIEW_STORAGE_KEY);
+        if (stored) {
+          previewAssets = JSON.parse(stored);
+          setPreviewMode(true);
+        }
+        window.sessionStorage.removeItem(PREVIEW_STORAGE_KEY);
+      } catch {
+        previewAssets = undefined;
+      }
+    }
+    void loadPublicLandingBranding(previewAssets);
+  }, []);
 
   return (
     <div className="public-site min-h-screen bg-white text-slate-900">
+      {previewMode && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-3 bg-blue-50 px-4 py-3 text-sm text-slate-900 sm:px-6"
+        >
+          <span>Vista previa del borrador; estos cambios todavía no están publicados.</span>
+          <a
+            href="/"
+            className="min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+          >
+            Salir de la vista previa
+          </a>
+        </div>
+      )}
       <a href="#contenido" className="public-skip-link">
         Saltar al contenido
       </a>

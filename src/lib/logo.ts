@@ -227,6 +227,71 @@ export type VisualAssets = {
   };
 };
 
+function publicAssetUrl(value: unknown): string {
+  if (typeof value !== "string" || !value.trim() || value.length > 2048) return "";
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Keeps public landing content within the small, safe set of editable fields. */
+export function sanitizePublicLandingAssets(value: unknown): VisualAssets {
+  const assets =
+    typeof value === "object" && value !== null && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  const icons =
+    typeof assets.icon_urls === "object" && assets.icon_urls !== null
+      ? (assets.icon_urls as Record<string, unknown>)
+      : {};
+  const landing =
+    typeof assets.landing === "object" && assets.landing !== null
+      ? (assets.landing as Record<string, unknown>)
+      : {};
+  const opacity = assets.hero_opacity;
+
+  return {
+    favicon_url: publicAssetUrl(assets.favicon_url),
+    header_image_url: publicAssetUrl(assets.header_image_url),
+    hero_image_url: publicAssetUrl(assets.hero_image_url),
+    hero_opacity:
+      typeof opacity === "number" && Number.isFinite(opacity) && opacity >= 0 && opacity <= 1
+        ? opacity
+        : 0.8,
+    icon_urls: {
+      brand: publicAssetUrl(icons.brand),
+      hero: publicAssetUrl(icons.hero),
+      feature: publicAssetUrl(icons.feature),
+      cta: publicAssetUrl(icons.cta),
+    },
+    landing: {
+      hero_title: typeof landing.hero_title === "string" ? landing.hero_title.slice(0, 160) : "",
+      hero_description:
+        typeof landing.hero_description === "string" ? landing.hero_description.slice(0, 400) : "",
+      cta_label: typeof landing.cta_label === "string" ? landing.cta_label.slice(0, 100) : "",
+    },
+  };
+}
+
+/** Loads public landing assets without mixing them into tenant branding fetches. */
+export async function loadPublicLandingBranding(previewAssets?: unknown): Promise<void> {
+  try {
+    let source = previewAssets;
+    if (source === undefined) {
+      const { data, error } = await supabase.rpc("fetch_public_landing_settings");
+      if (error) return;
+      source = data;
+    }
+    setBrandingCache(null, "BJSIGAPP", sanitizePublicLandingAssets(source));
+    loaded = false;
+  } catch {
+    // A failed public config fetch leaves the static landing defaults intact.
+  }
+}
+
 function normalizeVisualAssets(assets?: VisualAssets | null) {
   const opacity = Number(assets?.hero_opacity);
   return {
