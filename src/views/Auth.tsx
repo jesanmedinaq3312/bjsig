@@ -137,6 +137,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
     error: gpsError,
     capture: captureGps,
   } = useGpsCapture();
+  const gpsReady = gpsStatus === "ready" && gpsPosition !== null && isFreshGpsCapture(gpsPosition);
   const { logoUrl, companyName } = useCompanyBranding();
   const displayCompanyName = companyName === "Empresa" ? "BJSIGAPP" : companyName;
   const scopedSlug = tenantSlug && /^[a-z0-9-]+$/i.test(tenantSlug) ? tenantSlug : null;
@@ -173,6 +174,10 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy || !gpsReady) {
+      if (!gpsReady) setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
+      return;
+    }
     setError(null);
     setBusy(true);
     let loginGpsPosition = gpsPosition;
@@ -241,6 +246,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   }
 
   async function handleMagicLink() {
+    if (busy || !gpsReady) return;
     setError(null);
     setBusy(true);
     setMagicSent(false);
@@ -417,121 +423,124 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                 </fieldset>
               ) : (
                 <form onSubmit={submit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-white/80 mb-1.5">
-                      Correo Electrónico
-                    </label>
-                    <div className="relative group">
-                      <Mail
-                        size={16}
-                        className="absolute left-3.5 top-3 text-white/50 group-focus-within:text-blue-300 transition-colors"
-                      />
-                      <input
-                        type="email"
-                        required
-                        disabled={busy}
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          setMagicAvailable(false);
-                          setMagicSent(false);
-                        }}
-                        placeholder="prevencionista@correo.cl"
-                        className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-white/5 border border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400/50 focus:bg-white/10 transition-all text-white placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-white/80 mb-1.5">
-                      Contraseña
-                    </label>
-                    <div className="relative group">
-                      <Lock
-                        size={16}
-                        className="absolute left-3.5 top-3 text-white/50 group-focus-within:text-blue-300 transition-colors"
-                      />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        required
-                        minLength={6}
-                        disabled={busy}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full pl-10 pr-11 py-2.5 text-sm bg-white/5 border border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400/50 focus:bg-white/10 transition-all text-white placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
-                      />
-                      <button
-                        type="button"
-                        aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        onClick={() => setShowPassword((value) => !value)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <div
-                      role="alert"
-                      className="flex items-start gap-2.5 p-3 bg-red-500/10 backdrop-blur-md border border-red-400/20 rounded-xl text-xs font-medium text-red-300 animate-in fade-in [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
-                    >
-                      <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
-                      <div className="flex-1">
-                        <span>{error}</span>
-                        {error.includes("Portal del Trabajador") && (
-                          <a
-                            href={workerPortalPath}
-                            className="block mt-1.5 text-cyan-300 hover:text-cyan-200 font-semibold flex items-center gap-1"
-                          >
-                            <HardHat size={13} /> Ir al Portal del Trabajador{" "}
-                            <ArrowRight size={13} />
-                          </a>
-                        )}
+                  <fieldset disabled={!gpsReady || busy} className="min-w-0 border-0 p-0">
+                    <div>
+                      <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                        Correo Electrónico
+                      </label>
+                      <div className="relative group">
+                        <Mail
+                          size={16}
+                          className="absolute left-3.5 top-3 text-white/50 group-focus-within:text-blue-300 transition-colors"
+                        />
+                        <input
+                          type="email"
+                          required
+                          disabled={busy}
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            setMagicAvailable(false);
+                            setMagicSent(false);
+                          }}
+                          placeholder="prevencionista@correo.cl"
+                          className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-white/5 border border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400/50 focus:bg-white/10 transition-all text-white placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                        />
                       </div>
                     </div>
-                  )}
 
-                  <button
-                    type="submit"
-                    disabled={busy}
-                    className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
-                  >
-                    {busy ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        Procesando...
-                      </>
-                    ) : (
-                      "Ingresar al Sistema"
-                    )}
-                  </button>
-                  {magicSent && (
-                    <div className="text-center text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 rounded-xl px-3 py-2">
-                      Enviamos un enlace mágico de Supabase. Revisa tu correo para iniciar sesión.
+                    <div>
+                      <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                        Contraseña
+                      </label>
+                      <div className="relative group">
+                        <Lock
+                          size={16}
+                          className="absolute left-3.5 top-3 text-white/50 group-focus-within:text-blue-300 transition-colors"
+                        />
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required
+                          minLength={6}
+                          disabled={busy}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full pl-10 pr-11 py-2.5 text-sm bg-white/5 border border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400/50 focus:bg-white/10 transition-all text-white placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                        />
+                        <button
+                          type="button"
+                          disabled={!gpsReady || busy}
+                          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          onClick={() => setShowPassword((value) => !value)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  {magicAvailable && !magicSent && (
+
+                    {error && (
+                      <div
+                        role="alert"
+                        className="flex items-start gap-2.5 p-3 bg-red-500/10 backdrop-blur-md border border-red-400/20 rounded-xl text-xs font-medium text-red-300 animate-in fade-in [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                      >
+                        <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
+                        <div className="flex-1">
+                          <span>{error}</span>
+                          {error.includes("Portal del Trabajador") && (
+                            <a
+                              href={workerPortalPath}
+                              className="block mt-1.5 text-cyan-300 hover:text-cyan-200 font-semibold flex items-center gap-1"
+                            >
+                              <HardHat size={13} /> Ir al Portal del Trabajador{" "}
+                              <ArrowRight size={13} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={busy}
+                      className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                    >
+                      {busy ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          Procesando...
+                        </>
+                      ) : (
+                        "Ingresar al Sistema"
+                      )}
+                    </button>
+                    {magicSent && (
+                      <div className="text-center text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 rounded-xl px-3 py-2">
+                        Enviamos un enlace mágico de Supabase. Revisa tu correo para iniciar sesión.
+                      </div>
+                    )}
+                    {magicAvailable && !magicSent && (
+                      <button
+                        type="button"
+                        disabled={busy || !email}
+                        onClick={() => void handleMagicLink()}
+                        className="w-full rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-50"
+                      >
+                        Enviar magic link como última opción
+                      </button>
+                    )}
                     <button
                       type="button"
-                      disabled={busy || !email}
-                      onClick={() => void handleMagicLink()}
-                      className="w-full rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-50"
+                      onClick={() => {
+                        setForgotMode(true);
+                        setError(null);
+                      }}
+                      className="w-full text-xs text-white/50 hover:text-blue-300 font-medium flex items-center justify-center gap-1 transition-colors"
                     >
-                      Enviar magic link como última opción
+                      <KeyRound size={13} /> ¿Olvidaste tu contraseña?
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForgotMode(true);
-                      setError(null);
-                    }}
-                    className="w-full text-xs text-white/50 hover:text-blue-300 font-medium flex items-center justify-center gap-1 transition-colors"
-                  >
-                    <KeyRound size={13} /> ¿Olvidaste tu contraseña?
-                  </button>
+                  </fieldset>
                 </form>
               )}
               {/* Sección QR - Solicitar Acceso */}

@@ -32,6 +32,7 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     error: gpsError,
     capture: captureGps,
   } = useGpsCapture();
+  const gpsReady = gpsStatus === "ready" && gpsPosition !== null && isFreshGpsCapture(gpsPosition);
   const { logoUrl, companyName } = useCompanyBranding();
   const workerPortalSlug = tenantSlug && /^[a-z0-9-]+$/i.test(tenantSlug) ? tenantSlug : null;
   const operatorPortalPath = workerPortalSlug ? `/${workerPortalSlug}/admin` : "/admin";
@@ -99,6 +100,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     e.preventDefault();
     if (busy || retryAt > Date.now()) return;
     resetState();
+    if (!gpsReady) {
+      setError(gpsError ?? "Comparte tu ubicación GPS antes de continuar.");
+      return;
+    }
     if (!rutInput.trim()) {
       setError("Ingresa tu RUT.");
       return;
@@ -136,6 +141,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     e.preventDefault();
     if (busy || retryAt > Date.now()) return;
     resetState();
+    if (!gpsReady) {
+      setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
+      return;
+    }
     setBusy(true);
     try {
       let capture =
@@ -301,7 +310,7 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
               {String(remainingSeconds % 60).padStart(2, "0")}.
             </p>
           )}
-          {mode === "login" && (
+          {(mode === "rut" || mode === "login") && (
             <div className="mb-4">
               <GpsCaptureCard
                 status={gpsStatus}
@@ -312,7 +321,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
               />
             </div>
           )}
-          <fieldset disabled={remainingSeconds > 0} className="min-w-0">
+          <fieldset
+            disabled={remainingSeconds > 0 || ((mode === "rut" || mode === "login") && !gpsReady)}
+            className="min-w-0"
+          >
             {mode === "rut" && (
               <RutForm
                 rutInput={rutInput}
