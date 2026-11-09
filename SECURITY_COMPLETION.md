@@ -58,7 +58,7 @@ Las políticas MFA y de aislamiento multi-tenant permanecen activas en las tabla
 
 Este bloque documenta cambios preparados en el checkout local; **no significa que se hayan desplegado en Supabase ni publicado en GitHub**.
 
-- Se integró Cloudflare Turnstile en las acciones públicas de `worker-auth`, en login con contraseña, OTP/magic link, signup y recuperación de Supabase Auth. Los resets de trabajador usan dos tokens distintos porque el token validado por la Edge Function no puede reutilizarse en Supabase Auth. La configuración del CAPTCHA en el Dashboard todavía requiere una acción operativa.
+- La integración de Cloudflare Turnstile existe en el código, pero por instrucción del cliente **permanece pausada**. Un guard en cliente y Edge retorna antes de cargar scripts o hacer `fetch`, además de la CSP que bloquea Cloudflare. El portal de trabajadores falla cerrado; no publicar ese flujo hasta autorizar Turnstile o aprobar una alternativa. Si en el futuro se reactiva el código de verificación, enviará `remoteip` a Cloudflare y requerirá actualizar transparencia/contratos.
 - Se reforzaron anti-enumeración y rate limits combinados con IP confiable, redirects fijos/allowlist, CORS por allowlist, AAL2 en funciones privilegiadas, validación de URL en Zod, credenciales de onboarding fuera del correo, política de contraseñas compartida, protección de tarjetas QR y eliminación de datos de ubicación/tracking pre-login.
 - Se retiraron valores productivos por defecto del cliente Supabase. Se añadieron headers HTTP, Dependabot, CI, comprobación de catálogo RLS y E2E multi-tenant autenticado condicional, habilitables únicamente con credenciales de staging.
 

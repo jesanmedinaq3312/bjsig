@@ -16,6 +16,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Card, CardHeader, Button, Badge, EmptyState, Spinner } from "@/components/ui";
+import { isFirstPartyImageUrl } from "@/components/IdentityAvatar";
 import type { Worker, AttendanceStatus, ShiftDefinition } from "@/lib/types";
 import { usePagination } from "@/hooks/usePagination";
 import { ExpiryBadge } from "./components";
@@ -59,10 +60,6 @@ function ShiftBadge({ worker, shiftDefs }: { worker: Worker; shiftDefs: ShiftDef
   );
 }
 
-function blobatarUrl(seed: string, size = 72): string {
-  return `https://blobatar.dev/avatar/${encodeURIComponent(seed.trim().toLowerCase())}?size=${size}&background=squircle&gen=1`;
-}
-
 function PhotoAvatar({
   worker,
   resolvePhotoUrl,
@@ -73,8 +70,8 @@ function PhotoAvatar({
   onPhotoUpload?: (w: Worker, file: File) => void;
 }) {
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const photoSrc = resolvePhotoUrl(worker.photo_url);
-  const fallbackSrc = blobatarUrl(`${worker.full_name}-${worker.rut}`);
+  const resolvedPhotoSrc = resolvePhotoUrl(worker.photo_url);
+  const photoSrc = isFirstPartyImageUrl(resolvedPhotoSrc) ? resolvedPhotoSrc : null;
   const initials = worker.full_name
     .split(" ")
     .map((n) => n[0])
@@ -83,9 +80,9 @@ function PhotoAvatar({
     .toUpperCase();
   return (
     <div className="relative w-9 h-9 shrink-0">
-      {!avatarFailed ? (
+      {photoSrc && !avatarFailed ? (
         <img
-          src={photoSrc || fallbackSrc}
+          src={photoSrc}
           alt={worker.full_name}
           onError={() => setAvatarFailed(true)}
           className="w-9 h-9 rounded-full object-cover border border-slate-200 bg-slate-100"

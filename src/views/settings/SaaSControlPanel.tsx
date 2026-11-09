@@ -43,6 +43,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { Button, Modal, Select, Spinner } from "@/components/ui";
+import { isFirstPartyImageUrl } from "@/components/IdentityAvatar";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { supabase } from "@/lib/supabase";
 import {
@@ -412,10 +413,6 @@ function formatUsageLabel(tableName: string): string {
   return labels[tableName] ?? tableName.replaceAll("_", " ");
 }
 
-function blobatarUrl(seed: string, size = 64): string {
-  return `https://blobatar.dev/avatar/${encodeURIComponent(seed.trim().toLowerCase())}?size=${size}&background=squircle&gen=1`;
-}
-
 function CompanyIdentityAvatar({
   name,
   logoUrl,
@@ -426,8 +423,7 @@ function CompanyIdentityAvatar({
   size?: number;
 }) {
   const [failed, setFailed] = useState(false);
-  const logo = logoUrl?.trim();
-  const fallbackAvatar = blobatarUrl(name, size * 2);
+  const logo = isFirstPartyImageUrl(logoUrl) ? logoUrl!.trim() : null;
   const initials =
     name
       .split(/\s+/)
@@ -441,9 +437,9 @@ function CompanyIdentityAvatar({
       className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-600 to-cyan-500 font-black text-white shadow-sm"
       style={{ width: size, height: size }}
     >
-      {!failed ? (
+      {logo && !failed ? (
         <img
-          src={logo || fallbackAvatar}
+          src={logo}
           alt={`Avatar de ${name}`}
           className="h-full w-full object-cover bg-white"
           onError={() => setFailed(true)}

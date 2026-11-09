@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { SUPABASE_URL } from "@/lib/supabaseConfig";
 
 type IdentityAvatarProps = {
   name?: string | null;
@@ -38,33 +39,35 @@ export function isHttpUrl(value: string | null | undefined): boolean {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components -- mixed component and stable API export is intentional here
-export function blobatarUrl(seed: string, size = 96): string {
-  const normalized = seed.trim().toLowerCase() || "identity";
-  return `https://blobatar.dev/avatar/${encodeURIComponent(normalized)}?size=${size}&background=squircle&gen=1`;
+export function isFirstPartyImageUrl(value: string | null | undefined): boolean {
+  if (!isHttpUrl(value)) return false;
+  try {
+    const imageUrl = new URL(value!.trim());
+    const storageUrl = new URL(SUPABASE_URL);
+    return (
+      (typeof window !== "undefined" && imageUrl.origin === window.location.origin) ||
+      imageUrl.origin === storageUrl.origin
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function IdentityAvatar({
   name,
-  seed,
   photoUrl,
   className = "h-8 w-8",
   rounded = "rounded-lg",
   alt,
-  size = 96,
 }: IdentityAvatarProps) {
   const safeName = name?.trim() || "Empresa";
-  const avatarSeed = seed?.trim() || safeName;
-  const [sourceIndex, setSourceIndex] = useState(isHttpUrl(photoUrl) ? 0 : 1);
-  const sources = useMemo(
-    () => [isHttpUrl(photoUrl) ? photoUrl!.trim() : null, blobatarUrl(avatarSeed, size)],
-    [photoUrl, avatarSeed, size],
-  );
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
-    setSourceIndex(isHttpUrl(photoUrl) ? 0 : 1);
-  }, [photoUrl, avatarSeed]);
+    setImageFailed(false);
+  }, [photoUrl]);
 
-  const source = sources[sourceIndex];
+  const source = !imageFailed && isFirstPartyImageUrl(photoUrl) ? photoUrl!.trim() : null;
   if (!source) {
     return (
       <span
@@ -81,7 +84,7 @@ export function IdentityAvatar({
     <img
       src={source}
       alt={alt ?? `Avatar de ${safeName}`}
-      onError={() => setSourceIndex((current) => current + 1)}
+      onError={() => setImageFailed(true)}
       className={`${className} ${rounded} border border-slate-200 bg-white object-cover`}
     />
   );

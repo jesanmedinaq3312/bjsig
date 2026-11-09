@@ -56,6 +56,21 @@ type Asset = {
   contains_sensitive_data: boolean;
   has_backup: boolean;
   legal_hold: boolean;
+  processing_purpose: string | null;
+  lawful_basis: string | null;
+  data_subject_categories: string[];
+  collection_sources: string[];
+  external_recipients: string[];
+  international_transfer: boolean;
+  transfer_mechanism: string | null;
+  transfer_destination_countries: string[];
+  automated_decision_making: boolean;
+  includes_minors: boolean;
+  legal_retention_basis: string | null;
+  deletion_procedure: string | null;
+  dpia_required: boolean;
+  dpia_status: string;
+  risk_mitigations: string | null;
 };
 type Contact = {
   id: string;
@@ -152,6 +167,12 @@ type GovernanceProfile = {
   has_sensitive_data: boolean;
   document_review_status: string;
   last_reviewed_at: string | null;
+  controller_name: string | null;
+  privacy_contact_email: string | null;
+  processing_role: string;
+  minimum_user_age: number;
+  age_control_method: string;
+  target_telemetry_retention_days: number;
 };
 
 const tabItems: Array<{ id: Tab; label: string }> = [
@@ -184,6 +205,21 @@ const emptyAsset = {
   contains_sensitive_data: false,
   has_backup: false,
   legal_hold: false,
+  processing_purpose: "",
+  lawful_basis: "",
+  data_subject_categories: "",
+  collection_sources: "",
+  external_recipients: "",
+  international_transfer: false,
+  transfer_mechanism: "",
+  transfer_destination_countries: "",
+  automated_decision_making: false,
+  includes_minors: false,
+  legal_retention_basis: "",
+  deletion_procedure: "",
+  dpia_required: false,
+  dpia_status: "not_assessed",
+  risk_mitigations: "",
 };
 const emptyContact = {
   full_name: "",
@@ -221,6 +257,12 @@ function formatBytes(value: number | null | undefined) {
   const units = ["B", "KB", "MB", "GB", "TB"];
   const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / 1024 ** index).toFixed(index ? 1 : 0)} ${units[index]}`;
+}
+function splitList(value: string) {
+  return value
+    .split(/[\n,;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 function tenantName(tenants: GovernanceTenant[], id: string | null) {
   return tenants.find((tenant) => tenant.tenant_id === id)?.tenant_name ?? "Empresa";
@@ -312,7 +354,23 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
         (item) => !["completed", "rejected", "cancelled"].includes(item.status),
       ).length,
       missingRetention: assetsInScope.filter(
-        (asset) => asset.retention_days == null && !asset.legal_hold,
+        (asset) =>
+          (asset.retention_days == null && !asset.legal_hold) ||
+          !asset.deletion_procedure?.trim() ||
+          (asset.retention_days === 30 && !asset.legal_retention_basis?.trim()),
+      ).length,
+      missingPurposeBasis: assetsInScope.filter(
+        (asset) =>
+          asset.contains_personal_data &&
+          (!asset.processing_purpose?.trim() || !asset.lawful_basis?.trim()),
+      ).length,
+      missingSubjectSource: assetsInScope.filter(
+        (asset) =>
+          asset.contains_personal_data &&
+          (asset.data_subject_categories.length === 0 || asset.collection_sources.length === 0),
+      ).length,
+      unresolvedDpia: assetsInScope.filter(
+        (asset) => asset.dpia_required && !["approved", "not_required"].includes(asset.dpia_status),
       ).length,
     };
   }, [assets, incidents, requests, scoped, usage]);
@@ -321,13 +379,9 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
       isolationChecks.length > 0 && isolationChecks.every((item) => item.passed);
     const hasUsageSnapshot = scopedUsage.length > 0;
     const hasResponsible = Boolean(
-      selectedProfile?.treatment_owner || selectedProfile?.security_contact,
+      selectedProfile?.controller_name || selectedProfile?.treatment_owner,
     );
-    const hasRightsChannel = scopedContacts.some((contact) =>
-      ["legal_representative", "administrator", "security", "hr_prevention"].includes(
-        contact.contact_type,
-      ),
-    );
+    const hasRightsChannel = Boolean(selectedProfile?.privacy_contact_email);
     const hasSensitiveControls =
       summary.sensitiveAssets === 0 || scopedAssets.every((asset) => asset.has_backup);
     const hasReviewedProfile = selectedProfile?.document_review_status === "verified";
@@ -345,61 +399,73 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
       {
         title: "Inventario de tratamientos y activos",
         reference: "Ley 21.719 · transparencia y responsabilidad proactiva",
-        status: summary.totalAssets > 0 ? "evidence" : "pending",
+        status:
+          summary.totalAssets > 0 &&
+          summary.missingPurposeBasis === 0 &&
+          summary.missingSubjectSource === 0
+            ? "evidence"
+            : "pending",
         detail:
-          summary.totalAssets > 0
-            ? `${summary.totalAssets} activo(s) registrado(s) para el alcance seleccionado.`
+          summary.totalAssets > 0 &&
+          summary.missingPurposeBasis === 0 &&
+          summary.missingSubjectSource === 0
+            ? `${summary.totalAssets} activo(s) cuentan con finalidad, base, categorías de titulares y fuente declaradas.`
             : "Registra sistemas, categorías, finalidades, responsables y conjuntos de datos tratados.",
       },
       {
         title: "Finalidad y base de licitud",
         reference: "Ley 21.719 · principios y deber de información",
-        status: "pending",
+        status:
+          summary.totalAssets > 0 && summary.missingPurposeBasis === 0 ? "evidence" : "pending",
         detail:
-          "Falta modelar por activo la finalidad, base jurídica, categorías de titulares y fuente de los datos.",
+          summary.missingPurposeBasis === 0 && summary.totalAssets > 0
+            ? "Los activos con datos personales tienen una finalidad y base registradas; la validez jurídica requiere aprobación del responsable."
+            : `${summary.missingPurposeBasis} activo(s) con datos personales aún necesitan finalidad y base documentadas.`,
       },
       {
         title: "Política de privacidad y transparencia",
         reference: "Ley 21.719 · información pública permanente",
-        status: hasReviewedProfile ? "evidence" : "pending",
+        status: hasReviewedProfile ? "review" : "pending",
         detail: hasReviewedProfile
-          ? "El perfil indica revisión documental verificada."
-          : "Publica versión, fecha, finalidades, bases, seguridad, retención, transferencias y decisiones automatizadas.",
+          ? "Existe una revisión interna; la política pública sigue como borrador hasta aprobación jurídica y validación de producción."
+          : "La página pública contiene un borrador operativo; faltan aprobación jurídica, canal formal y validación de proveedores y retención.",
       },
       {
         title: "Responsable y canal para titulares",
         reference:
           "Ley 21.719 · acceso, rectificación, supresión, oposición, portabilidad y bloqueo",
-        status: hasResponsible && hasRightsChannel ? "evidence" : "pending",
+        status: hasResponsible && hasRightsChannel ? "review" : "pending",
         detail:
           hasResponsible && hasRightsChannel
-            ? "Existe responsable y contacto operativo registrado."
-            : "Declara responsable y canal para solicitudes; parametriza SLA y evidencia de respuesta.",
+            ? "Responsable y canal declarados; falta confirmar identidad, cobertura contractual y SLA."
+            : "Declara responsable y un canal de privacidad comprobado; luego parametriza SLA y evidencia de respuesta.",
       },
       {
         title: "Retención, bloqueo y eliminación controlada",
         reference: "Ley 21.719 · conservación limitada y derechos del titular",
-        status: summary.totalAssets > 0 && summary.missingRetention === 0 ? "evidence" : "pending",
+        status: summary.totalAssets > 0 && summary.missingRetention === 0 ? "review" : "pending",
         detail:
           summary.totalAssets > 0 && summary.missingRetention === 0
-            ? "Todos los activos tienen retención o una justificación de conservación."
-            : "Cada activo debe tener plazo, bloqueo, legal hold y procedimiento de eliminación verificable.",
+            ? "Los activos registran plazo, justificación y procedimiento; la purga automatizada de 30 días no está acreditada."
+            : "Cada activo requiere plazo, justificación, bloqueo, legal hold y procedimiento de eliminación verificable.",
       },
       {
         title: "Datos sensibles, niños y perfiles de alto riesgo",
         reference: "Ley 21.719 · categorías especiales y decisiones automatizadas",
-        status: summary.sensitiveAssets > 0 ? "pending" : "review",
+        status: "review",
         detail:
           summary.sensitiveAssets > 0
-            ? "Hay datos sensibles declarados; documenta salvaguardas, base legal y evaluación reforzada."
-            : "Confirma si existen datos sensibles, de menores o perfilamiento con efectos significativos.",
+            ? "Hay datos sensibles declarados; confirma además menores, perfilamiento y salvaguardas con asesoría jurídica."
+            : "La regla 18+ es autodeclarada; confirma que ningún flujo de cliente incorpora datos de menores ni perfilamiento significativo.",
       },
       {
         title: "Evaluación de impacto (DPIA)",
         reference: "Ley 21.719 · tratamientos de alto riesgo y artículo 15 ter",
-        status: "pending",
+        status: summary.unresolvedDpia > 0 ? "pending" : "review",
         detail:
-          "La aplicación aún no registra DPIA, aprobación, riesgos, medidas mitigadoras ni revisión posterior.",
+          summary.unresolvedDpia > 0
+            ? `${summary.unresolvedDpia} evaluación(es) requerida(s) sin aprobación registrada.`
+            : "La aplicación permite marcar si una DPIA se requiere; falta documentar el filtro de alto riesgo y su aprobación.",
       },
       {
         title: "Encargados, proveedores y transferencias",
@@ -469,7 +535,6 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
     isolationChecks,
     scopedAudit,
     scopedAssets,
-    scopedContacts,
     scopedIncidents,
     scopedUsage,
     selectedProfile,
@@ -494,7 +559,7 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
       supabase
         .from("saas_data_assets")
         .select(
-          "id,tenant_id,name,description,source_system,data_category,sensitivity_level,owner_name,location,record_count,storage_bytes,sync_frequency,last_synced_at,retention_days,status,contains_personal_data,contains_sensitive_data,has_backup,legal_hold",
+          "id,tenant_id,name,description,source_system,data_category,sensitivity_level,owner_name,location,record_count,storage_bytes,sync_frequency,last_synced_at,retention_days,status,contains_personal_data,contains_sensitive_data,has_backup,legal_hold,processing_purpose,lawful_basis,data_subject_categories,collection_sources,external_recipients,international_transfer,transfer_mechanism,transfer_destination_countries,automated_decision_making,includes_minors,legal_retention_basis,deletion_procedure,dpia_required,dpia_status,risk_mitigations",
         )
         .order("created_at", { ascending: false })
         .limit(1000),
@@ -534,7 +599,7 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
       supabase
         .from("saas_data_governance_profiles")
         .select(
-          "tenant_id,maturity_level,treatment_owner,security_contact,storage_region,default_retention_days,has_personal_data,has_sensitive_data,document_review_status,last_reviewed_at",
+          "tenant_id,maturity_level,treatment_owner,security_contact,storage_region,default_retention_days,has_personal_data,has_sensitive_data,document_review_status,last_reviewed_at,controller_name,privacy_contact_email,processing_role,minimum_user_age,age_control_method,target_telemetry_retention_days",
         )
         .limit(1000),
       supabase
@@ -661,6 +726,10 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
         record_count: Number(assetForm.record_count) || 0,
         storage_bytes: Number(assetForm.storage_bytes) || 0,
         retention_days: assetForm.retention_days ? Number(assetForm.retention_days) : null,
+        data_subject_categories: splitList(assetForm.data_subject_categories),
+        collection_sources: splitList(assetForm.collection_sources),
+        external_recipients: splitList(assetForm.external_recipients),
+        transfer_destination_countries: splitList(assetForm.transfer_destination_countries),
       })
       .select("*")
       .single();
@@ -867,9 +936,10 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
                 <p className="mt-1 text-xs leading-5 text-amber-900">
                   Esta subsección organiza evidencia técnica y operativa; no constituye
                   certificación ni asesoría jurídica. La Ley 21.719 es de protección de datos
-                  personales, no la Ley Marco de Ciberseguridad. La versión oficial consultada
-                  indica vigencia diferida al 1 de diciembre de 2026; existe una propuesta pública
-                  para postergarla a 2027, aún sujeta a tramitación.
+                  personales, no la Ley Marco de Ciberseguridad. La BCN indica vigencia desde el 1
+                  de diciembre de 2026. Los datos laborales deben analizarse con el cliente como
+                  posible responsable y BJ Servicios Informáticos SpA según el rol real de cada
+                  tratamiento. La meta de 30 días se limita a telemetría y no configura borrado.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-3 text-[11px] font-bold">
                   <a
@@ -879,6 +949,12 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
                     rel="noreferrer"
                   >
                     Texto oficial Ley 21.719
+                  </a>
+                  <a className="text-amber-800 underline" href="/privacidad" target="_blank">
+                    Borrador de privacidad público
+                  </a>
+                  <a className="text-amber-800 underline" href="/terminos" target="_blank">
+                    Borrador de términos públicos
                   </a>
                   <a
                     className="text-amber-800 underline"
@@ -1108,6 +1184,48 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
                       <p className="mt-2 text-xs text-slate-600">
                         {asset.description || "Sin descripción operativa."}
                       </p>
+                      <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
+                        <div>
+                          <dt className="font-bold text-slate-500">Finalidad y base</dt>
+                          <dd className="mt-0.5 text-slate-700">
+                            {asset.processing_purpose || "Finalidad pendiente"} ·{" "}
+                            {asset.lawful_basis || "Base pendiente"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-bold text-slate-500">Titulares y fuente</dt>
+                          <dd className="mt-0.5 text-slate-700">
+                            {asset.data_subject_categories.join(", ") || "Titulares pendientes"} ·{" "}
+                            {asset.collection_sources.join(", ") || "Fuente pendiente"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-bold text-slate-500">Proveedores y transferencias</dt>
+                          <dd className="mt-0.5 text-slate-700">
+                            {asset.external_recipients.join(", ") ||
+                              "Sin registro de destinatarios"}
+                            {asset.international_transfer &&
+                              ` · ${asset.transfer_destination_countries.join(", ") || "país pendiente"} · ${asset.transfer_mechanism || "mecanismo pendiente"}`}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-bold text-slate-500">Retención y evaluación</dt>
+                          <dd className="mt-0.5 text-slate-700">
+                            {asset.retention_days == null
+                              ? "Plazo pendiente"
+                              : `${asset.retention_days} días`}
+                            {asset.includes_minors
+                              ? " · contiene datos de menores"
+                              : " · menores no confirmados"}
+                            {asset.automated_decision_making
+                              ? " · perfilamiento/decisión automatizada"
+                              : ""}
+                            {asset.dpia_required
+                              ? ` · DPIA: ${asset.dpia_status}`
+                              : " · DPIA no evaluada"}
+                          </dd>
+                        </div>
+                      </dl>
                     </div>
                     <div className="grid grid-cols-2 gap-x-5 gap-y-1 text-right text-[10px] text-slate-500">
                       <span>
@@ -1844,6 +1962,89 @@ function AssetModal({
           value={form.description}
           onChange={(event) => update("description", event.target.value)}
         />
+        <Textarea
+          label="Finalidad específica"
+          rows={2}
+          value={form.processing_purpose}
+          onChange={(event) => update("processing_purpose", event.target.value)}
+          placeholder="Describe el propósito concreto del tratamiento para este activo."
+        />
+        <Textarea
+          label="Base de licitud documentada"
+          rows={2}
+          value={form.lawful_basis}
+          onChange={(event) => update("lawful_basis", event.target.value)}
+          placeholder="Indica la base aplicable y su justificación; requiere validación del responsable."
+        />
+        <FieldGrid>
+          <Textarea
+            label="Categorías de titulares (separadas por coma o línea)"
+            rows={2}
+            value={form.data_subject_categories}
+            onChange={(event) => update("data_subject_categories", event.target.value)}
+            placeholder="Trabajadores, postulantes, contactos…"
+          />
+          <Textarea
+            label="Fuentes de los datos (separadas por coma o línea)"
+            rows={2}
+            value={form.collection_sources}
+            onChange={(event) => update("collection_sources", event.target.value)}
+            placeholder="Titular, empleador, dispositivo, proveedor…"
+          />
+          <Textarea
+            label="Destinatarios y encargados"
+            rows={2}
+            value={form.external_recipients}
+            onChange={(event) => update("external_recipients", event.target.value)}
+            placeholder="Proveedor y servicio que recibe datos o solicitudes de red."
+          />
+          <Textarea
+            label="Países de destino (separados por coma o línea)"
+            rows={2}
+            value={form.transfer_destination_countries}
+            onChange={(event) => update("transfer_destination_countries", event.target.value)}
+            placeholder="País o región de alojamiento/soporte"
+          />
+          <Input
+            label="Mecanismo o garantía de transferencia"
+            value={form.transfer_mechanism}
+            onChange={(event) => update("transfer_mechanism", event.target.value)}
+            placeholder="Pendiente de validar, cláusulas, adecuación…"
+          />
+          <Select
+            label="Estado de DPIA / evaluación de impacto"
+            value={form.dpia_status}
+            onChange={(event) => update("dpia_status", event.target.value)}
+          >
+            <option value="not_assessed">No evaluado</option>
+            <option value="not_required">No requerida (justificar)</option>
+            <option value="planned">Planificada</option>
+            <option value="in_progress">En curso</option>
+            <option value="approved">Aprobada</option>
+            <option value="review_due">Revisión vencida</option>
+          </Select>
+        </FieldGrid>
+        <Textarea
+          label="Base de conservación y procedimiento de eliminación"
+          rows={2}
+          value={form.legal_retention_basis}
+          onChange={(event) => update("legal_retention_basis", event.target.value)}
+          placeholder="Documenta obligaciones, contrato y excepciones antes de asignar 30 días."
+        />
+        <Textarea
+          label="Procedimiento verificable de eliminación o anonimización"
+          rows={2}
+          value={form.deletion_procedure}
+          onChange={(event) => update("deletion_procedure", event.target.value)}
+          placeholder="Describe qué se elimina, quién ejecuta y cómo se comprueba."
+        />
+        <Textarea
+          label="Medidas de mitigación / revisión de impacto"
+          rows={2}
+          value={form.risk_mitigations}
+          onChange={(event) => update("risk_mitigations", event.target.value)}
+          placeholder="Salvaguardas, responsable y fecha de revisión posterior."
+        />
         <div className="grid gap-2 sm:grid-cols-2">
           <CheckField
             label="Contiene datos personales"
@@ -1865,7 +2066,31 @@ function AssetModal({
             checked={form.legal_hold}
             onChange={(value) => update("legal_hold", value)}
           />
+          <CheckField
+            label="Se ha confirmado presencia de datos de menores"
+            checked={form.includes_minors}
+            onChange={(value) => update("includes_minors", value)}
+          />
+          <CheckField
+            label="Transferencia internacional confirmada"
+            checked={form.international_transfer}
+            onChange={(value) => update("international_transfer", value)}
+          />
+          <CheckField
+            label="Hay decisión automatizada o perfilamiento significativo"
+            checked={form.automated_decision_making}
+            onChange={(value) => update("automated_decision_making", value)}
+          />
+          <CheckField
+            label="Requiere evaluación de impacto (DPIA)"
+            checked={form.dpia_required}
+            onChange={(value) => update("dpia_required", value)}
+          />
         </div>
+        <p className="text-xs leading-5 text-amber-800">
+          El objetivo de 30 días corresponde a telemetría técnica, no a todos los expedientes
+          laborales. Una casilla desmarcada no acredita que nunca existan datos de menores.
+        </p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
             Cancelar

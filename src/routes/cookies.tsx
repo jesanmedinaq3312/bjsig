@@ -4,17 +4,17 @@ import { openCookieSettings } from "@/components/CookieConsent";
 export const Route = createFileRoute("/cookies")({
   head: () => ({
     meta: [
-      { title: "Política de cookies y Google Analytics | BJSIGAPP" },
+      { title: "Política de cookies y almacenamiento local | BJSIGAPP" },
       {
         name: "description",
         content:
-          "Cómo BJSIGAPP usa cookies necesarias, funcionales y analíticas de Google Analytics 4, base legal, plazos y cómo retirar tu consentimiento.",
+          "Uso de almacenamiento local necesario y preferencias de BJSIGAPP, proveedores técnicos y controles de privacidad.",
       },
-      { property: "og:title", content: "Política de cookies y Google Analytics | BJSIGAPP" },
+      { property: "og:title", content: "Política de cookies y almacenamiento local | BJSIGAPP" },
       {
         property: "og:description",
         content:
-          "Cookies, Google Analytics 4, consentimiento y derechos del titular bajo la Ley 21.719.",
+          "Almacenamiento local, conexiones técnicas, consentimiento y derechos bajo la Ley 21.719.",
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
@@ -25,10 +25,10 @@ export const Route = createFileRoute("/cookies")({
 
 const cookies = [
   [
-    "bjsig_cookie_consent_v1",
+    "bjsig_privacy_notice_v2",
     "BJSIGAPP (almacenamiento local)",
     "Necesaria",
-    "Guarda tu elección de consentimiento.",
+    "Guarda que el aviso se entendió; no es consentimiento para analítica.",
     "12 meses",
   ],
   [
@@ -37,27 +37,6 @@ const cookies = [
     "Necesaria",
     "Mantiene tu sesión iniciada de forma segura.",
     "Sesión / hasta cerrar sesión",
-  ],
-  [
-    "Preferencias de interfaz",
-    "BJSIGAPP",
-    "Funcional",
-    "Recuerda tema, idioma y ajustes.",
-    "12 meses",
-  ],
-  [
-    "_ga",
-    "Google LLC (Google Analytics 4)",
-    "Analítica",
-    "Distingue visitantes de forma seudónima.",
-    "2 años",
-  ],
-  [
-    "_ga_<ID>",
-    "Google LLC (Google Analytics 4)",
-    "Analítica",
-    "Mantiene el estado de la sesión de medición.",
-    "2 años",
   ],
 ];
 
@@ -77,16 +56,20 @@ function CookiesPolicy() {
         <a href="/" className="text-sm font-semibold text-primary">
           ← Volver al inicio
         </a>
-        <h1 className="text-3xl font-black">Política de cookies y analítica (Google Analytics)</h1>
+        <h1 className="text-3xl font-black">Política de cookies y almacenamiento local</h1>
         <p className="text-sm text-muted-foreground">
-          Última actualización: 5 de noviembre de 2026 · Versión 1.0
+          Última actualización: 9 de noviembre de 2026 · Borrador 1.1, pendiente de revisión
+          jurídica
         </p>
       </header>
 
       <S t="1. Responsable">
         <p>
-          El responsable del tratamiento es BJSIGAPP (en adelante, “la Empresa”). Para consultas o
-          ejercer tus derechos escríbenos por los canales indicados en la página de contacto.
+          Para datos propios de la cuenta, seguridad y soporte, el responsable identificado por el
+          titular del servicio es BJ Servicios Informáticos SpA. Para datos laborales que una
+          empresa cliente incorpora, esa empresa determina el tratamiento según el contrato y la
+          configuración real. Falta confirmar y publicar un canal específico de privacidad; consulta
+          el canal contractual de tu empresa o solicita derivación desde la página de contacto.
         </p>
       </S>
 
@@ -100,91 +83,58 @@ function CookiesPolicy() {
 
       <S t="3. Marco legal">
         <p>
-          Este tratamiento se rige por la Ley N.º 19.628 y su reforma por la Ley N.º 21.719 sobre
-          Protección de Datos Personales, la Ley N.º 21.663 Marco de Ciberseguridad y, cuando
-          aplique a visitantes del Espacio Económico Europeo, el Reglamento (UE) 2016/679 (RGPD) y
-          la Directiva 2002/58/CE (ePrivacy).
+          El almacenamiento estrictamente necesario permite mantener la sesión y recordar que el
+          aviso fue visto. Cada uso de datos personales necesita una finalidad y base jurídica
+          aplicables a su contexto; este aviso no crea una base general para tratamientos laborales.
+          La Ley 21.719 debe aplicarse conforme a su vigencia oficial; el texto BCN consultado
+          indica el 1 de diciembre de 2026. El RGPD/ePrivacy requieren evaluación territorial cuando
+          corresponda.
         </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>
-            <b>Cookies necesarias:</b> interés legítimo y ejecución del servicio; no requieren
-            consentimiento.
+            <b>Almacenamiento necesario:</b> se limita a autenticación y al registro local de
+            lectura de este aviso.
           </li>
           <li>
-            <b>Cookies funcionales y analíticas:</b> consentimiento libre, específico, informado e
-            inequívoco, otorgado mediante el banner. Nunca se activan por defecto.
+            <b>Analítica:</b> no hay categoría opcional ni proveedor analítico activo en el código
+            revisado. No se solicita consentimiento para una herramienta que no se carga.
           </li>
         </ul>
       </S>
 
-      <S t="4. Google Analytics 4">
+      <S t="4. Analítica y solicitudes a proveedores">
         <p>
-          Con tu consentimiento usamos Google Analytics 4, servicio de Google LLC / Google Ireland
-          Ltd., para conocer de forma agregada cuántas personas visitan el sitio, qué páginas
-          consultan y cómo llegan a él.
+          En el código de aplicación revisado no encontramos el script de Google Analytics 4, Google
+          Tag Manager ni un consumidor del evento de consentimiento analítico. La política CSP
+          versionada tampoco autoriza dominios Google en scripts, imágenes o conexiones. Por ello,
+          este checkout no inicia envío analítico a Google. La configuración del hosting/CDN y los
+          encabezados servidos en producción deben verificarse por separado antes de presentar esta
+          afirmación como garantía de despliegue.
         </p>
-        <ul className="list-disc space-y-1 pl-5">
-          <li>
-            <b>Modo de consentimiento (Consent Mode v2):</b> por defecto{" "}
-            <code>analytics_storage</code>, <code>ad_storage</code>, <code>ad_user_data</code> y{" "}
-            <code>ad_personalization</code> quedan en “denegado”. Solo{" "}
-            <code>analytics_storage</code> pasa a “concedido” si aceptas las analíticas.
-          </li>
-          <li>
-            <b>Minimización:</b> GA4 no registra ni almacena direcciones IP completas. Desactivamos
-            señales de Google, personalización de anuncios y el intercambio de datos con otros
-            productos de Google.
-          </li>
-          <li>
-            <b>Sin datos sensibles:</b> no enviamos a Google nombres, RUT, correos, ubicación GPS,
-            datos de salud ni información de los portales privados de trabajadores o administración.
-          </li>
-          <li>
-            <b>Retención:</b> los datos de eventos se conservan como máximo 14 meses.
-          </li>
-          <li>
-            <b>Transferencia internacional:</b> los datos pueden tratarse en servidores de Google
-            fuera de Chile, amparados en las cláusulas contractuales tipo y el Anexo de Tratamiento
-            de Datos de Google.
-          </li>
-          <li>
-            No usamos Google Analytics para publicidad, elaboración de perfiles ni decisiones
-            automatizadas sobre personas.
-          </li>
-        </ul>
         <p>
-          Más información:{" "}
-          <a
-            className="text-primary underline"
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Política de privacidad de Google
-          </a>{" "}
-          y{" "}
-          <a
-            className="text-primary underline"
-            href="https://tools.google.com/dlpage/gaoptout"
-            target="_blank"
-            rel="noreferrer"
-          >
-            complemento de inhabilitación de Google Analytics
-          </a>
-          .
+          Toda solicitud directa del navegador a un proveedor revela normalmente la IP y metadatos
+          técnicas al servidor que la recibe. BJSIGAPP realiza solicitudes necesarias a Supabase
+          para autenticación y servicio. Turnstile está pausado: el cliente y la Edge Function
+          retornan antes de hacer solicitudes y la política CSP bloquea sus dominios. Si se reactiva
+          su verificación, el código enviará la IP del cliente a Cloudflare; este aviso y los
+          acuerdos deberán revisarse antes de cualquier habilitación. Abrir un enlace de Google
+          Drive u otro documento o imagen alojado por terceros conecta el navegador directamente con
+          ese proveedor y revela su IP.
         </p>
       </S>
 
-      <S t="5. Cookies que utilizamos">
+      <S t="5. Almacenamiento utilizado">
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-foreground">
               <tr>
-                {["Nombre", "Proveedor", "Tipo", "Finalidad", "Duración"].map((h) => (
-                  <th key={h} className="p-2">
-                    {h}
-                  </th>
-                ))}
+                {["Nombre", "Proveedor / ubicación", "Categoría", "Finalidad", "Duración"].map(
+                  (h) => (
+                    <th key={h} className="p-2">
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
@@ -202,18 +152,18 @@ function CookiesPolicy() {
         </div>
       </S>
 
-      <S t="6. Cómo aceptar, rechazar o retirar tu consentimiento">
+      <S t="6. Aviso y preferencias">
         <p>
-          Rechazar es tan fácil como aceptar: el banner ofrece “Solo necesarias”. Puedes cambiar tu
-          decisión cuando quieras; al retirar el consentimiento, dejamos de medir y se eliminan las
-          cookies analíticas de este dominio. Tu elección se vuelve a solicitar cada 12 meses o si
-          cambia esta política.
+          El banner es informativo; el botón “Entendido” guarda localmente una constancia de lectura
+          por un máximo de 12 meses. No activa analítica ni comparte datos con Google. Puedes borrar
+          el registro desde los ajustes del navegador. Si se incorpora una herramienta opcional en
+          el futuro, deberá revisarse y configurarse antes de solicitar el consentimiento aplicable.
         </p>
         <button
           onClick={() => openCookieSettings()}
           className="rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground"
         >
-          Configurar cookies
+          Ver detalles del almacenamiento
         </button>
         <p>
           También puedes bloquear o borrar cookies desde la configuración de tu navegador; algunas
@@ -223,24 +173,29 @@ function CookiesPolicy() {
 
       <S t="7. Tus derechos">
         <p>
-          Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, portabilidad y
-          bloqueo (Ley 21.719). Responderemos dentro de los plazos legales. Si no quedas conforme,
-          puedes reclamar ante la Agencia de Protección de Datos Personales.
+          Puedes ejercer los derechos que correspondan según la ley aplicable. Para datos laborales,
+          dirígete primero a tu empleador/empresa cliente, que determina el tratamiento. Para datos
+          propios de cuenta o consultas sobre BJSIGAPP, usa el canal contractual o la página de
+          contacto e indica “solicitud de privacidad”. BJ Servicios Informáticos SpA aún debe
+          habilitar y publicar un canal dedicado, responsable operativo y SLA. Los plazos legales no
+          se sustituyen por este borrador.
         </p>
       </S>
 
       <S t="8. Seguridad">
         <p>
-          Aplicamos cifrado en tránsito (HTTPS/TLS), control de accesos por roles, autenticación
-          multifactor en paneles administrativos y registros de auditoría, conforme a los principios
-          de seguridad desde el diseño de la Ley 21.663.
+          El repositorio implementa controles técnicos como autenticación, permisos, aislamiento por
+          empresa y registros de auditoría en los módulos correspondientes. La configuración real de
+          hosting, copias, cifrado en reposo, MFA y monitoreo debe comprobarse por entorno antes de
+          hacer afirmaciones de cumplimiento o seguridad garantizada.
         </p>
       </S>
 
       <S t="9. Cambios">
         <p>
-          Podemos actualizar esta política. Publicaremos la nueva versión con su fecha y, si el
-          cambio es relevante, volveremos a pedir tu consentimiento.
+          Publicaremos la versión y fecha de cada cambio material. Si una función nueva requiere
+          consentimiento, no se activará hasta implementar el mecanismo y actualizar la información
+          aplicable.
         </p>
       </S>
     </main>

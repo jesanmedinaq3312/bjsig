@@ -1,12 +1,17 @@
 import { clientInfo } from "./worker-auth-utils.ts";
 
 const VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+// Pausado por instrucción del cliente. No se ejecuta ninguna solicitud externa
+// ni se reenvía remoteip hasta que exista aprobación y revisión de privacidad.
+const TURNSTILE_PAUSED_BY_CLIENT = true;
 
 export async function verifyTurnstile(
   req: Request,
   body: Record<string, unknown>,
   expectedAction: string,
 ): Promise<boolean> {
+  if (TURNSTILE_PAUSED_BY_CLIENT) return false;
+
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY")?.trim();
   const allowedHostnames = (Deno.env.get("TURNSTILE_ALLOWED_HOSTNAMES") ?? "")
     .split(",")

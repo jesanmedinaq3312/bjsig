@@ -446,28 +446,109 @@ export function PublicLanding() {
 }
 
 export function PublicDocument({ kind }: { kind: "privacy" | "terms" | "contact" }) {
+  const sections: Array<{ title: string; body: string }> =
+    kind === "privacy"
+      ? [
+          {
+            title: "Responsable y roles",
+            body: "Para datos de cuentas, seguridad y soporte de la plataforma, el responsable informado es BJ Servicios Informáticos SpA, Chile. En expedientes de trabajadores cargados por una empresa cliente, esa empresa determina fines y medios y normalmente actúa como responsable; BJ actúa según el rol que establezcan el contrato y cada tratamiento. La identificación tributaria, domicilio y un correo dedicado de privacidad deben completarse antes de aprobar esta política.",
+          },
+          {
+            title: "Datos y finalidades",
+            body: "Según los módulos que habilite cada cliente, BJSIGAPP puede tratar datos de identificación y contacto, relación laboral, asistencia y turnos, documentos, remuneraciones y cuentas de pago, seguridad, capacitación, incidencias, licencias/ausencias y ubicación vinculada a controles operativos. Los fines deben definirse por activo. La seguridad, soporte y mejora técnica del servicio no constituyen por sí solos la finalidad ni la base jurídica de cada expediente laboral.",
+          },
+          {
+            title: "Base de licitud y transparencia",
+            body: "La empresa responsable debe informar a las personas y documentar la base de licitud aplicable a cada propósito. BJSIGAPP no considera que una aceptación general de estos términos sustituya la base legal, la información laboral ni las obligaciones del responsable. La ficha de tratamiento, bases y destinatarios está en proceso de implementación.",
+          },
+          {
+            title: "Edad mínima",
+            body: "El acceso a BJSIGAPP está destinado a personas de 18 años o más. El acceso pide una autodeclaración; no se solicita ni almacena fecha de nacimiento y esa casilla no verifica la edad ni acredita que un cliente nunca haya cargado datos de una persona menor. Los clientes no deben incorporar datos de menores en esta versión y deben contactar al responsable si detectan una carga accidental.",
+          },
+          {
+            title: "Conexiones, IP y proveedores",
+            body: "Las solicitudes web revelan la dirección IP y metadatos técnicos al servidor que las recibe. El código de aplicación revisado no carga Google Analytics ni Google Tag Manager y la política de seguridad del repositorio no autoriza dominios de analítica de Google. El QR de contacto y los avatares generados se procesan localmente. Las conexiones esenciales al servicio y el uso voluntario de enlaces externos de documentos/fotos pueden revelar la IP al proveedor correspondiente; abrir un enlace de Google Drive conecta directamente el navegador con Google. No se afirma que el hosting, registros de infraestructura o configuración de producción hayan sido auditados.",
+          },
+          {
+            title: "Ubicación y seguridad",
+            body: "Algunos flujos pueden solicitar GPS para validar acceso o registrar operaciones. La ubicación es un dato personal y su uso debe limitarse a los fines informados por la empresa responsable. Se aplican controles de autenticación, permisos, aislamiento y registros de seguridad según la configuración del servicio; la cobertura de producción y los proveedores deben validarse antes de considerar estos controles evidencia completa.",
+          },
+          {
+            title: "Conservación y eliminación",
+            body: "La meta comunicada es conservar telemetría técnica mínima por 30 días, sujeta a aprobación e implementación de una purga verificable. No es un plazo universal para registros laborales, documentos, nóminas, asistencia, respaldos ni retenciones legales. Cada activo necesita plazo y procedimiento propios. A la fecha de este borrador, el repositorio no acredita una eliminación automatizada completa en producción.",
+          },
+          {
+            title: "Transferencias y decisiones automatizadas",
+            body: "El inventario de países, encargados, subencargados, contratos y mecanismos de transferencia internacional aún debe completarse. No se declaran decisiones automatizadas con efectos significativos como función confirmada; los usos de perfilamiento deben ser revisados por cada cliente antes de habilitarlos.",
+          },
+          {
+            title: "Aplicación internacional",
+            body: "La operación base se identifica en Chile. El RGPD puede aplicar cuando se cumplen sus criterios territoriales (por ejemplo, establecimiento en la UE, oferta de servicios a personas en la UE o monitorización allí). En Estados Unidos pueden aplicar leyes federales sectoriales y leyes estatales según actividad y umbrales; COPPA se centra en menores de 13 y la regla de acceso 18+ de BJSIGAPP no exime a las empresas de sus deberes sobre datos laborales. La aplicación de cada régimen requiere análisis del mercado, titulares y contratos; esta política no certifica cumplimiento internacional.",
+          },
+          {
+            title: "Derechos y canal de solicitudes",
+            body: "Según la ley aplicable, los derechos pueden incluir acceso, rectificación, supresión, oposición, portabilidad y bloqueo, además de derechos locales adicionales. Las solicitudes sobre expedientes laborales deben dirigirse primero a la empresa empleadora, como responsable del tratamiento correspondiente. Para datos propios de una cuenta o consultas del servicio, utiliza el canal contractual o la página de contacto e indica que se trata de una solicitud de privacidad. El correo dedicado, responsables de atención y plazos operativos aún deben ser confirmados y publicados por BJ Servicios Informáticos SpA.",
+          },
+        ]
+      : kind === "terms"
+        ? [
+            {
+              title: "Proveedor y aceptación",
+              body: "BJSIGAPP es un servicio de gestión y prevención de riesgos operado por BJ Servicios Informáticos SpA en Chile. La identidad tributaria, domicilio y datos completos de contacto del proveedor deben completarse en la versión contractual firmada. El uso requiere autorización de la empresa cliente y una cuenta individual habilitada; la autodeclaración de edad no sustituye la validación de identidad.",
+            },
+            {
+              title: "Elegibilidad y cuentas",
+              body: "Sólo personas de 18 años o más pueden acceder a esta versión. Cada usuario debe mantener sus credenciales bajo control, no compartir cuentas y notificar accesos no autorizados. El cliente administra altas, roles y baja de trabajadores. No debe cargar información de personas menores en esta versión; si ocurre, debe restringir el acceso y comunicarlo por el canal de soporte/privacidad.",
+            },
+            {
+              title: "Datos y responsabilidades del cliente",
+              body: "El cliente decide qué módulos usar y responde por la exactitud de los datos, la información que entrega a trabajadores, la base de licitud, los permisos de sus usuarios, la definición de retención y las instrucciones impartidas a sus proveedores. En datos laborales, el cliente y BJ deben documentar en contrato sus roles, seguridad, asistencia a solicitudes y eliminación/devolución al terminar el servicio.",
+            },
+            {
+              title: "Uso, ubicación y seguridad",
+              body: "El servicio debe utilizarse para fines empresariales legítimos y dentro de los permisos asignados. Algunos flujos solicitan ubicación GPS; su propósito y alcance deben ser informados por la empresa cliente. Se prohíbe intentar acceder a datos de otros clientes, compartir credenciales o eludir controles de seguridad.",
+            },
+            {
+              title: "Proveedores y enlaces externos",
+              body: "El servicio puede depender de proveedores de alojamiento, autenticación y soporte que se informarán en la política de privacidad y en el contrato de tratamiento. Abrir enlaces de Google Drive u otros servicios externos comunica la dirección IP directamente al proveedor del enlace. Esta versión no incorpora analítica de Google en el código revisado; los scripts/configuración del hosting deben verificarse independientemente.",
+            },
+            {
+              title: "Disponibilidad, cambios y soporte",
+              body: "Las funciones pueden cambiar por mantenimiento, seguridad o evolución del producto. No se garantiza disponibilidad ininterrumpida. Los canales y niveles de soporte aplicables son los indicados en la propuesta/contrato SaaS firmado; esta página no crea un SLA no pactado.",
+            },
+            {
+              title: "Conservación, solicitudes y término",
+              body: "Los plazos y procesos de exportación, conservación y eliminación deben fijarse por contrato y por activo. La meta de 30 días se limita a telemetría técnica cuando se implemente y no prevalece sobre obligaciones legales documentadas. Al finalizar el servicio, BJ y el cliente deben acordar devolución, exportación, bloqueo y eliminación de acuerdo con la ley y el contrato.",
+            },
+            {
+              title: "Ley aplicable y estado de este documento",
+              body: "Este texto es un borrador público informativo, no sustituye el contrato SaaS ni asesoría jurídica. Antes de presentarlo como condición vinculante deben revisarse el alcance territorial, derechos de titulares, límites de responsabilidad, pagos, terminación, subencargos, notificación de incidentes, jurisdicción y anexos de tratamiento para Chile y los países donde se ofrezca el servicio.",
+            },
+          ]
+        : [];
   const content =
     kind === "privacy"
       ? {
           title: "Política de privacidad",
           intro:
-            "Información sobre cómo BJSIGAPP trata datos de usuarios, trabajadores y empresas.",
+            "Aviso de trabajo sobre los datos que trata BJSIGAPP, las responsabilidades de BJ y las empresas clientes, y los puntos que todavía requieren validación.",
           items: [
-            "Finalidades y categorías de datos",
-            "Bases y derechos de las personas",
-            "Seguridad, conservación y encargados",
-            "Canales de contacto y solicitudes",
+            "BJ Servicios Informáticos SpA · Chile",
+            "Acceso de personas usuarias 18+",
+            "Datos laborales bajo responsabilidad del cliente según cada tratamiento",
+            "Borrador público pendiente de aprobación jurídica y verificación de producción",
           ],
         }
       : kind === "terms"
         ? {
             title: "Términos y condiciones",
-            intro: "Condiciones generales para el uso de BJSIGAPP y sus portales empresariales.",
+            intro:
+              "Borrador de condiciones para el servicio BJSIGAPP. Debe completarse y revisarse con el contrato SaaS antes de tratarse como documento vinculante.",
             items: [
-              "Cuenta y responsabilidades del cliente",
-              "Módulos, límites y soporte",
-              "Uso aceptable y seguridad",
-              "Vigencia, suspensión y terminación",
+              "Proveedor identificado y cuentas individuales",
+              "Usuarios de 18 años o más",
+              "Responsabilidades por los datos cargados y su conservación",
+              "Seguridad, proveedores, soporte y término del servicio",
             ],
           }
         : {
@@ -496,6 +577,13 @@ export function PublicDocument({ kind }: { kind: "privacy" | "terms" | "contact"
           </div>
           <h1 className="mt-7 text-3xl font-bold tracking-tight sm:text-4xl">{content.title}</h1>
           <p className="mt-4 max-w-prose text-base leading-7 text-white/70">{content.intro}</p>
+          {kind !== "contact" && (
+            <p className="mt-3 rounded-xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-amber-100">
+              Borrador v0.1 · 9 de noviembre de 2026. No es una certificación de cumplimiento ni
+              reemplaza el contrato SaaS. Falta revisión jurídica, completar identificación y canal
+              formal de privacidad, y validar la configuración productiva.
+            </p>
+          )}
           <ul className="mt-8 divide-y divide-white/10 border-y border-white/10">
             {content.items.map((item) => (
               <li key={item} className="flex min-h-14 items-center gap-3 py-3 text-sm sm:text-base">
@@ -504,6 +592,16 @@ export function PublicDocument({ kind }: { kind: "privacy" | "terms" | "contact"
               </li>
             ))}
           </ul>
+          {sections.length > 0 && (
+            <div className="mt-10 space-y-8">
+              {sections.map((section) => (
+                <section key={section.title} className="space-y-2">
+                  <h2 className="text-lg font-bold text-white">{section.title}</h2>
+                  <p className="max-w-prose text-sm leading-7 text-white/70">{section.body}</p>
+                </section>
+              ))}
+            </div>
+          )}
           <p className="mt-8 border-t border-white/10 pt-6 text-sm leading-6 text-white/55">
             Documento sujeto a la versión contractual y legal vigente. Para solicitudes formales
             utiliza el canal de contacto indicado en tu contrato SaaS.

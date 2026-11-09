@@ -1,7 +1,4 @@
-import { IdentityAvatar, blobatarUrl } from "@/components/IdentityAvatar";
-
-// eslint-disable-next-line react-refresh/only-export-components -- mixed component and stable API export is intentional here
-export { blobatarUrl };
+import { IdentityAvatar } from "@/components/IdentityAvatar";
 
 type WorkerAvatarProps = {
   name: string;
@@ -13,7 +10,6 @@ type WorkerAvatarProps = {
 
 export function WorkerAvatar({
   name,
-  rut,
   photoUrl,
   className = "h-8 w-8",
   rounded = "rounded-lg",
@@ -21,7 +17,6 @@ export function WorkerAvatar({
   return (
     <IdentityAvatar
       name={name}
-      seed={`${name}-${rut ?? ""}`}
       photoUrl={photoUrl}
       className={className}
       rounded={rounded}

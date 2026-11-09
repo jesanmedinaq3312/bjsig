@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import {
   HardHat,
   Mail,
@@ -159,14 +160,29 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   const [magicSent, setMagicSent] = useState(false);
   const [magicAvailable, setMagicAvailable] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
+  const [adultConfirmed, setAdultConfirmed] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
 
-  // Enlace directo a WhatsApp con mensaje predeterminado y QR generado
+  // El QR se genera localmente; el proveedor externo sólo recibe una solicitud
+  // si la persona decide abrir el enlace de WhatsApp.
   const whatsappNumber = "56941228089";
   const whatsappMessage = encodeURIComponent(
     "Hola, necesito solicitar acceso al administrador para el sistema SIG Pro.",
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(whatsappUrl)}`;
+  useEffect(() => {
+    let cancelled = false;
+    void QRCode.toDataURL(whatsappUrl, {
+      width: 150,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    }).then((dataUrl) => {
+      if (!cancelled) setQrCodeUrl(dataUrl);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [whatsappUrl]);
 
   useEffect(() => {
     void (tenantSlug ? loadTenantBrandingBySlug(tenantSlug) : loadCompanyBranding());
@@ -174,6 +190,10 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder a BJSIGAPP.");
+      return;
+    }
     if (busy || !gpsReady) {
       if (!gpsReady) setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
       return;
@@ -227,6 +247,10 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
   async function handleForgotPassword(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder a BJSIGAPP.");
+      return;
+    }
     setError(null);
     setBusy(true);
     try {
@@ -246,7 +270,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   }
 
   async function handleMagicLink() {
-    if (busy || !gpsReady) return;
+    if (busy || !gpsReady || !adultConfirmed) return;
     setError(null);
     setBusy(true);
     setMagicSent(false);
@@ -298,7 +322,30 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
         {/* Tarjeta de Login */}
         <div className="wm-login-card bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-950/60 border border-white/20 p-5 sm:p-7 [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.15),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-          {!forgotMode && mfaState.status === "not_required" && (
+          {mfaState.status === "not_required" && (
+            <label className="mb-4 flex items-start gap-2.5 rounded-xl border border-white/15 bg-white/[0.04] p-3 text-xs leading-5 text-white/75">
+              <input
+                type="checkbox"
+                checked={adultConfirmed}
+                disabled={busy}
+                onChange={(event) => setAdultConfirmed(event.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-400"
+              />
+              <span>
+                Declaro que tengo 18 años o más. No se solicita ni almacena mi fecha de nacimiento.
+                Revisa los{" "}
+                <a className="font-semibold text-cyan-300 underline" href="/terminos">
+                  términos
+                </a>{" "}
+                y la{" "}
+                <a className="font-semibold text-cyan-300 underline" href="/privacidad">
+                  política de privacidad
+                </a>
+                .
+              </span>
+            </label>
+          )}
+          {!forgotMode && adultConfirmed && mfaState.status === "not_required" && (
             <div className="mb-4">
               <GpsCaptureCard
                 status={gpsStatus}
@@ -423,7 +470,10 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                 </fieldset>
               ) : (
                 <form onSubmit={submit} className="space-y-4">
-                  <fieldset disabled={!gpsReady || busy} className="min-w-0 border-0 p-0">
+                  <fieldset
+                    disabled={!adultConfirmed || !gpsReady || busy}
+                    className="min-w-0 border-0 p-0"
+                  >
                     <div>
                       <label className="block text-xs font-semibold text-white/80 mb-1.5">
                         Correo Electrónico
@@ -503,7 +553,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
                     <button
                       type="submit"
-                      disabled={busy}
+                      disabled={busy || !gpsReady || !adultConfirmed}
                       className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
                     >
                       {busy ? (
@@ -523,7 +573,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                     {magicAvailable && !magicSent && (
                       <button
                         type="button"
-                        disabled={busy || !email}
+                        disabled={busy || !email || !adultConfirmed}
                         onClick={() => void handleMagicLink()}
                         className="w-full rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-50"
                       >
@@ -559,11 +609,17 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                   rel="noopener noreferrer"
                   className="group flex flex-col items-center bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/15 hover:border-blue-400/40 p-3 rounded-2xl transition-all duration-200 [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.05)]"
                 >
-                  <img
-                    src={qrCodeUrl}
-                    alt="Código QR de ayuda"
-                    className="w-24 h-24 rounded-lg object-contain bg-white p-1 border border-white/10 group-hover:scale-105 transition-transform"
-                  />
+                  {qrCodeUrl ? (
+                    <img
+                      src={qrCodeUrl}
+                      alt="Código QR de ayuda, generado en este dispositivo"
+                      className="w-24 h-24 rounded-lg object-contain bg-white p-1 border border-white/10 group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <span className="flex h-24 w-24 items-center justify-center rounded-lg bg-white/10 text-[10px] text-white/60">
+                      Generando QR local…
+                    </span>
+                  )}
                   <span className="mt-2 text-[11px] font-semibold text-blue-300 group-hover:text-blue-200">
                     +56 9 4122 8089
                   </span>

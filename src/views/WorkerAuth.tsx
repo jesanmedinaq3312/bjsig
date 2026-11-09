@@ -51,6 +51,7 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [, setAccountInfo] = useState<AccountCheck | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
+  const [adultConfirmed, setAdultConfirmed] = useState(false);
 
   useEffect(() => {
     if (!retryAt) return;
@@ -98,6 +99,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleRutCheck(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder al portal.");
+      return;
+    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     if (!gpsReady) {
@@ -139,6 +144,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder al portal.");
+      return;
+    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     if (!gpsReady) {
@@ -228,6 +237,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleSetFirstPassword(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder al portal.");
+      return;
+    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     if (newPassword !== confirmPassword) {
@@ -262,6 +275,10 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
 
   async function handleResetRequest(e: React.FormEvent) {
     e.preventDefault();
+    if (!adultConfirmed) {
+      setError("Debes confirmar que tienes 18 años o más para acceder al portal.");
+      return;
+    }
     if (busy || retryAt > Date.now()) return;
     resetState();
     setBusy(true);
@@ -310,7 +327,28 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
               {String(remainingSeconds % 60).padStart(2, "0")}.
             </p>
           )}
-          {(mode === "rut" || mode === "login") && (
+          <label className="mb-4 flex items-start gap-2.5 rounded-xl border border-white/15 bg-slate-950/40 p-3 text-xs leading-5 text-white/80">
+            <input
+              type="checkbox"
+              checked={adultConfirmed}
+              disabled={busy}
+              onChange={(event) => setAdultConfirmed(event.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-400"
+            />
+            <span>
+              Declaro que tengo 18 años o más. No se solicita ni almacena mi fecha de nacimiento.
+              Consulta el requisito en los{" "}
+              <a className="font-semibold text-cyan-300 underline" href="/terminos">
+                términos
+              </a>{" "}
+              y la{" "}
+              <a className="font-semibold text-cyan-300 underline" href="/privacidad">
+                política de privacidad
+              </a>
+              .
+            </span>
+          </label>
+          {(mode === "rut" || mode === "login") && adultConfirmed && (
             <div className="mb-4">
               <GpsCaptureCard
                 status={gpsStatus}
@@ -322,7 +360,11 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
             </div>
           )}
           <fieldset
-            disabled={remainingSeconds > 0 || ((mode === "rut" || mode === "login") && !gpsReady)}
+            disabled={
+              !adultConfirmed ||
+              remainingSeconds > 0 ||
+              ((mode === "rut" || mode === "login") && !gpsReady)
+            }
             className="min-w-0"
           >
             {mode === "rut" && (

@@ -1,42 +1,46 @@
 import { useEffect, useState } from "react";
-import { Cookie, ShieldCheck, X } from "lucide-react";
+import { Cookie, X } from "lucide-react";
 
-const STORAGE_KEY = "bjsig_cookie_consent_v1";
+const STORAGE_KEY = "bjsig_privacy_notice_v2";
+const NOTICE_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
-type Consent = {
-  necessary: true;
-  functional: boolean;
-  analytics: boolean;
-  acceptedAt: string;
+type NoticeAcknowledgement = {
+  acknowledgedAt: string;
 };
 
-function save(consent: Omit<Consent, "acceptedAt" | "necessary">) {
-  const value: Consent = { necessary: true, ...consent, acceptedAt: new Date().toISOString() };
+function saveAcknowledgement() {
+  const value: NoticeAcknowledgement = { acknowledgedAt: new Date().toISOString() };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
   } catch {
-    /* storage unavailable */
+    /* El aviso seguirá visible si el almacenamiento no está disponible. */
   }
-  window.dispatchEvent(new CustomEvent("bjsig:cookie-consent", { detail: value }));
+}
+
+function hasFreshAcknowledgement() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const value = JSON.parse(raw) as Partial<NoticeAcknowledgement>;
+    const acknowledgedAt = Date.parse(value.acknowledgedAt ?? "");
+    if (!Number.isFinite(acknowledgedAt) || Date.now() - acknowledgedAt > NOTICE_TTL_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const [details, setDetails] = useState(false);
-  const [functional, setFunctional] = useState(true);
-  const [analytics, setAnalytics] = useState(false);
 
   useEffect(() => {
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(STORAGE_KEY);
-    } catch {
-      stored = null;
-    }
-    if (!stored) {
-      const t = window.setTimeout(() => setOpen(true), 700);
-      return () => window.clearTimeout(t);
-    }
+    if (hasFreshAcknowledgement()) return;
+    const timer = window.setTimeout(() => setOpen(true), 700);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -50,8 +54,8 @@ export function CookieConsent() {
 
   if (!open) return null;
 
-  const close = (c: { functional: boolean; analytics: boolean }) => {
-    save(c);
+  const close = () => {
+    saveAcknowledgement();
     setOpen(false);
   };
 
@@ -59,130 +63,78 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-live="polite"
-      aria-label="Aviso de privacidad y cookies"
+      aria-label="Aviso de almacenamiento y privacidad"
       className="cookie-banner fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-3xl rounded-2xl border border-white/15 bg-slate-900/95 p-4 text-white shadow-2xl shadow-blue-950/60 backdrop-blur-xl sm:inset-x-6 sm:bottom-6 sm:p-6"
     >
       <button
         type="button"
-        onClick={() => close({ functional: false, analytics: false })}
-        aria-label="Rechazar opcionales y cerrar"
+        onClick={close}
+        aria-label="Cerrar aviso"
         className="absolute right-2 top-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white"
       >
         <X size={16} />
       </button>
       <div className="flex gap-4">
-        <span className="cookie-icon hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 shadow-lg shadow-blue-500/30 sm:flex">
+        <span className="cookie-icon hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-700 sm:flex">
           <Cookie size={22} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-black">Tu privacidad nos importa</h2>
-          <p className="mt-1.5 text-sm leading-6 text-white/65">
-            Usamos cookies y datos técnicos (dispositivo, IP y actividad) para seguridad y
-            funcionamiento. En los portales, procesamos ubicación GPS para control operacional. No
-            vendemos ni compartimos tus datos con terceros. Revisa nuestra{" "}
+          <h2 className="text-base font-black">Aviso de almacenamiento y privacidad</h2>
+          <p className="mt-1.5 text-sm leading-6 text-white/75">
+            Esta versión usa almacenamiento local necesario para la sesión y este aviso. No carga
+            Google Analytics ni envía eventos analíticos a Google desde el código revisado. Las
+            conexiones web revelan la IP al servidor receptor; abrir documentos alojados en Google
+            Drive conecta directamente tu navegador con Google. Consulta la{" "}
             <a
               href="/privacidad"
               className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white"
             >
-              Política de privacidad
-            </a>{" "}
-            y los{" "}
+              política de privacidad
+            </a>
+            , los{" "}
             <a
               href="/terminos"
               className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white"
             >
-              Términos y condiciones
+              términos
             </a>{" "}
             y la{" "}
             <a
               href="/cookies"
               className="font-semibold text-cyan-300 underline underline-offset-2 hover:text-white"
             >
-              Política de cookies
+              política de cookies
             </a>
-            . Las analíticas (Google Analytics) solo se activan si las aceptas.
+            .
           </p>
 
           {details && (
-            <div className="cookie-details mt-4 space-y-2">
-              {[
-                {
-                  label: "Necesarias",
-                  desc: "Sesión, seguridad y preferencias básicas.",
-                  value: true,
-                  locked: true,
-                  set: () => {},
-                },
-                {
-                  label: "Funcionales",
-                  desc: "Recordar tema, idioma y ajustes de la interfaz.",
-                  value: functional,
-                  locked: false,
-                  set: setFunctional,
-                },
-                {
-                  label: "Analíticas",
-                  desc: "Medición anónima de uso para mejorar la plataforma.",
-                  value: analytics,
-                  locked: false,
-                  set: setAnalytics,
-                },
-              ].map((row) => (
-                <label
-                  key={row.label}
-                  className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.07]"
-                >
-                  <span>
-                    <span className="flex items-center gap-1.5 text-sm font-bold">
-                      {row.locked && <ShieldCheck size={14} className="text-emerald-300" />}
-                      {row.label}
-                    </span>
-                    <span className="block text-xs text-white/50">{row.desc}</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={row.value}
-                    disabled={row.locked}
-                    onChange={(e) => row.set(e.target.checked)}
-                    className="h-5 w-5 accent-cyan-400"
-                  />
-                </label>
-              ))}
+            <div className="cookie-details mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-xs leading-5 text-white/70">
+              <p>
+                Sólo se guarda una constancia local de que el aviso fue leído durante un máximo de
+                12 meses. No hay categorías de analítica o publicidad activas. Turnstile está
+                desactivado en esta versión; cualquier activación requiere revisión y nuevo aviso.
+              </p>
             </div>
           )}
 
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => close({ functional: true, analytics: true })}
-              className="rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-400"
+              onClick={close}
+              className="rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
             >
-              Aceptar todo
+              Entendido
             </button>
-            {details ? (
-              <button
-                type="button"
-                onClick={() => close({ functional, analytics })}
-                className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold transition hover:bg-white/10"
-              >
-                Guardar preferencias
-              </button>
-            ) : (
+            {!details && (
               <button
                 type="button"
                 onClick={() => setDetails(true)}
-                className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold transition hover:bg-white/10"
+                className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
               >
-                Configurar
+                Ver detalles
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => close({ functional: false, analytics: false })}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white/60 transition hover:bg-white/10 hover:text-white"
-            >
-              Solo necesarias
-            </button>
           </div>
         </div>
       </div>
@@ -190,6 +142,7 @@ export function CookieConsent() {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentional settings event API
 export function openCookieSettings() {
   window.dispatchEvent(new Event("bjsig:open-cookie-settings"));
 }

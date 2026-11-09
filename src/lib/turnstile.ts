@@ -14,6 +14,10 @@ type TurnstileApi = {
   remove: (widgetId: string) => void;
 };
 
+// Pausado por instrucción del cliente: no cargar Cloudflare ni remitir IP/token
+// hasta contar con aprobación de privacidad y despliegue específico.
+const TURNSTILE_PAUSED_BY_CLIENT = true;
+
 declare global {
   interface Window {
     turnstile?: TurnstileApi;
@@ -46,6 +50,11 @@ function loadTurnstile(): Promise<TurnstileApi> {
 }
 
 export async function getTurnstileToken(action: string): Promise<string> {
+  if (TURNSTILE_PAUSED_BY_CLIENT) {
+    throw new Error(
+      "El portal de trabajadores está pendiente de una configuración de acceso aprobada. Contacta al administrador.",
+    );
+  }
   const sitekey = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim();
   if (!sitekey) {
     throw new Error("La verificación de seguridad no está configurada. Contacta al administrador.");
