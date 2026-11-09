@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders, isOriginAllowed } from "../../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../../_shared/gps-gate.ts";
 import { resolveTenantId } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
@@ -60,7 +61,16 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userEmail = userData.user.email;
+
+    const gpsAccess = await checkGpsSessionAccess(userClient);
+    if (!gpsAccess.allowed) {
+      return new Response(JSON.stringify({ error: gpsAccess.code }), {
+        status: gpsAccess.code === "GPS_REQUIRED" ? 403 : 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userEmail = userData.user.email ?? "unknown";
 
     // Supabase SDK validates the JWT signature before exposing its claims.
     const { data: verifiedClaims, error: claimsError } = await userClient.auth.getClaims(token);

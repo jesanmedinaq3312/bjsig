@@ -4,6 +4,7 @@ import { WorkerLayout } from "@/components/WorkerLayout";
 import { audit } from "@/lib/audit";
 import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
+import { GpsSessionGate } from "@/components/auth/GpsSessionGate";
 import { AuthScreen } from "@/views/Auth";
 import { WorkerChangePassword } from "@/components/WorkerChangePassword";
 import { WorkerRecoveryPassword } from "@/components/WorkerRecoveryPassword";
@@ -204,6 +205,8 @@ export function App() {
     permissions,
     userRole,
     emailOtpStatus,
+    gpsAccessStatus,
+    attestGpsCapture,
   } = useAuth();
   const isCompanyOwner = userRole === "company_owner";
   const tenantAdmin = isAdmin || isCompanyOwner;
@@ -243,7 +246,11 @@ export function App() {
   // la sesión del operador de plataforma.
   const rawData = useAppData(
     view,
-    !!session && emailOtpStatus !== "pending" && !isWorker && route.kind !== "platform",
+    !!session &&
+      (gpsAccessStatus === "disabled" || gpsAccessStatus === "verified") &&
+      emailOtpStatus !== "pending" &&
+      !isWorker &&
+      route.kind !== "platform",
     route.slug,
   );
   const { runInBackground } = useLoading();
@@ -304,7 +311,7 @@ export function App() {
 
   useNavigationTracking(
     isWorker ? "workerportal" : effectiveView,
-    sessionId,
+    gpsAccessStatus === "disabled" || gpsAccessStatus === "verified" ? sessionId : null,
     userEmail,
     userRole ?? null,
   );
@@ -380,6 +387,18 @@ export function App() {
       return <AuthScreen tenantSlug={route.slug} />;
     }
     return <WorkerAuthScreen tenantSlug={route.slug} />;
+  }
+
+  if (gpsAccessStatus === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (gpsAccessStatus === "required" || gpsAccessStatus === "error") {
+    return <GpsSessionGate onVerify={attestGpsCapture} onSignOut={() => void signOut()} />;
   }
 
   if (emailOtpStatus === "pending") {

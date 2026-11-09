@@ -4,7 +4,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
 import { audit, syncQueuedAuditLogs, initAuditAutoSync } from "@/lib/audit";
-import { clearGpsCache, recordSessionStart, clearSessionStart } from "@/lib/gps";
+import {
+  clearGpsCache,
+  isFreshGpsCapture,
+  recordSessionStart,
+  clearSessionStart,
+  type GpsPosition,
+} from "@/lib/gps";
 import { systemConfigRepo } from "@/lib/repositories";
 import { hasOperationalAccess } from "@/lib/authorization";
 import { getTurnstileToken } from "@/lib/turnstile";
@@ -12,6 +18,7 @@ import { getAdminCaptchaToken } from "@/lib/adminCaptcha";
 
 const DEFAULT_TIMEOUT_MINUTES = 30;
 export type EmailOtpStatus = "not_required" | "pending" | "verified";
+export type GpsAccessStatus = "checking" | "disabled" | "verified" | "required" | "error";
 
 export type MfaState =
   | { status: "not_required" }
@@ -64,7 +71,9 @@ export function useAuth() {
     }
   });
   const [mfaState, setMfaState] = useState<MfaState>({ status: "not_required" });
+  const [gpsAccessStatus, setGpsAccessStatus] = useState<GpsAccessStatus>("checking");
   const [timeoutMinutes, setTimeoutMinutes] = useState(DEFAULT_TIMEOUT_MINUTES);
+  const authOperationRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
   const timeoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -149,6 +158,73 @@ export function useAuth() {
     }
   }
 
+  const syncGpsAccess = useCallback(async (current: Session | null): Promise<boolean> => {
+    if (!current) {
+      setGpsAccessStatus("disabled");
+      return true;
+    }
+    setGpsAccessStatus("checking");
+    try {
+      const { data: enabled, error: enabledError } = await supabase.rpc("gps_gate_enabled");
+      if (enabledError) {
+        setGpsAccessStatus("error");
+        return false;
+      }
+      if (enabled !== true) {
+        setGpsAccessStatus("disabled");
+        return true;
+      }
+      const { data: verified, error: verifiedError } =
+        await supabase.rpc("gps_session_is_verified");
+      if (verifiedError) {
+        setGpsAccessStatus("error");
+        return false;
+      }
+      setGpsAccessStatus(verified === true ? "verified" : "required");
+      return verified === true;
+    } catch {
+      setGpsAccessStatus("error");
+      return false;
+    }
+  }, []);
+
+  const attestGpsCapture = useCallback(async (position?: GpsPosition): Promise<void> => {
+    let useErrorStatus = true;
+    try {
+      const { data: enabled, error: enabledError } = await supabase.rpc("gps_gate_enabled");
+      if (enabledError) {
+        setGpsAccessStatus("error");
+        useErrorStatus = false;
+        throw new Error("No se pudo comprobar el requisito GPS. Intenta nuevamente.");
+      }
+      if (enabled !== true) {
+        setGpsAccessStatus("disabled");
+        return;
+      }
+      if (!position || !isFreshGpsCapture(position)) {
+        setGpsAccessStatus("required");
+        useErrorStatus = false;
+        throw new Error("Comparte una captura GPS válida de menos de 2 minutos para ingresar.");
+      }
+      const { data, error } = await supabase.rpc("attest_gps_session", {
+        p_latitude: position.latitude,
+        p_longitude: position.longitude,
+        p_accuracy_m: position.accuracy,
+        p_captured_at: new Date(position.capturedAt).toISOString(),
+      });
+      const result = data as { ok?: boolean; message?: string } | null;
+      if (error || result?.ok !== true) {
+        setGpsAccessStatus("required");
+        useErrorStatus = false;
+        throw new Error(result?.message ?? error?.message ?? "No se pudo validar la captura GPS.");
+      }
+      setGpsAccessStatus("verified");
+    } catch (error) {
+      if (useErrorStatus) setGpsAccessStatus("error");
+      throw error;
+    }
+  }, []);
+
   // Load session timeout config from system_config
   useEffect(() => {
     systemConfigRepo.getValue("session_timeout_minutes").then((val) => {
@@ -206,8 +282,9 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      refreshRoles(data.session?.user?.email);
-      if (data.session) {
+      const gpsAllowed = await syncGpsAccess(data.session);
+      await refreshRoles(gpsAllowed ? data.session?.user?.email : undefined);
+      if (data.session && gpsAllowed) {
         const { data: mfaRequired } = await supabase.rpc("mfa_required_for_current_user");
         if (mfaRequired === true) {
           const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -279,7 +356,9 @@ export function useAuth() {
         }
         setSession(sess);
         setUser(sess?.user ?? null);
-        refreshRoles(sess?.user?.email);
+        if (authOperationRef.current) return;
+        const gpsAllowed = await syncGpsAccess(sess);
+        await refreshRoles(gpsAllowed ? sess?.user?.email : undefined);
       })();
     });
 
@@ -296,7 +375,7 @@ export function useAuth() {
         lastActivityRef.current = Date.now();
         supabase.auth
           .getSession()
-          .then(({ data }) => {
+          .then(async ({ data }) => {
             if (!data.session) {
               try {
                 sessionStorage.setItem("gyc_session_expired", "1");
@@ -306,7 +385,9 @@ export function useAuth() {
             }
             setSession(data.session);
             setUser(data.session?.user ?? null);
-            refreshRoles(data.session?.user?.email);
+            if (authOperationRef.current) return;
+            const gpsAllowed = await syncGpsAccess(data.session);
+            await refreshRoles(gpsAllowed ? data.session?.user?.email : undefined);
           })
           .catch(() => {
             // Network error on visibility — don't silently kick the user out
@@ -329,44 +410,25 @@ export function useAuth() {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [syncGpsAccess]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      options: { captchaToken },
-    });
-    if (error) {
-      // Log failed login attempt with full context
-      await audit({
-        action: "auth.signin_failed",
-        entity: "auth",
-        entity_label: email,
-        details: { error: error.message },
-      });
-      throw error;
-    }
-    recordSessionStart();
-    await audit({ action: "auth.signin", entity: "auth", entity_label: email });
-    return data;
-  }, []);
-
-  const signInWithPasswordThenOtp = useCallback(
-    async (
-      email: string,
-      password: string,
-      tenantSlug?: string | null,
-      options: { allowWorkerPortal?: boolean } = {},
-    ) => {
+  const signIn = useCallback(
+    async (email: string, password: string, gpsPosition?: GpsPosition) => {
       const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-        options: { captchaToken },
-      });
+      authOperationRef.current = true;
+      const { data, error } = await supabase.auth
+        .signInWithPassword({
+          email,
+          password,
+          options: { captchaToken },
+        })
+        .catch((authError: unknown) => {
+          authOperationRef.current = false;
+          throw authError;
+        });
       if (error) {
+        authOperationRef.current = false;
+        // Log failed login attempt with full context
         await audit({
           action: "auth.signin_failed",
           entity: "auth",
@@ -375,6 +437,58 @@ export function useAuth() {
         });
         throw error;
       }
+      try {
+        await attestGpsCapture(gpsPosition);
+      } catch (gpsError) {
+        await supabase.auth.signOut().catch(() => {});
+        authOperationRef.current = false;
+        throw gpsError;
+      }
+      authOperationRef.current = false;
+      recordSessionStart();
+      await audit({ action: "auth.signin", entity: "auth", entity_label: email });
+      return data;
+    },
+    [attestGpsCapture],
+  );
+
+  const signInWithPasswordThenOtp = useCallback(
+    async (
+      email: string,
+      password: string,
+      tenantSlug?: string | null,
+      options: { allowWorkerPortal?: boolean; gpsPosition?: GpsPosition } = {},
+    ) => {
+      const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
+      authOperationRef.current = true;
+      const { data, error } = await supabase.auth
+        .signInWithPassword({
+          email,
+          password,
+          options: { captchaToken },
+        })
+        .catch((authError: unknown) => {
+          authOperationRef.current = false;
+          throw authError;
+        });
+      if (error) {
+        authOperationRef.current = false;
+        await audit({
+          action: "auth.signin_failed",
+          entity: "auth",
+          entity_label: email,
+          details: { error: error.message },
+        });
+        throw error;
+      }
+      try {
+        await attestGpsCapture(options.gpsPosition);
+      } catch (gpsError) {
+        await supabase.auth.signOut().catch(() => {});
+        authOperationRef.current = false;
+        throw gpsError;
+      }
+      authOperationRef.current = false;
       const [workerResult, adminResult, roleResult, accountResult, activeTenantResult] =
         await Promise.all([
           supabase.rpc("is_worker"),
@@ -493,7 +607,7 @@ export function useAuth() {
       setEmailOtpStatus("pending");
       return data;
     },
-    [],
+    [attestGpsCapture],
   );
 
   const verifyMfaCode = useCallback(
@@ -620,6 +734,7 @@ export function useAuth() {
     queryClient.clear();
     setSession(null);
     setUser(null);
+    setGpsAccessStatus("disabled");
     setIsAdmin(false);
     setIsWorker(false);
     setWorkerRut(null);
@@ -654,6 +769,8 @@ export function useAuth() {
     userRole,
     permissions,
     emailOtpStatus,
+    gpsAccessStatus,
+    attestGpsCapture,
     mfaState,
     signIn,
     signInWithPasswordThenOtp,

@@ -11,6 +11,7 @@ import {
   listScope,
   resolveTenant,
 } from "../_shared/authz.ts";
+import { checkGpsSessionAccess } from "../_shared/gps-gate.ts";
 import { isPreauthorizedCompanyOwner } from "./_shared/provisioning.ts";
 import {
   meetsPasswordPolicy,
@@ -149,6 +150,10 @@ Deno.serve(async (req) => {
     );
     if (claimsError || verifiedClaims?.claims?.aal !== "aal2") {
       return json({ error: "MFA_REQUIRED" }, 403);
+    }
+    const gpsAccess = await checkGpsSessionAccess(user);
+    if (!gpsAccess.allowed) {
+      return json({ error: gpsAccess.code }, gpsAccess.code === "GPS_REQUIRED" ? 403 : 503);
     }
     const svc = createClient(url, key);
     const [{ data: role }, { data: tenant }, { data: owner }, { data: superadmin }] =

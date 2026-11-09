@@ -15,6 +15,26 @@ export interface GpsPosition {
   latitude: number;
   longitude: number;
   accuracy: number;
+  capturedAt: number;
+}
+
+export const GPS_CAPTURE_MAX_AGE_MS = 2 * 60 * 1000;
+
+export function isFreshGpsCapture(position: GpsPosition, now = Date.now()): boolean {
+  const age = now - position.capturedAt;
+  return (
+    Number.isFinite(position.latitude) &&
+    position.latitude >= -90 &&
+    position.latitude <= 90 &&
+    Number.isFinite(position.longitude) &&
+    position.longitude >= -180 &&
+    position.longitude <= 180 &&
+    Number.isFinite(position.accuracy) &&
+    position.accuracy >= 0 &&
+    Number.isFinite(position.capturedAt) &&
+    age >= -30000 &&
+    age <= GPS_CAPTURE_MAX_AGE_MS
+  );
 }
 
 export interface ScanContext {
@@ -125,13 +145,14 @@ export function getGpsPosition(timeoutMs = 12000): Promise<GpsPosition | null> {
       }
     };
 
-    // First attempt: high accuracy, allows cached position up to 60s old
+    // Authentication requires an actual recent browser capture, never a cached fix.
     navigator.geolocation.getCurrentPosition(
       (pos) =>
         finish({
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
           accuracy: pos.coords.accuracy,
+          capturedAt: pos.timestamp,
         }),
       () => {
         // High-accuracy failed — retry with low accuracy and longer timeout
@@ -141,12 +162,13 @@ export function getGpsPosition(timeoutMs = 12000): Promise<GpsPosition | null> {
               latitude: pos.coords.latitude,
               longitude: pos.coords.longitude,
               accuracy: pos.coords.accuracy,
+              capturedAt: pos.timestamp,
             }),
           () => finish(null),
-          { enableHighAccuracy: false, timeout: timeoutMs, maximumAge: 300000 },
+          { enableHighAccuracy: false, timeout: timeoutMs, maximumAge: 0 },
         );
       },
-      { enableHighAccuracy: true, timeout: Math.min(timeoutMs, 8000), maximumAge: 60000 },
+      { enableHighAccuracy: true, timeout: Math.min(timeoutMs, 8000), maximumAge: 0 },
     );
   });
 }
@@ -159,9 +181,21 @@ function loadCachedGps(): GpsPosition | null {
   try {
     const raw = localStorage.getItem(GPS_CACHE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { lat: number; lng: number; acc: number; ts: number };
+    const parsed = JSON.parse(raw) as {
+      lat: number;
+      lng: number;
+      acc: number;
+      ts: number;
+      capturedAt?: number;
+    };
     if (Date.now() - parsed.ts > GPS_CACHE_TTL_MS) return null;
-    return { latitude: parsed.lat, longitude: parsed.lng, accuracy: parsed.acc };
+    if (!Number.isFinite(parsed.capturedAt)) return null;
+    return {
+      latitude: parsed.lat,
+      longitude: parsed.lng,
+      accuracy: parsed.acc,
+      capturedAt: parsed.capturedAt as number,
+    };
   } catch {
     return null;
   }
@@ -179,6 +213,7 @@ function saveCachedGps(pos: GpsPosition): void {
         lng: pos.longitude,
         acc: pos.accuracy,
         ts: Date.now(),
+        capturedAt: pos.capturedAt,
       }),
     );
   } catch {

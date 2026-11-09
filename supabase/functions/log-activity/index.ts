@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
-import { getCorsHeaders } from "../_shared/auth.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { getCorsHeaders, isOriginAllowed } from "../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../_shared/gps-gate.ts";
 
 type Payload = {
   tenant_id?: string | null;
@@ -71,6 +72,14 @@ Deno.serve(async (request) => {
       await userClient.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalError || aal?.currentLevel !== "aal2")
       return json(request, { error: "MFA_REQUIRED" }, 403);
+
+    const gpsAccess = await checkGpsSessionAccess(userClient);
+    if (!gpsAccess.allowed)
+      return json(
+        request,
+        { error: gpsAccess.code },
+        gpsAccess.code === "GPS_REQUIRED" ? 403 : 503,
+      );
 
     const payload = (await request.json()) as Payload;
     if (!payload.action?.trim() || !payload.entity?.trim())

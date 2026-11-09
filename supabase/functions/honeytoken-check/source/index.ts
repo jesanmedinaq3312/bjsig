@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../../_shared/gps-gate.ts";
 import { resolveTenantId } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
@@ -32,6 +33,14 @@ Deno.serve(async (req: Request) => {
     if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Sesión inválida." }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const gpsAccess = await checkGpsSessionAccess(userClient);
+    if (!gpsAccess.allowed) {
+      return new Response(JSON.stringify({ error: gpsAccess.code }), {
+        status: gpsAccess.code === "GPS_REQUIRED" ? 403 : 503,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders, isOriginAllowed } from "../../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../../_shared/gps-gate.ts";
 import { resolveTenantId } from "../_shared/auth.ts";
 
 const VALID_CATEGORIES = ["acoso_laboral", "acoso_sexual", "violencia", "otro"];
@@ -37,6 +38,9 @@ Deno.serve(async (req: Request) => {
     if (userErr || !userData?.user?.id || !userData.user.email) {
       return json({ error: "Sesión inválida." }, 401);
     }
+    const gpsAccess = await checkGpsSessionAccess(userClient);
+    if (!gpsAccess.allowed)
+      return json({ error: gpsAccess.code }, gpsAccess.code === "GPS_REQUIRED" ? 403 : 503);
     const userEmail = userData.user.email;
     const admin = createClient(supabaseUrl, serviceKey);
 

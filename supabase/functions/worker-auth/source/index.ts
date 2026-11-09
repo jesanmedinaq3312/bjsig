@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../../_shared/gps-gate.ts";
 import { clientInfo, jsonResponse } from "../_shared/worker-auth-utils.ts";
 import { verifyTurnstile } from "../_shared/turnstile.ts";
 import { handleCheckRut } from "./handlers/check_rut.ts";
@@ -56,6 +57,28 @@ Deno.serve(async (req: Request) => {
           corsHeaders,
           { error: "No se pudo completar la verificación de seguridad. Intenta nuevamente." },
           403,
+        );
+      }
+    }
+
+    if (action === "change_password") {
+      const authHeader = req.headers.get("Authorization") ?? "";
+      if (!authHeader.startsWith("Bearer ")) {
+        return jsonResponse(corsHeaders, { error: "Sesión requerida." }, 401);
+      }
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData, error: userError } = await userClient.auth.getUser();
+      if (userError || !userData.user) {
+        return jsonResponse(corsHeaders, { error: "Sesión inválida." }, 401);
+      }
+      const gpsAccess = await checkGpsSessionAccess(userClient);
+      if (!gpsAccess.allowed) {
+        return jsonResponse(
+          corsHeaders,
+          { error: gpsAccess.code },
+          gpsAccess.code === "GPS_REQUIRED" ? 403 : 503,
         );
       }
     }

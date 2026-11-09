@@ -20,9 +20,18 @@ import { LoginForm } from "./worker-auth/LoginForm";
 import { FirstPasswordForm } from "./worker-auth/FirstPasswordForm";
 import { ResetRequestForm } from "./worker-auth/ResetRequestForm";
 import { SuccessView } from "./worker-auth/SuccessView";
+import { useGpsCapture } from "@/hooks/useGpsCapture";
+import { isFreshGpsCapture } from "@/lib/gps";
+import { GpsCaptureCard } from "@/components/auth/GpsCaptureCard";
 
 export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }) {
   const { signInWithPasswordThenOtp } = useAuth();
+  const {
+    position: gpsPosition,
+    status: gpsStatus,
+    error: gpsError,
+    capture: captureGps,
+  } = useGpsCapture();
   const { logoUrl, companyName } = useCompanyBranding();
   const workerPortalSlug = tenantSlug && /^[a-z0-9-]+$/i.test(tenantSlug) ? tenantSlug : null;
   const operatorPortalPath = workerPortalSlug ? `/${workerPortalSlug}/admin` : "/admin";
@@ -129,6 +138,12 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
     resetState();
     setBusy(true);
     try {
+      let capture =
+        gpsPosition && isFreshGpsCapture(gpsPosition) ? gpsPosition : await captureGps();
+      if (!capture) {
+        setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
+        return;
+      }
       const check = (await callWorkerAuth("check_account", {
         email,
         rut: normalizeRut(rutInput),
@@ -164,8 +179,14 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
         return;
       }
 
+      if (!isFreshGpsCapture(capture)) capture = await captureGps();
+      if (!capture) {
+        setError(gpsError ?? "Vuelve a capturar tu ubicación GPS para continuar.");
+        return;
+      }
       await signInWithPasswordThenOtp(email, password, workerPortalSlug, {
         allowWorkerPortal: true,
+        gpsPosition: capture,
       });
     } catch (err) {
       if (err instanceof RateLimitError) {
@@ -279,6 +300,17 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
               Podrás reintentar en {Math.floor(remainingSeconds / 60)}:
               {String(remainingSeconds % 60).padStart(2, "0")}.
             </p>
+          )}
+          {mode === "login" && (
+            <div className="mb-4">
+              <GpsCaptureCard
+                status={gpsStatus}
+                position={gpsPosition}
+                error={gpsError}
+                onCapture={() => void captureGps()}
+                variant="dark"
+              />
+            </div>
           )}
           <fieldset disabled={remainingSeconds > 0} className="min-w-0">
             {mode === "rut" && (

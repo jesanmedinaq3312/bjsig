@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders, isOriginAllowed } from "../_shared/auth.ts";
+import { checkGpsSessionAccess } from "../_shared/gps-gate.ts";
 
 type Payload = {
   tenant_id: string;
@@ -96,6 +97,9 @@ Deno.serve(async (request) => {
     if (claimsError || verifiedClaims?.claims?.aal !== "aal2") {
       return json({ error: "MFA_REQUIRED" }, 403);
     }
+    const gpsAccess = await checkGpsSessionAccess(userClient);
+    if (!gpsAccess.allowed)
+      return json({ error: gpsAccess.code }, gpsAccess.code === "GPS_REQUIRED" ? 403 : 503);
     const { data: owner, error: ownerError } = await userClient.rpc("is_platform_owner");
     if (ownerError || owner !== true) {
       return json({ error: "Sólo el dueño de la plataforma puede enviar onboarding." }, 403);

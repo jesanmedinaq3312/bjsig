@@ -35,10 +35,14 @@ import { audit } from "@/lib/audit";
 import { LOGIN_DISCLAIMER } from "@/lib/legal";
 import { getAdminCaptchaToken } from "@/lib/adminCaptcha";
 import { WatermelonMfaCard } from "@/components/ui/watermelon-mfa";
+import { useGpsCapture } from "@/hooks/useGpsCapture";
+import { isFreshGpsCapture, type GpsPosition } from "@/lib/gps";
+import { GpsCaptureCard } from "@/components/auth/GpsCaptureCard";
 
 async function checkEmailRole(
   email: string,
   password: string,
+  gpsPosition?: GpsPosition,
   allowPasswordFallback = true,
 ): Promise<
   | {
@@ -68,6 +72,28 @@ async function checkEmailRole(
         options: { captchaToken },
       });
       if (!authError) {
+        const { data: gpsGateEnabled, error: gpsGateError } =
+          await supabase.rpc("gps_gate_enabled");
+        if (gpsGateError) {
+          await supabase.auth.signOut();
+          return { error: "No se pudo comprobar el requisito GPS. Intenta nuevamente." };
+        }
+        if (gpsGateEnabled === true) {
+          if (!gpsPosition || !isFreshGpsCapture(gpsPosition)) {
+            await supabase.auth.signOut();
+            return { error: "Comparte una captura GPS reciente para ingresar." };
+          }
+          const { data: attestation, error: gpsError } = await supabase.rpc("attest_gps_session", {
+            p_latitude: gpsPosition.latitude,
+            p_longitude: gpsPosition.longitude,
+            p_accuracy_m: gpsPosition.accuracy,
+            p_captured_at: new Date(gpsPosition.capturedAt).toISOString(),
+          });
+          if (gpsError || (attestation as { ok?: boolean } | null)?.ok !== true) {
+            await supabase.auth.signOut();
+            return { error: "No se pudo validar la ubicación GPS de esta sesión." };
+          }
+        }
         const { data: ownRow } = await supabase
           .from("allowed_emails")
           .select("active,role")
@@ -105,6 +131,12 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
     emailOtpStatus,
     mfaState,
   } = useAuth();
+  const {
+    position: gpsPosition,
+    status: gpsStatus,
+    error: gpsError,
+    capture: captureGps,
+  } = useGpsCapture();
   const { logoUrl, companyName } = useCompanyBranding();
   const displayCompanyName = companyName === "Empresa" ? "BJSIGAPP" : companyName;
   const scopedSlug = tenantSlug && /^[a-z0-9-]+$/i.test(tenantSlug) ? tenantSlug : null;
@@ -143,6 +175,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
     e.preventDefault();
     setError(null);
     setBusy(true);
+    let loginGpsPosition = gpsPosition;
     try {
       if (!SUPABASE_CONFIGURED) {
         setError(
@@ -154,11 +187,18 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
         // Password login is the authoritative path for existing users. The
         // public email check is only needed after a failed password attempt,
         // avoiding a rate-limit hit on every normal login.
-        await signInWithPasswordThenOtp(email, password, tenantSlug);
+        const capture =
+          gpsPosition && isFreshGpsCapture(gpsPosition) ? gpsPosition : await captureGps();
+        if (!capture) {
+          setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
+          return;
+        }
+        loginGpsPosition = capture;
+        await signInWithPasswordThenOtp(email, password, tenantSlug, { gpsPosition: capture });
       } catch (err) {
         const msg = friendlyError(err);
         if (!msg.toLowerCase().includes("invalid login credentials")) throw err;
-        const result = await checkEmailRole(email, password);
+        const result = await checkEmailRole(email, password, loginGpsPosition ?? undefined);
         if (!("error" in result) && result.isNewAdmin && result.hasAuthIdentity === false) {
           setMagicAvailable(true);
           setError("Correo autorizado. Como última opción, puedes solicitar un magic link.");
@@ -252,6 +292,17 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
 
         {/* Tarjeta de Login */}
         <div className="wm-login-card bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-950/60 border border-white/20 p-5 sm:p-7 [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.15),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
+          {!forgotMode && mfaState.status === "not_required" && (
+            <div className="mb-4">
+              <GpsCaptureCard
+                status={gpsStatus}
+                position={gpsPosition}
+                error={gpsError}
+                onCapture={() => void captureGps()}
+                variant="dark"
+              />
+            </div>
+          )}
           {forgotMode ? (
             forgotSent ? (
               <div className="space-y-5 text-center py-4">
