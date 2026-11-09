@@ -224,6 +224,7 @@
 }
 
 .landing-device-frame--laptop {
+  width: calc(100% - 2rem);
   max-width: 680px;
   padding: 0.55rem 0.55rem 0;
   border: 1px solid rgb(148 163 184 / 42%);
@@ -434,6 +435,7 @@
 
 @media (max-width: 640px) {
   .landing-device-frame--laptop {
+    width: calc(100% - 1.5rem);
     padding: 0.4rem 0.4rem 0;
     border-radius: 0.9rem 0.9rem 0.3rem 0.3rem;
   }
