@@ -34,7 +34,6 @@ import { supabase } from "@/lib/supabase";
 import { SUPABASE_CONFIGURED } from "@/lib/supabaseConfig";
 import { audit } from "@/lib/audit";
 import { LOGIN_DISCLAIMER } from "@/lib/legal";
-import { getAdminCaptchaToken } from "@/lib/adminCaptcha";
 import { WatermelonMfaCard } from "@/components/ui/watermelon-mfa";
 import { useGpsCapture } from "@/hooks/useGpsCapture";
 import { isFreshGpsCapture, type GpsPosition } from "@/lib/gps";
@@ -66,11 +65,9 @@ async function checkEmailRole(
       if (!allowPasswordFallback) return { error };
       // V4 fallback: after a clean schema reset, authenticate first and read
       // only the caller's own allow-list row through authenticated RLS.
-      const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: { captchaToken },
       });
       if (!authError) {
         const { data: gpsGateEnabled, error: gpsGateError } =
@@ -254,10 +251,8 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
     setError(null);
     setBusy(true);
     try {
-      const captchaToken = await getAdminCaptchaToken("supabase_password_recovery");
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
         redirectTo: `${window.location.origin}/admin`,
-        captchaToken,
       });
       if (resetError) throw resetError;
       setForgotSent(true);
@@ -278,7 +273,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
       // Supabase Auth applies its own anti-enumeration and email rate limits.
       // Do not call check-email-allowed first: that endpoint is intentionally
       // rate-limited and a repeated click must not consume the login budget.
-      await signInWithMagicLink(email, false);
+      await signInWithMagicLink(email);
       setMagicSent(true);
     } catch (err) {
       setError(friendlyError(err));

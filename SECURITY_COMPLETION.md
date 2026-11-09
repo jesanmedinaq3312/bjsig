@@ -20,16 +20,16 @@ Se añadió un override de `uuid` para eliminar el advisory transitivo provenien
 
 ## Verificación ejecutada
 
-| Verificación | Resultado |
-|---|---:|
-| `npm run typecheck` | **0** |
-| `npm run lint` | **0** errores; 121 warnings preexistentes no bloqueantes |
-| `npm run build` | **0** |
-| `npm audit --omit=dev` | **0 vulnerabilidades** |
-| Edge Function `log-activity` | Activa, versión 18, JWT requerido |
-| Edge Function `check-email-allowed` | Activa, versión 31, endpoint público controlado |
-| Grants efectivos `activity_logs` | `anon`: sin privilegios; `authenticated`: sólo `SELECT` |
-| Vista previa | HTTP 200 local y pública en `https://4173-ibyda14y2j4yvpbbou49a-998a8bb0.us1.manus.computer/` |
+| Verificación                        |                                                                                     Resultado |
+| ----------------------------------- | --------------------------------------------------------------------------------------------: |
+| `npm run typecheck`                 |                                                                                         **0** |
+| `npm run lint`                      |                                      **0** errores; 121 warnings preexistentes no bloqueantes |
+| `npm run build`                     |                                                                                         **0** |
+| `npm audit --omit=dev`              |                                                                        **0 vulnerabilidades** |
+| Edge Function `log-activity`        |                                                             Activa, versión 18, JWT requerido |
+| Edge Function `check-email-allowed` |                                               Activa, versión 31, endpoint público controlado |
+| Grants efectivos `activity_logs`    |                                       `anon`: sin privilegios; `authenticated`: sólo `SELECT` |
+| Vista previa                        | HTTP 200 local y pública en `https://4173-ibyda14y2j4yvpbbou49a-998a8bb0.us1.manus.computer/` |
 
 ## Avisos residuales de Supabase
 
@@ -53,23 +53,24 @@ Las políticas MFA y de aislamiento multi-tenant permanecen activas en las tabla
 - `scripts/audit_security_definer.sql`: inventario y clasificación reproducible de funciones privilegiadas.
 - `package.json` y `package-lock.json`: override seguro de `uuid`.
 
-
-## Remediación local adicional — 6 de noviembre de 2026
+## Remediación local adicional — 9 de noviembre de 2026
 
 Este bloque documenta cambios preparados en el checkout local; **no significa que se hayan desplegado en Supabase ni publicado en GitHub**.
 
-- La integración de Cloudflare Turnstile existe en el código, pero por instrucción del cliente **permanece pausada**. Un guard en cliente y Edge retorna antes de cargar scripts o hacer `fetch`, además de la CSP que bloquea Cloudflare. El portal de trabajadores falla cerrado; no publicar ese flujo hasta autorizar Turnstile o aprobar una alternativa. Si en el futuro se reactiva el código de verificación, enviará `remoteip` a Cloudflare y requerirá actualizar transparencia/contratos.
+- **Actualización posterior:** por instrucción del cliente, Turnstile/CAPTCHA fue retirado del código local de autenticación administrativa y de trabajadores, incluyendo helpers, tokens, guard Edge y variables de ejemplo. El signup público se mantiene deshabilitado. Una lectura remota encontró `worker-auth` v49 sin validación Turnstile; no se desplegó código desde este checkout. El endpoint público `/auth/v1/settings` no expuso un indicador CAPTCHA y no permite confirmar el ajuste del dashboard.
 - Se reforzaron anti-enumeración y rate limits combinados con IP confiable, redirects fijos/allowlist, CORS por allowlist, AAL2 en funciones privilegiadas, validación de URL en Zod, credenciales de onboarding fuera del correo, política de contraseñas compartida, protección de tarjetas QR y eliminación de datos de ubicación/tracking pre-login.
 - Se retiraron valores productivos por defecto del cliente Supabase. Se añadieron headers HTTP, Dependabot, CI, comprobación de catálogo RLS y E2E multi-tenant autenticado condicional, habilitables únicamente con credenciales de staging.
 
-| Verificación local | Resultado |
-|---|---:|
-| `bun run typecheck` | **0** |
-| `bun run test` | **29 passed** |
-| `deno test --allow-env --allow-net supabase/functions/worker-auth/tests` | **18 passed** |
-| `bun run lint` | **0 errores**, 2 warnings no bloqueantes de Fast Refresh |
-| `bun run build` | **0** |
-| `bun audit --production` | **0 vulnerabilidades** |
-| `bun audit` completo | **1 advisory moderado** transitivo de `minimatch` en dependencias de desarrollo |
+| Verificación local                                                       |                                                                       Resultado |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------: |
+| `bun run typecheck`                                                      |                                                                           **0** |
+| `bun run test`                                                           |                                                                   **29 passed** |
+| `deno test --allow-env --allow-net supabase/functions/worker-auth/tests` |                                                                   **18 passed** |
+| `bun run lint`                                                           |                        **0 errores**, 2 warnings no bloqueantes de Fast Refresh |
+| `bun run build`                                                          |                                                                           **0** |
+| `bun audit --production`                                                 |                                                          **0 vulnerabilidades** |
+| `bun audit` completo                                                     | **1 advisory moderado** transitivo de `minimatch` en dependencias de desarrollo |
 
-Antes del despliegue siguen pendientes la configuración de CAPTCHA/redirects/signups en Supabase Auth, secretos y allowlists de Edge Functions, rotación de secretos afectados y ejecución de staging. La CI de RLS y E2E autenticado sólo se activan al configurar sus variables/secrets de staging. Los plazos de retención y la integración/umbrales de alertas requieren una política y un proveedor aprobados; no se inventaron ni se configuraron desde el checkout local. Ver `SECURITY_DEPLOYMENT_CHECKLIST.md`.
+En la verificación del 9 de noviembre: TypeScript pasó, Vitest (**44**) y pruebas Deno de `worker-auth` (**17**) pasaron, ESLint terminó sin errores con una advertencia de Fast Refresh y Vite build pasó. El login E2E con una cuenta worker sintética sigue pendiente; no se hicieron bypasses al formulario de autenticación.
+
+Antes del despliegue siguen pendientes la comprobación de que CAPTCHA está desactivado en Supabase Auth, redirects/signups, secretos y allowlists de Edge Functions, rotación de secretos afectados y ejecución de staging. La CI de RLS y E2E autenticado sólo se activan al configurar sus variables/secrets de staging. Los plazos de retención y la integración/umbrales de alertas requieren una política y un proveedor aprobados; no se inventaron ni se configuraron desde el checkout local. Ver `SECURITY_DEPLOYMENT_CHECKLIST.md`.

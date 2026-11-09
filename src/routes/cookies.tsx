@@ -114,12 +114,11 @@ function CookiesPolicy() {
         <p>
           Toda solicitud directa del navegador a un proveedor revela normalmente la IP y metadatos
           técnicas al servidor que la recibe. BJSIGAPP realiza solicitudes necesarias a Supabase
-          para autenticación y servicio. Turnstile está pausado: el cliente y la Edge Function
-          retornan antes de hacer solicitudes y la política CSP bloquea sus dominios. Si se reactiva
-          su verificación, el código enviará la IP del cliente a Cloudflare; este aviso y los
-          acuerdos deberán revisarse antes de cualquier habilitación. Abrir un enlace de Google
-          Drive u otro documento o imagen alojado por terceros conecta el navegador directamente con
-          ese proveedor y revela su IP.
+          para autenticación y servicio. La integración de Turnstile/CAPTCHA de Cloudflare fue
+          retirada del código local; este repositorio ya no carga su script ni envía tokens. La
+          configuración de CAPTCHA del proyecto Supabase y la configuración del hosting deben
+          verificarse por separado. Abrir un enlace de Google Drive u otro documento o imagen
+          alojado por terceros conecta el navegador directamente con ese proveedor y revela su IP.
         </p>
       </S>
 

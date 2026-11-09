@@ -54,7 +54,7 @@ function makeHarness(
     signIns: [] as Array<{
       email: string;
       password: string;
-      options?: { captchaToken?: string };
+      options?: Record<string, unknown>;
     }>,
     authOptions: [] as Array<{ url: string; key: string }>,
   };
@@ -132,7 +132,7 @@ function makeHarness(
         signInWithPassword: async (credentials: {
           email: string;
           password: string;
-          options?: { captchaToken?: string };
+          options?: Record<string, unknown>;
         }) => {
           state.signIns.push(credentials);
           return {
@@ -150,7 +150,6 @@ async function invoke(
   harness: ReturnType<typeof makeHarness>,
   currentPassword = TEMPORARY_PASSWORD,
   newPassword = NEW_PASSWORD,
-  authCaptchaToken = "synthetic-auth-captcha-token",
 ) {
   const request = new Request("https://example-project.supabase.co/functions/v1/worker-auth", {
     method: "POST",
@@ -164,7 +163,6 @@ async function invoke(
       email: EMAIL,
       current_password: currentPassword,
       new_password: newPassword,
-      auth_captcha_token: authCaptchaToken,
     },
     {},
     SUPABASE_URL,
@@ -215,11 +213,8 @@ Deno.test(
     equal(harness.state.loginAttempts.at(-1)?.success, true, "successful attempt record");
     equal(harness.state.authOptions[0].url, SUPABASE_URL, "Auth verification URL");
     equal(harness.state.authOptions[0].key, ANON_KEY, "Auth verification uses anon key");
-    equal(
-      harness.state.signIns[0].options?.captchaToken,
-      "synthetic-auth-captcha-token",
-      "Supabase Auth must receive the separate CAPTCHA token",
-    );
+    equal(harness.state.signIns.length, 1, "Auth verifies the temporary password without CAPTCHA");
+    equal(harness.state.signIns[0].options, undefined, "no CAPTCHA options are sent to Auth");
     const logged = JSON.stringify({
       attempts: harness.state.loginAttempts,
       audit: harness.state.auditRows,
@@ -228,16 +223,6 @@ Deno.test(
     assert(!logged.includes(NEW_PASSWORD), "new password must not appear in logs");
   },
 );
-
-Deno.test("fails closed when the separate Supabase Auth CAPTCHA token is missing", async () => {
-  const harness = makeHarness();
-  const { response } = await invoke(harness, TEMPORARY_PASSWORD, NEW_PASSWORD, "");
-
-  equal(response.status, 400, "status");
-  equal(harness.state.signIns.length, 0, "Supabase Auth must not be called without CAPTCHA");
-  equal(harness.state.authUpdates.length, 0, "Auth password must remain unchanged");
-  equal(harness.state.loginAttempts.length, 1, "missing CAPTCHA counts against the IP bucket");
-});
 
 Deno.test("rejects a second first-access request after the account flag is cleared", async () => {
   const harness = makeHarness({ mustChangePassword: false });

@@ -7,10 +7,10 @@
 ## Estado comprobable de esta revisión
 
 - **Código local:** el producto contiene módulos de SaaS, personas, portal de trabajador, turnos, asistencia QR, nómina, Ley Karin, incidentes/CPHS, Gobierno de Datos y registros de auditoría.
-- **Validación local:** TypeScript pasó; Vitest pasó con 49 pruebas; build Vite/Nitro pasó; ESLint terminó sin errores y con una advertencia preexistente de Fast Refresh en `QrCardGenerator.tsx`.
-- **Supabase/hosting:** no se volvió a inspeccionar ni se desplegó la base compartida en esta revisión. Una migración en el checkout no equivale a una migración aplicada.
+- **Validación local:** TypeScript pasó; Vitest pasó con 44 pruebas y `worker-auth` con 17 pruebas Deno; build Vite/Nitro pasó; ESLint terminó sin errores y con una advertencia de Fast Refresh en `QrCardGenerator.tsx`.
+- **Supabase/hosting:** inspección read-only: `worker-auth` remoto observado en v49 no exige tokens Turnstile; `/auth/v1/settings` no mostró un indicador público de CAPTCHA. No se desplegó ni modificó el proyecto y el ajuste CAPTCHA del dashboard sigue sin confirmar. Una migración en el checkout no equivale a una migración aplicada.
 - **Asistencia/GPS:** el código usa fecha laboral `America/Santiago`, instante UTC, captura GPS reciente al procesar QR y ya no ofrece sobrescritura en la interfaz. La migración append-only `20261109070000_qr_attendance_marks_immutable.sql` está versionada, pero su aplicación está pendiente de staging.
-- **Portal de trabajador:** existe en el código y forma parte del flujo de producto. El checklist de seguridad mantiene un bloqueo operativo porque Turnstile está pausado; no asumir ni imponer que el portal sea “Dev Team-only”. Resolver primero la decisión de producto y una alternativa de seguridad aprobada.
+- **Portal de trabajador:** existe en el código y forma parte del flujo de producto. Por instrucción del cliente se retiró Turnstile/CAPTCHA de los fuentes locales; signup público continúa cerrado. La versión remota v49 no contiene la barrera Turnstile, pero difiere de la fuente local y no se desplegó. El CAPTCHA de Supabase Auth y el smoke test de ingreso con worker sintético siguen pendientes. No asumir que el portal sea “Dev Team-only”.
 
 ## Seguimiento de los requisitos adjuntos
 
@@ -26,7 +26,7 @@
 
 ### P0 — Mantener estado veraz y evitar cambios de producción no verificados
 
-1. Resolver en staging el bloqueo de acceso del portal de trabajador asociado a Turnstile pausado: decisión de producto, mecanismo alternativo, transparencia y pruebas. No retirar silenciosamente la autenticación ni el control server-side.
+1. Confirmar en Supabase Auth → Security/CAPTCHA que el challenge esté desactivado; comparar `worker-auth` v49 con el código local y desplegar sólo tras revisión. Completar el smoke test con identidad worker sintética, verificando rate limits, autenticación y alcance RLS.
 2. Comparar el esquema/migraciones remotos con el checkout antes de aplicar cambios. Empezar con lectura/dump de esquema sin datos y registrar qué versión de cada migración está desplegada.
 3. Desplegar/probar por separado `geolocation=(self)` en el hosting y la migración de inalterabilidad QR. Confirmar permisos de navegador, captura bajo acción, posiciones vencidas, cola offline, duplicados y comportamiento ante rechazo de GPS.
 4. Validar si la política real del producto permite autoservicio de trabajador. La matriz de autorización debe preservar RLS y a la vez ser coherente con el portal de trabajador que ofrece BJSIGAPP.

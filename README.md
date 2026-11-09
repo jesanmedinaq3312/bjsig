@@ -28,9 +28,10 @@ Se eliminó de la UI la acción de sobrescribir una marca y se preparó una migr
 
 ## Límites y bloqueos conocidos
 
-- **Portal de trabajador:** el código del portal existe, pero el checklist de seguridad indica que el flujo falla cerrado porque Turnstile está pausado. No publicarlo hasta aprobar y probar una alternativa o habilitarlo con transparencia y configuración revisadas.
+- **Portal de trabajador:** Turnstile/CAPTCHA se eliminó del código local. La versión remota observada de `worker-auth` (v49) no exige tokens Turnstile; no se desplegó código desde este checkout. El endpoint público `/auth/v1/settings` no expuso un indicador CAPTCHA, lo que no confirma la opción del dashboard. Revisar Auth → Security/CAPTCHA y probar con un trabajador sintético antes de habilitar el portal.
+- **Protecciones conservadas en el código local:** límites por IP/cuenta/RUT, registro de intentos, respuesta genérica de recuperación, redirect allowlist, política de contraseña, comprobación de sesión, GPS donde aplica, MFA administrativo y RLS. La versión remota debe compararse con la fuente local antes de desplegar; no reemplazar controles server-side por validaciones de interfaz.
 - **Seguridad por trabajador:** existen políticas de ownership por RUT en partes del esquema y migraciones recientes para datos sensibles; no se ha demostrado en esta actualización que todas las tablas y RPC respeten el alcance personal. Validar cada tabla con sesiones de staging y pruebas negativas.
-- **Estado remoto:** las migraciones locales y el catálogo Supabase pueden divergir. No asumir que una migración está desplegada porque está en `supabase/migrations/`.
+- **Estado remoto:** sólo se inspeccionaron de forma read-only la versión de `worker-auth` y el endpoint público de configuración Auth; no se modificaron servicios. Las migraciones locales y el catálogo Supabase pueden divergir. No asumir que una migración está desplegada porque está en `supabase/migrations/`.
 - **Cumplimiento laboral y privacidad:** revisar las brechas A–E en [`ROADMAP.md`](ROADMAP.md). No describir la aplicación como “100 % conforme” ni como un sistema certificado.
 - **Información legal/comercial:** razón social/RUT/domicilio del responsable, DPO, bases y finalidades por tratamiento, retención, DPA, proveedores y canal ARCO+ requieren datos y aprobaciones del responsable; no inventarlos en el código.
 
@@ -82,7 +83,7 @@ docs/                       # auditorías, línea base, QA y decisiones
 
 ## Verificación local
 
-En esta revisión se validaron TypeScript, la suite de Vitest (**49 pruebas aprobadas**), build Vite/Nitro y Prettier de los archivos tocados. ESLint no tuvo errores; el análisis completo mostró una advertencia de Fast Refresh en `src/components/QrCardGenerator.tsx`. Estas pruebas no sustituyen E2E autenticadas ni staging.
+En esta revisión se validaron TypeScript, la suite de Vitest (**44 pruebas aprobadas**), pruebas Deno de `worker-auth` (**17 aprobadas**), build Vite/Nitro y Prettier de los archivos tocados. ESLint no tuvo errores; el análisis completo mostró una advertencia de Fast Refresh en `src/components/QrCardGenerator.tsx`. No se completó todavía un E2E autenticado; estas pruebas no sustituyen la verificación del login con una cuenta worker sintética.
 
 `bun.lock` es el lockfile del proyecto; se recomienda Bun para instalar dependencias. Los scripts disponibles están en `package.json`:
 

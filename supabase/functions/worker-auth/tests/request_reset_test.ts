@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { handleRequestReset } from "../source/handlers/reset.ts";
+import {
+  getSafeRedirectUrl,
+  handleRequestReset,
+  type ResetAuthClientFactory,
+} from "../source/handlers/reset.ts";
 
 function equal(actual: unknown, expected: unknown, message: string): void {
   if (actual !== expected) {
@@ -7,7 +11,7 @@ function equal(actual: unknown, expected: unknown, message: string): void {
   }
 }
 
-function harness(rateAllowed: boolean) {
+function harness(rateAllowed: boolean, accountIsWorker = false) {
   const inserted: Record<string, unknown>[] = [];
   const svc = {
     rpc(name: string) {
@@ -17,10 +21,28 @@ function harness(rateAllowed: boolean) {
       });
     },
     from(table: string) {
+      if (table === "login_attempts") {
+        return {
+          insert(row: Record<string, unknown>) {
+            inserted.push(row);
+            return Promise.resolve({ error: null });
+          },
+        };
+      }
       return {
-        insert(row: Record<string, unknown>) {
-          if (table === "login_attempts") inserted.push(row);
-          return Promise.resolve({ error: null });
+        select() {
+          return {
+            ilike() {
+              return {
+                maybeSingle: async () => ({
+                  data: accountIsWorker
+                    ? { role: "worker", active: true, tenant_id: "tenant-qa" }
+                    : null,
+                  error: null,
+                }),
+              };
+            },
+          };
         },
       };
     },
@@ -35,6 +57,28 @@ function request(referer?: string): Request {
     method: "POST",
     headers,
   });
+}
+
+function configureSafeRedirect() {
+  const previousOrigin = Deno.env.get("WORKER_AUTH_REDIRECT_ORIGIN");
+  const previousAllowed = Deno.env.get("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS");
+  const previousSupabaseUrl = Deno.env.get("SUPABASE_URL");
+  const previousAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  Deno.env.set("WORKER_AUTH_REDIRECT_ORIGIN", "https://app.example.test");
+  Deno.env.set("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS", "https://app.example.test");
+  Deno.env.set("SUPABASE_URL", "https://example-project.supabase.co");
+  Deno.env.set("SUPABASE_ANON_KEY", "synthetic-anon-key-for-tests");
+  equal(getSafeRedirectUrl(), "https://app.example.test/trabajador", "test redirect configuration");
+  return () => {
+    if (previousOrigin === undefined) Deno.env.delete("WORKER_AUTH_REDIRECT_ORIGIN");
+    else Deno.env.set("WORKER_AUTH_REDIRECT_ORIGIN", previousOrigin);
+    if (previousAllowed === undefined) Deno.env.delete("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS");
+    else Deno.env.set("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS", previousAllowed);
+    if (previousSupabaseUrl === undefined) Deno.env.delete("SUPABASE_URL");
+    else Deno.env.set("SUPABASE_URL", previousSupabaseUrl);
+    if (previousAnonKey === undefined) Deno.env.delete("SUPABASE_ANON_KEY");
+    else Deno.env.set("SUPABASE_ANON_KEY", previousAnonKey);
+  };
 }
 
 Deno.test(
@@ -69,21 +113,40 @@ Deno.test("request_reset responds generically to malformed addresses", async () 
   equal(body.success, true, "response must not reveal address validity");
 });
 
-Deno.test(
-  "request_reset is generic when its separate Supabase Auth CAPTCHA token is missing",
-  async () => {
-    const { svc, inserted } = harness(true);
-    const response = await handleRequestReset(svc, request(), { email: "worker@example.test" }, {});
+Deno.test("request_reset triggers Supabase recovery without a CAPTCHA token", async () => {
+  const restoreEnv = configureSafeRedirect();
+  try {
+    const { svc, inserted } = harness(true, true);
+    const resetCalls: Array<{ email: string; options: Record<string, unknown> }> = [];
+    const createAuthClient: ResetAuthClientFactory = () =>
+      ({
+        auth: {
+          resetPasswordForEmail: async (email: string, options: Record<string, unknown>) => {
+            resetCalls.push({ email, options });
+            return { error: null };
+          },
+        },
+      }) as never;
 
-    equal(response.status, 200, "missing Auth CAPTCHA status remains generic");
-    equal(
-      await response.text(),
-      JSON.stringify({
-        success: true,
-        message: "Si el correo existe, recibirá un enlace de restablecimiento en breve.",
-      }),
-      "generic response body",
+    const response = await handleRequestReset(
+      svc,
+      request(),
+      { email: "worker@example.test" },
+      {},
+      createAuthClient,
     );
-    equal(inserted.length, 1, "missing Auth CAPTCHA attempt is rate-limited");
-  },
-);
+
+    equal(response.status, 200, "reset response remains generic");
+    equal(resetCalls.length, 1, "eligible worker receives a recovery request");
+    equal(resetCalls[0].email, "worker@example.test", "recovery target");
+    equal(
+      resetCalls[0].options.redirectTo,
+      "https://app.example.test/trabajador",
+      "redirect remains fixed to the portal",
+    );
+    equal("captchaToken" in resetCalls[0].options, false, "no CAPTCHA token is sent to Auth");
+    equal(inserted.length, 1, "rate-limit attempt is retained");
+  } finally {
+    restoreEnv();
+  }
+});

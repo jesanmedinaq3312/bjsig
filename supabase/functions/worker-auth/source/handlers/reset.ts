@@ -15,7 +15,15 @@ const GENERIC_SUCCESS = {
   message: "Si el correo existe, recibirá un enlace de restablecimiento en breve.",
 };
 
-function getSafeRedirectUrl(): string | null {
+export type ResetAuthClientFactory = (
+  supabaseUrl: string,
+  anonKey: string,
+) => Pick<SupabaseClient, "auth">;
+
+export const createResetAuthClient: ResetAuthClientFactory = (supabaseUrl, anonKey) =>
+  createClient(supabaseUrl, anonKey);
+
+export function getSafeRedirectUrl(): string | null {
   const configuredOrigin = Deno.env.get("WORKER_AUTH_REDIRECT_ORIGIN")?.trim();
   const allowedOrigins = (Deno.env.get("WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS") ?? "")
     .split(",")
@@ -43,10 +51,9 @@ export async function handleRequestReset(
   req: Request,
   body: Record<string, unknown>,
   corsHeaders: Record<string, string>,
+  createAuthClient: ResetAuthClientFactory = createResetAuthClient,
 ): Promise<Response> {
   const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
-  const authCaptchaToken =
-    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
   if (!email || email.length > 254 || !/^[^\s@%_]+@[^\s@%_]+\.[^\s@%_]+$/.test(email)) {
     return jsonResponse(corsHeaders, GENERIC_SUCCESS);
   }
@@ -60,9 +67,6 @@ export async function handleRequestReset(
     return jsonResponse(corsHeaders, GENERIC_SUCCESS);
   }
   await recordLoginAttempt(svc, rateLimitKey, ip, false, null);
-  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
-    return jsonResponse(corsHeaders, GENERIC_SUCCESS);
-  }
 
   const redirectTo = getSafeRedirectUrl();
   if (!redirectTo) {
@@ -89,11 +93,8 @@ export async function handleRequestReset(
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
       if (!supabaseUrl || !anonKey) throw new Error("SUPABASE_AUTH_NOT_CONFIGURED");
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { error } = await anonClient.auth.resetPasswordForEmail(email, {
-        redirectTo,
-        captchaToken: authCaptchaToken,
-      });
+      const anonClient = createAuthClient(supabaseUrl, anonKey);
+      const { error } = await anonClient.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) throw error;
     }
 

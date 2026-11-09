@@ -112,8 +112,9 @@ export function CookieConsent() {
             <div className="cookie-details mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-xs leading-5 text-white/70">
               <p>
                 Sólo se guarda una constancia local de que el aviso fue leído durante un máximo de
-                12 meses. No hay categorías de analítica o publicidad activas. Turnstile está
-                desactivado en esta versión; cualquier activación requiere revisión y nuevo aviso.
+                12 meses. No hay categorías de analítica o publicidad activas. La integración
+                Turnstile/CAPTCHA se retiró del código local; cualquier proveedor futuro requerirá
+                una revisión separada y un aviso actualizado.
               </p>
             </div>
           )}

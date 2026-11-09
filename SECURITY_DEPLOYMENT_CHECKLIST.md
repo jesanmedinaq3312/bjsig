@@ -1,31 +1,29 @@
 # Checklist de despliegue de seguridad
 
-Los cambios de aplicación, funciones Edge, configuración versionada y pruebas se prepararon localmente. Esta lista reúne los pasos que requieren acceso al panel de Supabase, al proveedor de hosting o a GitHub; no se ejecutaron en producción.
+**Estado local:** Turnstile fue retirado del cliente, de `worker-auth` y de las llamadas a Supabase Auth. El código ya no carga scripts, solicita tokens ni valida tokens de Turnstile. Este cambio conserva límites de intentos server-side, registros de autenticación, respuestas genéricas de recuperación, allowlists de redirect, política de contraseña, validación de sesión, MFA y RLS.
 
-## Antes de publicar
+**Límite del cambio:** el proyecto remoto de Supabase no se modificó ni se desplegó desde este checkout. La versión observada de `worker-auth` (v49) no exigía tokens Turnstile; el endpoint público `/auth/v1/settings` no expuso un indicador de CAPTCHA, lo que no confirma la configuración del dashboard. Revisar Auth → Security/CAPTCHA y comparar la función remota con la fuente local antes de afirmar que el portal está habilitado.
 
-1. En el hosting, configurar `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_PUBLIC_SITE_URL` para el dominio HTTPS real. **No configurar `VITE_TURNSTILE_SITE_KEY` ni secretos de Turnstile** hasta que el cliente apruebe expresamente su uso y la divulgación de transferencia de IP.
-2. Turnstile está pausado por decisión del cliente: un guard en cliente y Edge impide solicitudes y remisión de IP, y la CSP también bloquea sus dominios. No habilitarlo en Supabase Auth ni permitir el dominio en CSP sin revisión jurídica, aviso actualizado y autorización del cliente.
-3. **Bloqueo operativo:** el portal de trabajadores falla cerrado al solicitar el token desactivado; no publicar ese flujo hasta escoger una alternativa de seguridad aprobada o autorizar/implementar Turnstile con los avisos y contratos correspondientes.
+## Antes de probar o publicar
 
-> **GPS — corregido en el código local, pendiente de aprobación/despliegue:** `_headers` permite `geolocation=(self)` y el login solicita captura sólo tras acción del usuario; el escáner QR captura al procesar una marca y descarta una posición vencida. Antes de publicar, confirmar finalidad/base y transparencia con el cliente, desplegar la cabecera y probar permisos en el dominio HTTPS real. La app no acredita la autenticidad física de coordenadas suministradas por el navegador.
+1. Configurar en el hosting `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_PUBLIC_SITE_URL` para el dominio HTTPS correspondiente. No crear variables ni secretos de Turnstile.
+2. En Supabase Auth → Security/CAPTCHA, confirmar que CAPTCHA/Turnstile esté desactivado para el proyecto si había sido habilitado anteriormente. La configuración remota no está representada en `supabase/config.toml`.
+3. Comparar la versión remota v49 con la fuente local y desplegar sólo después de revisar el diff; probar que no exija `captcha_token` ni `auth_captcha_token` y que conserve límites y controles server-side.
+4. Mantener y comprobar los límites existentes por IP + cuenta/RUT, bitácora de intentos, respuesta anti-enumeración para reset y política de contraseñas. El signup público permanece deshabilitado; no habilitarlo sin decisión de producto.
+5. Configurar como secretos de Edge Functions —nunca como `VITE_*`— `WORKER_AUTH_REDIRECT_ORIGIN`, `WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS` y `ALLOWED_ORIGINS`, más los secretos aprobados de cada función.
+6. En Supabase Auth, autorizar sólo el dominio HTTPS de producción y los destinos exactos usados por recuperación (`/admin` y `/trabajador`). No usar comodines amplios.
+7. Confirmar límites/rate limit para `worker-auth` y `check-email-allowed`; las demás funciones mantienen `verify_jwt = true`. Revisar signup, MFA, recuperación y acceso con sesiones de staging.
+8. Revisar la política de alta de Supabase Auth y desactivar signup público si no es necesario. Esta configuración remota no se modificó.
+9. Rotar en el proveedor cualquier clave/secreto que haya estado expuesto en el repositorio o logs, siguiendo primero dependencias entre entornos. No se rotaron secretos en este cambio.
+10. En GitHub Actions, apuntar `SUPABASE_DB_URL` sólo a staging y habilitar `SUPABASE_RLS_AUDIT_ENABLED=true` para las comprobaciones del catálogo RLS.
+11. Para E2E multi-tenant, usar cuentas y tenants sintéticos de staging con las variables documentadas en `e2e/multitenant.spec.ts`; no incluir contraseñas en el repositorio.
 
-4. Configurar como secretos de Edge Functions —nunca como `VITE_*`— sólo `WORKER_AUTH_REDIRECT_ORIGIN`, `WORKER_AUTH_ALLOWED_REDIRECT_ORIGINS` y `ALLOWED_ORIGINS`, además de otros secretos que se hayan aprobado para cada función.
-5. En los ajustes de URL de Supabase Auth, autorizar sólo el dominio HTTPS de producción y los destinos exactos usados por recuperación (`/admin` y el destino fijo del portal de trabajadores). No usar comodines amplios.
-6. Desplegar `supabase/config.toml` y las funciones Edge desde este checkout. Confirmar límites/rate limit para las acciones públicas de `worker-auth` y `check-email-allowed`; las demás funciones quedan con `verify_jwt = true`.
-7. Revisar la política de alta de usuarios de Supabase Auth y desactivar signup público si la aplicación no lo necesita. No se modificó esa configuración remota.
-8. Rotar en el proveedor cualquier clave o secreto que haya estado expuesto en el repositorio o en logs, actualizando primero todos los entornos dependientes. No se rotaron credenciales desde este cambio local.
-9. En GitHub Actions, agregar `SUPABASE_DB_URL` apuntando únicamente a staging y habilitar la variable de repositorio `SUPABASE_RLS_AUDIT_ENABLED=true` para activar la comprobación de catálogo RLS.
-10. Para activar E2E multi-tenant, crear cuentas/tenants de staging aislados y configurar las variables `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_ADMIN_PASSWORD`, `E2E_ADMIN_USERS_JSON`, `E2E_DEVELOPER_EMAIL`, `E2E_DEVELOPER_PASSWORD` y `E2E_DEVELOPER_TENANTS_JSON`; luego habilitar `MULTITENANT_E2E_ENABLED=true`. No almacenar secretos de Turnstile mientras permanezca desactivado.
+> **GPS:** `_headers` permite `geolocation=(self)` en el checkout y el login sólo solicita captura tras una acción del usuario; el escáner captura al procesar la marca y descarta ubicaciones vencidas. Desplegar y verificar la cabecera en HTTPS. La coordenada del navegador no demuestra por sí sola presencia física.
 
-## Cambios preparados, aún no desplegados
+## Otros cambios locales pendientes de despliegue
 
-- **Inalterabilidad QR:** se eliminó la acción de sobrescritura en la interfaz y se preparó `20261109070000_qr_attendance_marks_immutable.sql` para impedir UPDATE/DELETE. Aplicar y verificar primero en staging. El flujo bilateral de solicitud/aprobación de regularización todavía no está implementado.
-
-## Pendiente de política/operación
-
-- Aplicar primero en staging `supabase/migrations/20261109060000_privacy_processing_inventory.sql`, probar carga/guardado del inventario y luego decidir el despliegue a producción. Esta migración no se aplicó desde el checkout local.
-- Aplicar y probar en staging la migración de inalterabilidad de marcajes y verificar que ningún flujo operativo siga actualizando `qr_scan_events`. Diseñar por separado la solicitud de regularización con consentimiento de trabajador y supervisor antes de habilitar correcciones.
-- Definir y aprobar períodos de retención para `activity_logs` y `login_attempts` antes de automatizar borrados; no se eligieron plazos arbitrarios.
-- Elegir proveedor/canales y umbrales para alertas de picos de intentos, accesos a honeytokens, actividad administrativa y eventos MFA; no se configuraron integraciones externas.
-- Aplicar y verificar el despliegue en staging antes de producción, incluyendo la CSP servida, redirects y autenticación de trabajadores. No añadir dominios de Google Analytics ni Turnstile a CSP sin autorización y revisión de privacidad.
+- **Inalterabilidad QR:** se eliminó la acción de sobrescritura y se preparó `20261109070000_qr_attendance_marks_immutable.sql`. Aplicar y verificar primero en staging; implementar por separado la regularización bilateral antes de permitir correcciones.
+- Aplicar en staging `20261109060000_privacy_processing_inventory.sql` y probar carga/guardado del inventario.
+- Definir y aprobar retención para `activity_logs` y `login_attempts` antes de automatizar borrados.
+- Elegir proveedor/canales y umbrales para alertas de intentos, honeytokens, actividad administrativa y eventos MFA.
+- Confirmar la CSP realmente servida, redirects, signup, CAPTCHA remoto apagado y autenticación de trabajadores en staging antes de producción. No agregar proveedores externos a CSP sin autorización y revisión de privacidad.

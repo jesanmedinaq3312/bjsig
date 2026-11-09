@@ -13,8 +13,6 @@ import {
 } from "@/lib/gps";
 import { systemConfigRepo } from "@/lib/repositories";
 import { hasOperationalAccess } from "@/lib/authorization";
-import { getTurnstileToken } from "@/lib/turnstile";
-import { getAdminCaptchaToken } from "@/lib/adminCaptcha";
 
 const DEFAULT_TIMEOUT_MINUTES = 30;
 export type EmailOtpStatus = "not_required" | "pending" | "verified";
@@ -414,14 +412,9 @@ export function useAuth() {
 
   const signIn = useCallback(
     async (email: string, password: string, gpsPosition?: GpsPosition) => {
-      const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
       authOperationRef.current = true;
       const { data, error } = await supabase.auth
-        .signInWithPassword({
-          email,
-          password,
-          options: { captchaToken },
-        })
+        .signInWithPassword({ email, password })
         .catch((authError: unknown) => {
           authOperationRef.current = false;
           throw authError;
@@ -459,14 +452,9 @@ export function useAuth() {
       tenantSlug?: string | null,
       options: { allowWorkerPortal?: boolean; gpsPosition?: GpsPosition } = {},
     ) => {
-      const captchaToken = await getAdminCaptchaToken("supabase_sign_in");
       authOperationRef.current = true;
       const { data, error } = await supabase.auth
-        .signInWithPassword({
-          email,
-          password,
-          options: { captchaToken },
-        })
+        .signInWithPassword({ email, password })
         .catch((authError: unknown) => {
           authOperationRef.current = false;
           throw authError;
@@ -656,14 +644,12 @@ export function useAuth() {
     await supabase.auth.signOut();
   }, []);
 
-  const signInWithMagicLink = useCallback(async (email: string, shouldCreateUser = false) => {
-    const captchaToken = await getAdminCaptchaToken("supabase_sign_in_otp");
+  const signInWithMagicLink = useCallback(async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
         emailRedirectTo: `${window.location.origin}/admin`,
-        shouldCreateUser,
-        captchaToken,
+        shouldCreateUser: false,
       },
     });
     if (error) throw error;
@@ -675,10 +661,9 @@ export function useAuth() {
   }, []);
 
   const sendEmailOtp = useCallback(async (email: string) => {
-    const captchaToken = await getAdminCaptchaToken("supabase_sign_in_otp");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false, captchaToken },
+      options: { shouldCreateUser: false },
     });
     if (error) throw error;
   }, []);
@@ -714,15 +699,9 @@ export function useAuth() {
     }
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string) => {
-    const captchaToken = await getTurnstileToken("supabase_sign_up");
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { captchaToken },
-    });
-    if (error) throw error;
-    return data;
+  // Public sign-up stays disabled: worker identities are provisioned by an administrator.
+  const signUp = useCallback(async () => {
+    throw new Error("El registro público está deshabilitado. Solicita acceso a un administrador.");
   }, []);
 
   const signOut = useCallback(async () => {

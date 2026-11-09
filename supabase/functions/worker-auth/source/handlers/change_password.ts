@@ -30,8 +30,6 @@ export async function handleChangePassword(
     .trim();
   const currentPassword = String(body?.current_password ?? "");
   const newPassword = String(body?.new_password ?? "");
-  const authCaptchaToken =
-    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
 
   if (!email || !currentPassword || !newPassword) {
     return jsonResponse(
@@ -70,10 +68,6 @@ export async function handleChangePassword(
       429,
     );
   }
-  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
-    return jsonResponse(corsHeaders, { error: "No se pudo validar la solicitud." }, 400);
-  }
-
   const { data: allowed, error: allowErr } = await svc
     .from("allowed_emails")
     .select("role, active, must_change_password, tenant_id")
@@ -91,7 +85,6 @@ export async function handleChangePassword(
   const { error: signInErr } = await userClient.auth.signInWithPassword({
     email,
     password: currentPassword,
-    options: { captchaToken: authCaptchaToken },
   });
   if (signInErr) {
     await recordLoginAttempt(svc, rateLimitKey, ip, false, allowed.tenant_id ?? null);

@@ -16,6 +16,11 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 
 ## Validación y operación
 
-- [x] TypeScript, Vitest, lint y build se ejecutan localmente; el último registro del README indica 49 pruebas unitarias aprobadas.
-- [ ] Ejecutar E2E público y autenticado con cuentas de staging; documentar errores de servicios externos sin usar credenciales reales.
+- [x] TypeScript, Vitest (**44**), pruebas Deno de `worker-auth` (**17**), ESLint y build se ejecutan localmente; ESLint conserva una advertencia Fast Refresh no bloqueante.
+- [ ] Ejecutar E2E público y autenticado con cuentas sintéticas; documentar errores de servicios externos sin usar credenciales reales.
 - [ ] Mantener decisiones pendientes de despliegue, migraciones y seguridad en [`SECURITY_DEPLOYMENT_CHECKLIST.md`](SECURITY_DEPLOYMENT_CHECKLIST.md).
+
+## Portal de trabajador
+
+- [x] Turnstile/CAPTCHA retirado del código local; el signup público permanece deshabilitado.
+- [ ] Confirmar el ajuste de CAPTCHA en el dashboard, comparar y revisar la versión remota de `worker-auth`, y completar login con un worker sintético antes de habilitar el portal.

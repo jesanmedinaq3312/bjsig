@@ -42,8 +42,6 @@ export async function handleSetInitialPassword(
   const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
   const currentPassword = typeof body?.current_password === "string" ? body.current_password : "";
   const newPassword = typeof body?.new_password === "string" ? body.new_password : "";
-  const authCaptchaToken =
-    typeof body?.auth_captcha_token === "string" ? body.auth_captcha_token.trim() : "";
 
   if (!email || !currentPassword || !newPassword) {
     return jsonResponse(
@@ -85,10 +83,6 @@ export async function handleSetInitialPassword(
     return jsonResponse(corsHeaders, { error: INVALID_INITIAL_ACCESS }, 400);
   };
 
-  if (!authCaptchaToken || authCaptchaToken.length > 2048) {
-    return await rejectAttempt();
-  }
-
   const { data: allowed, error: allowError } = await svc
     .from("allowed_emails")
     .select("role, active, must_change_password, tenant_id")
@@ -119,7 +113,6 @@ export async function handleSetInitialPassword(
   const { error: passwordError } = await verifier.auth.signInWithPassword({
     email,
     password: currentPassword,
-    options: { captchaToken: authCaptchaToken },
   });
   if (passwordError) return await rejectAttempt(allowed.tenant_id);
 
