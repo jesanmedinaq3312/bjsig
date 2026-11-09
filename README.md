@@ -1,224 +1,121 @@
 # BJSIGAPP — Sistema Integrado de Gestión Empresarial
 
-BJSIGAPP es un **SaaS multiempresa para gestión integrada de seguridad, operaciones y personas**. Permite que un Dev Team configure empresas aisladas, planes, módulos, branding, usuarios, turnos, asistencia, documentos, cumplimiento y comunicaciones. Debe evolucionar sin perder **aislamiento por empresa, control explícito de capacidades y trazabilidad**.
+BJSIGAPP es una plataforma SaaS multiempresa para gestión de personas, operaciones, asistencia, prevención y procesos internos. Este README orienta a quienes mantengan el repositorio; el estado del despliegue debe verificarse por separado.
 
-> Documento de continuidad para agentes humanos o de IA. Antes de cambiar código, leerlo completo y revisar la implementación relacionada. No asumir que un nombre de tabla, una clave de módulo o un tipo TypeScript coincide con Supabase: validar ambos lados.
+**Revisión del repositorio:** 9 de noviembre de 2026. El checkout contiene código y migraciones locales; no implica que todo esté desplegado en Supabase o en el hosting. No se debe inferir cumplimiento legal integral a partir de la presencia de una pantalla, una tabla o una migración.
 
-## 1. Estado y alcance actual
+## Estado actual
 
-Aplicación React 19 + TypeScript + Vite/TanStack Start con Supabase. Se importó desde un proyecto Lovable y se ejecuta en preview de Manus.
+La aplicación usa React 19, TypeScript, Vite/TanStack Start y Supabase. El repositorio contiene módulos funcionales y superficies de demostración; producción, staging, configuración de Auth, cabeceras entregadas y migraciones remotas requieren verificación independiente.
 
-Capacidades actuales:
+### Capacidades presentes en el código
 
-- Landing responsive con CTA de demo por WhatsApp.
-- Panel Dev Team para empresas, planes, vistas, branding, landing, avisos y monitoreo.
-- Control de vistas por **rol/permisos + plan + overrides del Dev Team**.
-- Branding por empresa: logo, Blobavatar como fallback, tema, opacidad glass y landing.
-- Blobavatar vinculado a empresa y persona en dashboard, trabajadores, asistencia, turnos, organigrama y portal individual.
-- Modal responsive para detalles de empresas, planes y vistas.
-- Avisos del desarrollador por empresa con plantilla, prioridad, fecha/hora, lectura y trazabilidad.
-- Turnos: definiciones, asignaciones, duración, días, cambios e historial, aislados mediante `tenant_id`.
-- Equipo Dev: operadores desarrolladores globales, empresas asignadas y permisos por módulo.
-- Retiro del producto legado “BJ Brain 3D”; no debe aparecer en navegación, permisos ni copy.
+- SaaS multiempresa con gestión de empresas, memberships, roles, módulos, planes, overrides, branding y landing.
+- Panel Dev Team con gestión de operadores, ciclo de vida de empresas, comunicaciones, contratos comerciales, onboarding y monitoreo.
+- Personas, portal de trabajador, solicitudes, asistencia/calendario, turnos y marcación QR con cola offline.
+- Nómina y liquidaciones, finanzas, vacaciones, finiquitos y datos bancarios.
+- Prevención y operaciones: incidentes, CPHS, EPP, capacitaciones, documentos, indicadores, auditoría y seguridad.
+- Canal de denuncias Ley Karin, Gobierno de Datos e interfaces de privacidad.
+- Branding tenant-scoped, avisos por empresa y recibos de lectura para circulares.
 
-## 2. Reglas de negocio no negociables
+Estas capacidades no equivalen automáticamente a los formatos, plazos, firmas, avisos o controles legales requeridos por cada cliente.
 
-### 2.1 Jerarquía de autoridad
+### Estado reciente de asistencia y GPS
 
-La autorización efectiva se evalúa así:
+La marcación QR usa hora del instante UTC y fecha laboral en `America/Santiago`; al procesar una marca solicita GPS, valida frescura y conserva la precisión reportada por el navegador. La política local permite geolocalización sólo para el mismo origen (`geolocation=(self)`). Las coordenadas del navegador no prueban por sí solas la presencia física.
 
-1. **Supabase/RLS y RPC server-side**: frontera de seguridad; el frontend nunca sustituye RLS.
-2. **Contexto activo de empresa (`tenant_id`)**: toda operación debe quedar vinculada al tenant activo.
-3. **Rol**: `superadmin` y `developer` son plataforma; los demás pertenecen a una empresa.
-4. **Permisos**: por ejemplo `can_view_workers`, `can_view_shifts` o `can_edit_workers`.
-5. **Plan y módulos habilitados**: una ruta empresarial no se muestra ni permite si el módulo está bloqueado.
-6. **Override de empresa**: Dev Team puede activar o desactivar una clave para un tenant.
+Se eliminó de la UI la acción de sobrescribir una marca y se preparó una migración de inalterabilidad para `qr_scan_events`. La migración `20261109070000_qr_attendance_marks_immutable.sql` **no se debe considerar aplicada** hasta confirmarla en staging/producción. Aún falta el flujo bilateral de regularización. Tampoco están acreditados aquí el comprobante inmediato por correo, el portal de fiscalizador ni el reporte de jornada firmado.
+
+## Límites y bloqueos conocidos
+
+- **Portal de trabajador:** el código del portal existe, pero el checklist de seguridad indica que el flujo falla cerrado porque Turnstile está pausado. No publicarlo hasta aprobar y probar una alternativa o habilitarlo con transparencia y configuración revisadas.
+- **Seguridad por trabajador:** existen políticas de ownership por RUT en partes del esquema y migraciones recientes para datos sensibles; no se ha demostrado en esta actualización que todas las tablas y RPC respeten el alcance personal. Validar cada tabla con sesiones de staging y pruebas negativas.
+- **Estado remoto:** las migraciones locales y el catálogo Supabase pueden divergir. No asumir que una migración está desplegada porque está en `supabase/migrations/`.
+- **Cumplimiento laboral y privacidad:** revisar las brechas A–E en [`ROADMAP.md`](ROADMAP.md). No describir la aplicación como “100 % conforme” ni como un sistema certificado.
+- **Información legal/comercial:** razón social/RUT/domicilio del responsable, DPO, bases y finalidades por tratamiento, retención, DPA, proveedores y canal ARCO+ requieren datos y aprobaciones del responsable; no inventarlos en el código.
+
+## Reglas de negocio no negociables
+
+### Autorización efectiva
+
+La autorización se decide en servidor, con aislamiento de tenant y controles de sesión; las guards de interfaz sólo mejoran la experiencia.
 
 ```text
-acceso = sesión válida
-      + tenant correcto
-      + permiso del rol/usuario
-      + módulo habilitado por plan u override
+RLS/RPC/Edge → tenant activo → rol → permiso → plan/módulo → override
 ```
 
-Un permiso positivo nunca debe saltarse el plan. Un operador de plataforma puede administrar el SaaS desde plataforma; dentro de una empresa debe respetarse la configuración empresarial y nunca mostrar controles de Dev Team a la empresa.
+Un permiso positivo no debe saltarse el plan. El rol de plataforma administra el SaaS; el acceso dentro de una empresa sigue la membresía y los permisos efectivos.
 
-### 2.2 Aislamiento multiempresa
+### Aislamiento multiempresa
 
-- Las tablas operativas tienen `tenant_id` y las queries filtran por `current_tenant_id()`.
-- No hacer `select` global de trabajadores, turnos, documentos o finanzas para una vista empresarial.
-- Al cambiar de empresa, separar/invalidate las claves de React Query por tenant usando `tenantQueryKey(tenantId, recurso)`.
-- Turnos: aislar por `tenant_id + worker_rut`; no enlazar datos de otra empresa solo porque coincida el RUT.
-- Avisos: persistir el `tenant_id` destino y mostrarlos solo en ese portal.
-- Equipo Dev: `tenant_memberships` define las empresas autorizadas.
+- Las queries operativas deben tener tenant scope y RLS correspondiente.
+- Nunca leer trabajadores, turnos, documentos o finanzas de forma global desde una vista tenant.
+- Al cambiar de empresa, separar/invalidate claves React Query con `tenantQueryKey(tenantId, recurso)`.
+- No enlazar datos por RUT entre empresas sin tenant; las memberships determinan las empresas disponibles para Dev Team.
+- Una ruta o botón visible no constituye autorización.
 
-### 2.3 Vistas, planes y overrides
+### Identidad de trabajador y portal
 
-El Dev Team administra módulos desde **SaaS Control Panel → Planes y vistas**. Las claves de plan usan nombres de ruta (`dashboard`, `workers`, `shifts`, `organigrama`, `payroll`, `extendedfinance`, etc.). El código normaliza datos históricos con prefijo `can_view_` desde `tenant_settings.modules`.
+El producto incluye un portal personal de trabajador en `/trabajador` y un portal operativo en `/admin` o `/<slug>/admin`. La persona puede tener ambos usos con una sola identidad; la autorización y el alcance personal se verifican en servidor. **No asumir “Dev Team-only” para el portal de trabajador**: es incompatible con el flujo de autoservicio presente y requiere una decisión de producto explícita si se quisiera cambiar.
 
-Una clave ausente no habilita una vista empresarial. El dashboard es el único fallback mínimo seguro cuando una empresa carece de configuración.
+### Vistas, planes y branding
 
-Al crear una vista nueva:
+Las claves de módulos se normalizan en `src/lib/authorization.ts`, `src/lib/roleAccess.ts` y `src/lib/tenant.ts`. Al agregar una vista, revisar el mapa de rutas/navegación, permisos `can_view_*`, etiquetas del panel SaaS, planes fallback, `Layout`/`TenantGate` y pruebas negativas de rol/plan/override.
 
-1. agregarla al tipo de ruta y al mapa de navegación;
-2. agregar `can_view_*`;
-3. agregarla a `FEATURE_LABELS` del panel Dev Team;
-4. agregarla a los planes fallback si corresponde;
-5. filtrar con `moduleEnabled` en `Layout` y `TenantGate`;
-6. probar usuario con/sin permiso, plan sin módulo y override explícito.
+Reutilizar `CompanyLogo`, `WorkerAvatar` e `IdentityAvatar`; no introducir avatares duplicados ni exponer un RUT al generar un recurso externo.
 
-La empresa administra sus usuarios internos solo dentro de los módulos habilitados; no puede modificar su propio plan ni concederse módulos de plataforma.
-
-### 2.4 Equipo Dev
-
-Un operador adicional debe existir como desarrollador global en `allowed_emails` con `role = 'developer'`, `tenant_id = null`, `active = true` y permisos explícitos. Sus empresas se guardan como membresías activas en `tenant_memberships`. Debe poder suspenderse sin borrar historial y todo cambio relevante debe auditarse.
-
-El panel Dev Team es la superficie para asignar empresas y módulos a desarrolladores. No hacerlo desde una pantalla empresarial.
-
-### 2.5 Turnos
-
-Las definiciones son plantillas; las asignaciones vinculan plantilla y trabajador; los cambios conservan historial.
-
-Campos esperados:
-
-- `shift_definitions`: `tenant_id`, `name`, `cycle`, `start_time`, `end_time`, `color`, `active`.
-- `shift_assignments`: `tenant_id`, `worker_rut`, `shift_definition_id`, `shift_name`, `duration_type`, `start_date`, `end_date`, `days_of_week`, `assigned_by_email`, `active`.
-- `shift_change_logs`: trabajador, turno anterior/nuevo, duración, fechas, motivo, tipo y emisor.
-
-El esquema fue alineado porque tablas antiguas solo tenían campos genéricos (`name`, `label`, `status`, `data`) y no tenían `active`. Ante otra discrepancia de PostgREST, consultar `information_schema.columns` antes de cambiar UI.
-
-### 2.6 Identidad y Blobavatar
-
-Si existe foto/logo válido se usa; si no, Blobavatar determinístico por nombre/RUT; las iniciales son solo último fallback si falla Blobavatar. Reutilizar `CompanyLogo`, `WorkerAvatar` y `CompanyIdentityAvatar`; no crear avatares nuevos con `charAt(0)`.
-
-### 2.7 Avisos del desarrollador
-
-Un aviso se envía a una empresa o conjunto explícito. Plantillas: general, pago, regalo/beneficio y nota libre. Requiere título y detalle; prioridad, emisor, fecha/hora y lectura deben persistirse. La empresa puede marcar leído, pero no alterar contenido original ni su trazabilidad.
-
-### 2.8 Identidad trabajador-operador y portales
-
-Una persona puede tener simultáneamente una ficha personal de trabajador y una función operativa en su empresa; no se deben crear dos cuentas Auth para representar esas dos tareas. La ficha/RUT determina el acceso personal y el rol/permisos activos de la empresa determinan el acceso operativo. La autorización final sigue en RPC/RLS: elegir una ruta o mostrar una vista no concede permisos.
-
-- `/trabajador` es el portal personal: valida RUT y luego solicita el correo registrado y la contraseña para ver únicamente los datos y solicitudes del propio trabajador.
-- `/admin` (o `/<slug>/admin`) es el portal operativo: usa el mismo correo/contraseña, aplica permisos y módulos de la empresa y abre herramientas de trabajo, no la ficha personal.
-- Si la misma persona tiene ambos accesos, puede entrar a cualquiera de los portales con la misma identidad y escoger el portal por la URL/enlace de acceso. El portal personal no debe redirigirla automáticamente al panel operativo solo porque tenga otro rol.
-- El login de `/<slug>` y `/<slug>/admin` debe resolver logo, nombre y tema de ese tenant sin heredar la marca del tenant previamente abierto. Solo se expone branding público; usuarios, permisos y datos operativos permanecen protegidos.
-- Si la organización usa una identidad global con `role = 'worker'` y permisos operativos adicionales, el servidor debe reconocer el vínculo personal sin convertir esos permisos en acceso administrativo amplio; la matriz RLS/RPC sigue limitando cada módulo.
-
-**Hallazgo pendiente de seguridad (auditoría 2026-10-23):** en el Supabase conectado, varias políticas de tablas personales solo limitan por `tenant_id`, aunque el portal filtre por RUT en el cliente. Un trabajador autenticado podría omitir esos filtros mediante la API. En particular se verificó `op_workers` (`ALL`) y políticas tenant-wide para documentos, solicitudes, nómina, desempeño y turnos. No afirmar que el aislamiento por trabajador esté garantizado en backend hasta endurecer esas políticas y probar con cuentas separadas de trabajador y operador. No aplicar cambios RLS en producción sin aprobación explícita y respaldo.
-
-## 3. Arquitectura
+## Arquitectura del repositorio
 
 ```text
 src/
-├── App.tsx                         # composición, rutas y guards
-├── components/
-│   ├── BjsigApp.tsx                # shell
-│   ├── Layout.tsx                  # navegación
-│   ├── TenantProvider.tsx           # tenant, módulos y cambio de empresa
-│   ├── TenantGate.tsx               # bloqueo de rutas sin módulo
-│   ├── CompanyLogo.tsx              # identidad de empresa
-│   ├── WorkerAvatar.tsx             # foto/Blobavatar
-│   └── ui.tsx                       # Modal, Button y UI compartida
-├── hooks/
-│   ├── useAppData.ts                # datos por vista/tenant
-│   ├── useModuleData.ts             # queries de módulos
-│   └── useWorkerData.ts              # portal individual
-├── lib/
-│   ├── tenant.ts                    # resolución/normalización de módulos
-│   ├── roleAccess.ts                # roles y permisos
-│   ├── repositories.ts              # repositorios Supabase con tenant scope
-│   ├── types.ts                     # contratos TypeScript
-│   ├── logo.ts                      # branding y CSS variables
-│   └── supabase.ts                  # cliente
-├── views/
-│   ├── settings/SaaSControlPanel.tsx # Dev Team, planes y control SaaS
-│   ├── settings/AccessControlPanel.tsx# usuarios empresariales
-│   ├── shifts/                      # definiciones, asignaciones, calendario
-│   ├── calendar/                    # asistencia
-│   ├── Organigrama.tsx               # jerarquía
-│   ├── WorkerPortal.tsx              # portal individual
-│   └── workers/                      # personas
-└── routes/                           # rutas TanStack Start
+├── routes/                 # rutas públicas, legales y SSR (TanStack Start)
+├── components/             # shell, navegación, QR, UI y módulos compartidos
+├── hooks/                  # auth, datos tenant, GPS y estado de aplicación
+├── lib/                    # dominio, repositorios, permisos, exportaciones y validaciones
+├── views/                  # módulos funcionales y paneles
+└── integrations/supabase/  # cliente y tipos
+supabase/
+├── functions/              # Edge Functions y utilidades compartidas
+└── migrations/             # migraciones versionadas; estado remoto por verificar
+docs/                       # auditorías, línea base, QA y decisiones
 ```
 
-## 4. Contratos de datos
+## Verificación local
 
-- `tenants`: identidad y estado de empresa.
-- `tenant_settings`: `plan`, `modules`, `default_view`, límites.
-- `saas_tenant_feature_overrides`: clave, enabled, motivo y tenant.
-- `tenant_branding`: logo, tema, opacidad y landing.
-- `allowed_emails`: correo, rol, tenant, permisos y activo.
-- `tenant_memberships`: correo, tenant, rol, permisos y activo; esencial para Dev Team multiempresa.
-- `tenant_role_permission_templates`: plantillas por rol.
-- `shiftDefRepo`, `shiftAssignmentRepo`, `shiftChangeLogRepo`: contratos en `src/lib/types.ts` con tenant scope obligatorio.
+En esta revisión se validaron TypeScript, la suite de Vitest (**49 pruebas aprobadas**), build Vite/Nitro y Prettier de los archivos tocados. ESLint no tuvo errores; el análisis completo mostró una advertencia de Fast Refresh en `src/components/QrCardGenerator.tsx`. Estas pruebas no sustituyen E2E autenticadas ni staging.
 
-## 5. Protocolo para futuros agentes
-
-1. Leer este README, `AGENTS.md`, componente objetivo y repositorio relacionado.
-2. Clasificar el cambio: plataforma, empresa, trabajador o dato operativo.
-3. Verificar permisos, `tenant_id`, RLS/RPC y esquema real de Supabase.
-4. Implementar persistencia/contrato antes de UI.
-5. Reutilizar componentes de identidad, modal y permisos.
-6. Probar 390×844, 768×1024 y desktop.
-7. Ejecutar `npm run build`; en cambios visuales revisar preview.
-8. Documentar cualquier nueva regla global.
-9. No borrar datos ni cambiar seguridad, ownership o billing sin aprobación explícita y respaldo.
-
-## 6. Comandos
+`bun.lock` es el lockfile del proyecto; se recomienda Bun para instalar dependencias. Los scripts disponibles están en `package.json`:
 
 ```bash
-npm install
-npm run dev -- --host 0.0.0.0 --port 4173
-npm run build
-npm run preview
-npm run lint
+bun install
+bun run dev -- --host 0.0.0.0 --port 4173
+bun run typecheck
+bun run test
+bun run lint
+bun run build
+bun run test:e2e:public
+bun run test:e2e:authenticated
 ```
 
-No documentar secretos. Mantener variables solo en `.env` local o gestor de secretos. Para preview de Manus, escuchar en `0.0.0.0` y usar la URL pública del puerto.
+La suite autenticada requiere variables y tenants QA sintéticos; no usar datos/credenciales de producción para pruebas. Si se usa npm, no generar o confirmar un segundo lockfile sin decisión explícita.
 
-## 7. Checklist de aceptación
+## Documentación que define el estado
 
-### Seguridad y aislamiento
+- [`ROADMAP.md`](ROADMAP.md): estado actual, brechas de la lista adjunta, prioridad y criterios de cierre.
+- [`SECURITY_DEPLOYMENT_CHECKLIST.md`](SECURITY_DEPLOYMENT_CHECKLIST.md): tareas que requieren staging, hosting, Supabase o aprobación.
+- [`docs/PRIVACY_COMPLIANCE_BASELINE.md`](docs/PRIVACY_COMPLIANCE_BASELINE.md): inventario y límites de privacidad, no dictamen legal.
+- [`docs/PHASE0_INVENTORY_20261101.md`](docs/PHASE0_INVENTORY_20261101.md): fotografía histórica de solo lectura de 1 de noviembre; no describe por sí sola el código actual.
+- [`AGENTS.md`](AGENTS.md): instrucciones operativas locales del repositorio.
 
-- [ ] Empresa A no ve datos de Empresa B cambiando la URL.
-- [ ] Usuario empresarial no puede abrir Planes, Branding global, Equipo Dev ni Monitoreo.
-- [ ] Módulo bloqueado no aparece en sidebar y su ruta redirige de forma segura.
-- [ ] Operador Dev ve solo empresas y módulos asignados.
-- [ ] Queries operativas usan tenant scope y RLS permanece activa.
+`roadmap.md` es un tablero corto de Dev Team complementario; no reemplaza el roadmap principal.
 
-### Turnos
+## Protocolo para futuros cambios
 
-- [ ] Crear, activar/desactivar y editar definiciones.
-- [ ] Asignar definición a trabajador de empresa activa.
-- [ ] Ver asignación en calendario, asistencia, turnos y portal correspondiente.
-- [ ] Desactivar conserva historial.
-- [ ] No aparece `Could not find the 'active' column of 'shift_definitions'`.
-
-### Responsive e identidad
-
-- [ ] Modal de empresa/plan con scroll interno en móvil.
-- [ ] Blobavatar visible en empresa, trabajadores, asistencia, organigrama, turnos y portal.
-- [ ] Landing sin overflow en 390×844, 768×1024 y desktop.
-- [ ] CTA abre WhatsApp sin enviar automáticamente.
-
-## 8. Decisiones de continuidad
-
-- Nombre actual: **BJSIGAPP**. “BJ Brain 3D” es legado y no debe reintroducirse.
-- Compatibilidad histórica: normalizar claves y agregar columnas; no deshabilitar aislamiento.
-- Migraciones preferentemente aditivas y reversibles.
-- La app puede crecer, pero jerarquía de permisos y aislamiento son invariantes.
-- Cada iteración debe entregar build, evidencia y nota de cambios.
-
-## 9. Historial reciente de hardening
-
-- Blobavatar en empresa, trabajadores, asistencia, organigrama, turnos y portal.
-- Sliding Number de Animate UI integrado.
-- Modal responsive del Dev Team mejorado.
-- Avisos de desarrollador con prioridad y lectura.
-- Esquema Supabase de turnos alineado con contratos de UI.
-- Claves históricas `can_view_*` normalizadas a rutas.
-- Catálogo de vistas ampliado y Brain 3D retirado.
-- Pestaña Equipo Dev para operadores, empresas y módulos.
-
-Última actualización: 2026-09-18.
+1. Leer este README, `AGENTS.md`, el componente objetivo y su repositorio/migración relacionados.
+2. Identificar si el cambio afecta plataforma, tenant, trabajador, operación o dato sensible.
+3. Verificar contrato de datos, esquema real, grants, RLS, funciones Edge y tenant scope.
+4. Separar cambios locales de cambios desplegados; no aplicar DDL/DCL ni escribir en Supabase compartido sin autorización específica.
+5. Preparar pruebas unitarias y, para autorización/datos personales, pruebas negativas en staging aislado.
+6. Ejecutar typecheck, lint, pruebas y build; en cambios UI revisar responsive.
+7. Documentar lo que sigue pendiente y no presentar una plantilla como formulario oficial sin validación.
+8. No incluir secretos ni datos reales en commits, logs, fixtures o ejemplos.

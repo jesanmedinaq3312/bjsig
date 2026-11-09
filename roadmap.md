@@ -1,5 +1,21 @@
-# Reparaciones del panel DevTeam
+# Seguimiento breve — panel Dev Team
 
-- [ ] Corregir carga y cálculos de proyección y cobranza; mostrar errores reales de acceso.
-- [ ] Conectar los controles de identidad visual de la landing pública con su configuración guardada.
-- [ ] Verificar pruebas y pantalla pública; documentar cualquier bloqueo de acceso al servicio externo.
+Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad para el estado del producto y las brechas regulatorias. No reemplaza el staging ni prueba despliegues.
+
+## Proyección y cobranza
+
+- [x] La interfaz calcula y muestra métricas de cartera, próximos cobros y proyección base a 90 días a partir de datos de la aplicación.
+- [ ] Validar cálculos con cartera real autorizada, casos borde, errores de permisos y conciliación; no cargar cifras de ejemplo como métricas reales.
+- [ ] Integrar un proveedor DTE/SII y automatizaciones de cobranza sólo después de definir proveedor, credenciales server-side y procesos aprobados.
+
+## Landing pública configurable
+
+- [x] El panel contiene edición visual/branding de landing y el código versiona lectura/escritura de su configuración.
+- [ ] Confirmar/aplicar la migración `20261109044500_public_landing_settings.sql` en staging y probar persistencia/publicación y permisos de lectura/escritura.
+- [ ] Verificar preview público, accesibilidad y comportamiento responsive tras el despliegue; los datos de demostración deben seguir identificados como ilustrativos.
+
+## Validación y operación
+
+- [x] TypeScript, Vitest, lint y build se ejecutan localmente; el último registro del README indica 49 pruebas unitarias aprobadas.
+- [ ] Ejecutar E2E público y autenticado con cuentas de staging; documentar errores de servicios externos sin usar credenciales reales.
+- [ ] Mantener decisiones pendientes de despliegue, migraciones y seguridad en [`SECURITY_DEPLOYMENT_CHECKLIST.md`](SECURITY_DEPLOYMENT_CHECKLIST.md).
