@@ -472,17 +472,6 @@ export class QrScanRepository extends BaseRepository<QrScanEvent> {
     }
     return { data: data as QrScanEvent, duplicate: false };
   }
-
-  async markUnvalidated(rut: string, scanType: string, date: string): Promise<void> {
-    const { error } = await supabase
-      .from(this.table)
-      .update({ validated: false })
-      .eq("worker_rut", rut)
-      .eq("scan_type", scanType)
-      .eq("scan_date", date)
-      .eq("validated", true);
-    if (error) throw new Error(error.message);
-  }
 }
 
 export class ActivityLogRepository extends BaseRepository<ActivityLog> {

@@ -6,6 +6,7 @@ import { getServerDeviceId, type GpsPosition } from "@/lib/gps";
 import { saveScanOrQueue } from "@/lib/offlineQueue";
 import { getCompanyName } from "@/lib/logo";
 import { isOnline } from "@/hooks/useOnlineStatus";
+import { getChileAttendanceTime } from "@/lib/chileAttendanceTime";
 import { normalizeRut } from "@/lib/rut";
 import type { Worker, QrScanType } from "@/lib/types";
 import type { AppData } from "@/hooks/useAppData";
@@ -157,8 +158,9 @@ export function useScanProcessor({
       const currentType = selectedTypeRef.current;
       const typeMeta = getScanTypeMeta(currentType);
       const nowDate = new Date();
-      const today = nowDate.toISOString().slice(0, 10);
-      const timeStr = nowDate.toLocaleTimeString("es-CL");
+      const chileTime = getChileAttendanceTime(nowDate);
+      const today = chileTime.scanDate;
+      const timeStr = chileTime.timeLabel;
       const deviceId = deviceIdRef.current || (await getServerDeviceId());
 
       const gps = await ensureGps();
@@ -204,68 +206,11 @@ export function useScanProcessor({
             scanType: currentType,
             time: timeStr,
           });
-
-          const { isConfirmed } = await swalMixin.fire({
-            title: "Registro duplicado",
-            html: `<div style="text-align:left;font-size:14px;line-height:1.6">
-            <p style="margin:0 0 8px"><strong>${worker.full_name}</strong> ya tiene una
-            <strong style="color:${typeMeta.swalColor}">${typeMeta.label}</strong> registrada hoy.</p>
-            <p style="margin:0;color:#64748b;font-size:13px">Si desea sobrescribir el registro anterior, confirme la accion. Esto reemplazara el registro previo.</p>
-          </div>`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Si, sobrescribir",
-            cancelButtonText: "Cancelar",
-            reverseButtons: true,
-          });
-
-          if (isConfirmed) {
-            if (!offline) {
-              await qrScanRepo.markUnvalidated(worker.rut, currentType, today);
-            }
-            const { queued, duplicate: dup } = await saveScanOrQueue({
-              worker_rut: worker.rut,
-              scan_type: currentType,
-              scan_date: today,
-              scan_time: nowDate.toISOString(),
-              latitude: gps?.latitude ?? null,
-              longitude: gps?.longitude ?? null,
-              gps_accuracy: gps?.accuracy ?? null,
-              gps_missing: gpsMissing,
-              notes: offline
-                ? "Sobrescrito por supervisor (offline)"
-                : "Sobrescrito por supervisor",
-            });
-            if (dup) {
-              toast("error", "Error", "No se pudo sobrescribir el registro.");
-              return;
-            }
-            if (queued) {
-              toast(
-                "info",
-                "Guardado sin conexion",
-                `${worker.full_name} — ${typeMeta.label} se enviara cuando se recupere la red.`,
-              );
-            }
-            await logAudit(worker, currentType, deviceId, gps, gpsMissing);
-            if (gpsMissing) {
-              toast("warning", "Marcaje sin GPS", "Se registro el scan sin coordenadas GPS.");
-            }
-            const okResult: ScanResult = {
-              ok: true,
-              worker,
-              message: `${typeMeta.label} sobrescrita correctamente`,
-              scanType: currentType,
-              time: timeStr,
-              gpsMissing,
-              gps,
-            };
-            addResult(okResult);
-            toast("success", "Registro sobrescrito", `${worker.full_name} — ${typeMeta.label}`);
-            data.reload().catch(() => {});
-          } else {
-            toast("info", "Operacion cancelada", "No se realizaron cambios.");
-          }
+          toast(
+            "warning",
+            "Registro duplicado",
+            "La marca existente se conserva sin cambios. Si requiere corrección, use el proceso formal de regularización.",
+          );
           return;
         }
 
@@ -273,7 +218,7 @@ export function useScanProcessor({
           worker_rut: worker.rut,
           scan_type: currentType,
           scan_date: today,
-          scan_time: nowDate.toISOString(),
+          scan_time: chileTime.isoInstant,
           latitude: gps?.latitude ?? null,
           longitude: gps?.longitude ?? null,
           gps_accuracy: gps?.accuracy ?? null,
