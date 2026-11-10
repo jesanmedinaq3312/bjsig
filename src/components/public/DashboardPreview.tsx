@@ -262,7 +262,7 @@ export function DashboardPreview() {
 
   useEffect(() => {
     const lid = lidRef.current;
-    if (!lid || !opening) return;
+    if (!lid) return;
     let raf = 0;
     const apply = () => {
       const t = Math.min(1, Math.max(0, window.scrollY / LID_SCROLL_RANGE));
@@ -281,7 +281,7 @@ export function DashboardPreview() {
       cancelAnimationFrame(raf);
       window.clearTimeout(timer);
     };
-  }, [opening]);
+  }, []);
 
   return (
     <div
