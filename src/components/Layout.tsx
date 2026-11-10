@@ -740,10 +740,12 @@ export function Layout({
       <div className={`flex-1 ${hideSidebar ? "" : mainOffsetClass} flex flex-col min-w-0`}>
         {/* Topbar */}
         <header
-          className="sticky top-0 z-20 glass-topbar bg-cover bg-center px-4 lg:px-8 py-3 flex items-center justify-between"
+          className="sticky top-0 z-20 glass-topbar bg-cover bg-center px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-2"
           style={{ backgroundImage: "var(--brand-header-image)" }}
         >
-          <div className={`flex items-center gap-3 ${sidebarPos === "right" ? "order-2" : ""}`}>
+          <div
+            className={`min-w-0 flex-1 flex items-center gap-3 ${sidebarPos === "right" ? "order-2" : ""}`}
+          >
             <div>
               <h1 className="text-base lg:text-lg font-semibold text-slate-800 dark:text-slate-100">
                 {navItems.find((n) => n.key === current)?.label ?? "Mi Portal"}
@@ -753,7 +755,9 @@ export function Layout({
               </p>
             </div>
           </div>
-          <div className={`flex items-center gap-3 ${sidebarPos === "right" ? "order-1" : ""}`}>
+          <div
+            className={`ml-auto flex max-w-full flex-wrap items-center justify-end gap-2 ${sidebarPos === "right" ? "order-1" : ""}`}
+          >
             {!hideSidebar && (
               <button
                 aria-label="Abrir menú de navegación"

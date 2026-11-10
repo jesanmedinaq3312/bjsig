@@ -35,8 +35,8 @@ export function WorkerLayout({
         style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }}
       />
 
-      <header className="sticky top-0 z-20 glass-topbar px-4 lg:px-8 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-20 glass-topbar px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
           <div
             className="p-1 rounded-xl border border-white/10 shrink-0"
             style={{ background: "rgba(255,255,255,0.08)" }}
@@ -55,7 +55,7 @@ export function WorkerLayout({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
           <div
             className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-200/40"
             style={{ background: "rgba(16,185,129,0.12)" }}

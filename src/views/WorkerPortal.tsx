@@ -201,7 +201,7 @@ export function WorkerPortal({
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard
           icon={<QrCode size={20} className="text-blue-600" />}
           label="Registros QR"
@@ -245,6 +245,8 @@ export function WorkerPortal({
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
+            aria-selected={activeTab === tab}
+            role="tab"
             className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${activeTab === tab ? "border-blue-600 text-blue-600 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50"}`}
           >
             {TAB_LABELS[tab]}

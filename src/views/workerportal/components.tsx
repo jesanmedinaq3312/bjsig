@@ -16,16 +16,16 @@ export function StatCard({
   color: string;
 }) {
   return (
-    <Card className="p-4 glass-hover">
-      <div className="flex items-center gap-3">
+    <Card className="min-w-0 p-4 glass-hover">
+      <div className="flex min-w-0 items-center gap-3">
         <div
           className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform hover:scale-110 ${color}`}
         >
           {icon}
         </div>
-        <div>
-          <p className="text-xs text-slate-500 font-medium">{label}</p>
-          <p className="text-lg font-bold text-slate-800">{value}</p>
+        <div className="min-w-0">
+          <p className="truncate text-xs text-slate-500 font-medium">{label}</p>
+          <p className="truncate text-lg font-bold text-slate-800">{value}</p>
         </div>
       </div>
     </Card>
