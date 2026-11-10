@@ -31,6 +31,7 @@
   color: var(--public-ink);
   font-family: "DM Sans", "Segoe UI", system-ui, sans-serif;
   font-optical-sizing: auto;
+  overflow-x: clip;
 }
 
 .public-site :where(a, button, input, summary):focus-visible {
