@@ -235,7 +235,7 @@
   padding: 0.55rem 0.55rem 0;
   border: 1px solid rgb(148 163 184 / 42%);
   border-radius: 1.2rem 1.2rem 0.35rem 0.35rem;
-  background: linear-gradient(145deg, #334155, #1e293b 70%);
+  background: transparent;
   box-shadow: none;
   perspective: 1400px;
 }
@@ -329,7 +329,7 @@
 }
 
 .landing-device-frame .landing-preview {
-  transition: none;
+  transition: transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
