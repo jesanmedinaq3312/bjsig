@@ -41,6 +41,25 @@ const questions = [
   },
 ];
 
+const differentiators = [
+  {
+    title: "Cada empresa con su propio contexto",
+    text: "Administra organizaciones, sucursales, responsables, permisos, branding y módulos habilitados sin mezclar la operación entre clientes.",
+  },
+  {
+    title: "RR. HH. conectado con el terreno",
+    text: "Une personas, asistencia y turnos con prevención, EPP, incidentes, charlas, matrices IPER, ISO y seguimiento operativo.",
+  },
+  {
+    title: "Una experiencia para cada equipo",
+    text: "Las jefaturas gestionan desde sus paneles y cada trabajador consulta documentos, turnos, asistencia, capacitaciones y solicitudes desde su portal.",
+  },
+  {
+    title: "Módulos que crecen contigo",
+    text: "Activa lo que cada organización necesita y conserva permisos, actividad y evidencia para reemplazar planillas y traspasos manuales.",
+  },
+];
+
 function LeadForm() {
   const [form, setForm] = useState({ name: "", company: "", contact: "", teamSize: "" });
   const update = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement>) => {
@@ -298,6 +317,41 @@ export function PublicLanding() {
                 El alcance concreto depende del plan y los módulos habilitados para cada
                 organización.
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-slate-950 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-300">
+                Una diferencia práctica
+              </p>
+              <h2 className="public-h2 mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+                No elijas entre software de RR. HH. y control de operación
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+                Talana y Buk muestran el valor de una suite amplia de gestión de personas.
+                GeoVictoria destaca en control de asistencia y gestión del tiempo. BJSIGAPP se
+                diferencia al unir personas, prevención y terreno dentro del contexto de cada
+                empresa.
+              </p>
+              <p className="mt-5 max-w-xl text-sm leading-6 text-slate-400">
+                La mejor decisión depende de tus flujos, país, integraciones y módulos contratados.
+                En una demo puedes probar el caso real de tu empresa antes de elegir.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {differentiators.map(({ title, text }) => (
+                <article
+                  key={title}
+                  className="rounded-2xl border border-white/10 bg-white/[0.06] p-5"
+                >
+                  <Check size={18} className="text-cyan-300" aria-hidden="true" />
+                  <h3 className="mt-4 text-base font-semibold text-white">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
