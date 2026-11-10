@@ -440,38 +440,38 @@
 
 @media (max-width: 767px) {
   .landing-device-frame--laptop {
-    width: 100%;
-    padding: 0;
-    border: 0;
-    border-radius: 1rem;
-    background: transparent;
-    box-shadow: none;
-    perspective: none;
+    width: calc(100% - 0.75rem);
+    padding: 0.3rem 0.3rem 0;
+    border-radius: 0.9rem 0.9rem 0.3rem 0.3rem;
+    perspective: 900px;
   }
 
   .landing-device-frame--laptop .landing-preview {
-    height: auto;
-    min-height: 0;
-    border: 1px solid rgb(148 163 184 / 35%);
-    border-radius: 1rem;
-    transform: none !important;
+    height: clamp(230px, 62vw, 276px);
+    border-radius: 0.55rem 0.55rem 0.125rem 0.125rem;
   }
 
   .landing-device-frame--laptop .landing-laptop-viewport {
-    display: block;
+    display: grid;
     height: auto;
+    flex: 1;
     min-height: 0;
   }
 
   .landing-laptop-viewport > div {
     max-height: none;
-    overflow: visible;
-    padding: 0.875rem;
+    overflow-y: auto;
+    padding: 0.75rem;
   }
 
   .landing-laptop-hinge,
   .landing-laptop-base {
-    display: none;
+    display: block;
+  }
+
+  .landing-laptop-base {
+    width: calc(100% + 1.25rem);
+    margin-inline: -0.625rem;
   }
 
   .landing-device-note {
