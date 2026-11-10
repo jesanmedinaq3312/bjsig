@@ -24,6 +24,8 @@ type Branding = {
   headerImageUrl: string;
   heroImageUrl: string;
   heroOpacity: number;
+  navigationLayout: "sidebar" | "bottom";
+  navigationOpacity: number | null;
   iconUrls: {
     brand: string;
     hero: string;
@@ -44,6 +46,8 @@ let branding: Branding = {
   headerImageUrl: "",
   heroImageUrl: "",
   heroOpacity: 0.8,
+  navigationLayout: "sidebar",
+  navigationOpacity: null,
   iconUrls: { brand: "", hero: "", feature: "", cta: "" },
   landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
 };
@@ -78,6 +82,11 @@ function applyDynamicBranding(b: Branding): void {
     b.heroImageUrl ? `url("${b.heroImageUrl}")` : "none",
   );
   root.style.setProperty("--brand-hero-opacity", String(b.heroOpacity));
+  if (b.navigationOpacity === null) {
+    root.style.removeProperty("--brand-navigation-opacity");
+  } else {
+    root.style.setProperty("--brand-navigation-opacity", String(b.navigationOpacity));
+  }
 }
 
 function notify(): void {
@@ -117,6 +126,8 @@ export async function loadCompanyBranding(force = false): Promise<void> {
         headerImageUrl: "",
         heroImageUrl: "",
         heroOpacity: 0.8,
+        navigationLayout: "sidebar",
+        navigationOpacity: null,
         iconUrls: { brand: "", hero: "", feature: "", cta: "" },
         landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
       };
@@ -214,6 +225,10 @@ export type VisualAssets = {
   header_image_url?: string;
   hero_image_url?: string;
   hero_opacity?: number;
+  navigation?: {
+    layout?: "sidebar" | "bottom";
+    opacity?: number;
+  };
   icon_urls?: {
     brand?: string;
     hero?: string;
@@ -226,6 +241,24 @@ export type VisualAssets = {
     cta_label?: string;
   };
 };
+
+export function sanitizeTenantNavigationConfig(value: unknown): {
+  layout: "sidebar" | "bottom";
+  opacity: number | null;
+} {
+  const navigation =
+    typeof value === "object" && value !== null && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  const opacity = navigation.opacity;
+  return {
+    layout: navigation.layout === "bottom" ? "bottom" : "sidebar",
+    opacity:
+      typeof opacity === "number" && Number.isFinite(opacity) && opacity >= 0.4 && opacity <= 1
+        ? opacity
+        : null,
+  };
+}
 
 function publicAssetUrl(value: unknown): string {
   if (typeof value !== "string" || !value.trim() || value.length > 2048) return "";
@@ -294,11 +327,14 @@ export async function loadPublicLandingBranding(previewAssets?: unknown): Promis
 
 function normalizeVisualAssets(assets?: VisualAssets | null) {
   const opacity = Number(assets?.hero_opacity);
+  const navigation = sanitizeTenantNavigationConfig(assets?.navigation);
   return {
     faviconUrl: assets?.favicon_url?.trim() || "",
     headerImageUrl: assets?.header_image_url?.trim() || "",
     heroImageUrl: assets?.hero_image_url?.trim() || "",
     heroOpacity: Number.isFinite(opacity) && opacity >= 0 && opacity <= 1 ? opacity : 0.8,
+    navigationLayout: navigation.layout,
+    navigationOpacity: navigation.opacity,
     iconUrls: {
       brand: assets?.icon_urls?.brand?.trim() || "",
       hero: assets?.icon_urls?.hero?.trim() || "",

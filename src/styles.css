@@ -177,6 +177,7 @@
   --brand-header-image: none;
   --brand-hero-image: none;
   --brand-hero-opacity: 0.8;
+  --brand-navigation-opacity: var(--glass-sidebar-opacity);
 
   /* Liquid Glass opacity controls (0–1) */
   --glass-surface-opacity: 0.72;
@@ -563,7 +564,7 @@ button:active:not(:disabled) {
 }
 
 .glass-sidebar {
-  background: rgba(15, 23, 42, var(--glass-sidebar-opacity));
+  background: rgba(15, 23, 42, var(--brand-navigation-opacity, var(--glass-sidebar-opacity)));
   backdrop-filter: blur(var(--glass-sidebar-blur)) saturate(1.8);
   -webkit-backdrop-filter: blur(var(--glass-sidebar-blur)) saturate(1.8);
   box-shadow:

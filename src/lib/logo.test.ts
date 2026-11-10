@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sanitizePublicLandingAssets } from "./logo";
+import { sanitizePublicLandingAssets, sanitizeTenantNavigationConfig } from "./logo";
 
 describe("sanitizePublicLandingAssets", () => {
   it("conserva campos permitidos y solo URLs HTTPS válidas", () => {
@@ -44,5 +44,21 @@ describe("sanitizePublicLandingAssets", () => {
     expect(result.landing?.hero_title).toHaveLength(160);
     expect(result.landing?.hero_description).toBe("");
     expect(result.landing?.cta_label).toHaveLength(100);
+  });
+});
+
+describe("sanitizeTenantNavigationConfig", () => {
+  it("conserva el bottom navbar y una opacidad válida", () => {
+    expect(sanitizeTenantNavigationConfig({ layout: "bottom", opacity: 0.65 })).toEqual({
+      layout: "bottom",
+      opacity: 0.65,
+    });
+  });
+
+  it("usa sidebar y rechaza valores de opacidad fuera del rango seguro", () => {
+    expect(sanitizeTenantNavigationConfig({ layout: "invalid", opacity: 1.2 })).toEqual({
+      layout: "sidebar",
+      opacity: null,
+    });
   });
 });

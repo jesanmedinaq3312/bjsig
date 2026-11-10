@@ -248,6 +248,10 @@ interface TenantBranding {
     header_image_url?: string;
     hero_image_url?: string;
     hero_opacity?: number;
+    navigation?: {
+      layout?: "sidebar" | "bottom";
+      opacity?: number;
+    };
     icon_urls?: {
       brand?: string;
       hero?: string;
@@ -295,6 +299,22 @@ const FEATURE_LABELS: Record<string, string> = {
   harassmentreports: "Canal de denuncias",
   securitybreaches: "Brechas de seguridad",
 };
+const BRANDING_PREVIEW_COLORS: Record<string, string> = {
+  blue: "#2563eb",
+  cyan: "#0891b2",
+  indigo: "#4f46e5",
+  amber: "#d97706",
+  orange: "#ea580c",
+  emerald: "#059669",
+  violet: "#7c3aed",
+  green: "#16a34a",
+  rose: "#e11d48",
+};
+function getBrandingPreviewColor(theme: string): string {
+  return /^#[\da-f]{6}$/i.test(theme)
+    ? theme
+    : (BRANDING_PREVIEW_COLORS[theme] ?? BRANDING_PREVIEW_COLORS.blue);
+}
 function normalizeFeatureKeys(
   value: Record<string, boolean> | null | undefined,
 ): Record<string, boolean> {
@@ -749,6 +769,13 @@ export function SaaSControlPanel() {
     visibleBranding.find((item) => item.tenant_id === brandingTenantId) ??
     visibleBranding[0] ??
     null;
+  const configuredNavigationOpacity = Number(
+    selectedBranding?.visual_assets?.navigation?.opacity ?? selectedBranding?.glass_opacity ?? 0.8,
+  );
+  const navigationOpacity = Number.isFinite(configuredNavigationOpacity)
+    ? Math.min(1, Math.max(0.4, configuredNavigationOpacity))
+    : 0.8;
+  const navigationLayout = selectedBranding?.visual_assets.navigation?.layout ?? "sidebar";
 
   const BACKUP_TABLES = [
     "workers",
@@ -3165,9 +3192,13 @@ export function SaaSControlPanel() {
                     <div className="mb-2 flex items-center gap-2">
                       <SlidersHorizontal size={15} className="text-blue-600" />
                       <span className="text-xs font-bold text-slate-700">
-                        Vistas switchable por empresa
+                        Sidebar y módulos de la empresa
                       </span>
                     </div>
+                    <p className="mb-3 text-[11px] leading-5 text-slate-500">
+                      Activa u oculta cada módulo del menú lateral. Al desactivarlo también se
+                      bloquea su acceso para esa empresa.
+                    </p>
                     {Object.keys(overrides).length > 0 && (
                       <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800">
                         Las etiquetas “excepción manual” prevalecen sobre el plan y se conservan al
@@ -3183,6 +3214,9 @@ export function SaaSControlPanel() {
                         return (
                           <button
                             key={key}
+                            type="button"
+                            role="switch"
+                            aria-checked={effective}
                             disabled={busy}
                             onClick={() => void toggleOverride(key)}
                             className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-xs transition ${effective ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-slate-50 text-slate-500"}`}
@@ -3654,10 +3688,9 @@ export function SaaSControlPanel() {
           <section className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="border-b border-slate-100 px-5 py-4">
-                <h2 className="text-sm font-black text-slate-900">Identidad visual SaaS</h2>
+                <h2 className="text-sm font-black text-slate-900">Identidad visual por empresa</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  Administra logo y nombre de cada empresa desde el panel exclusivo del dueño del
-                  SaaS.
+                  Personaliza el panel y el portal de cada empresa, incluido Dev Team.
                 </p>
               </div>
               <div className="divide-y divide-slate-100">
@@ -3698,8 +3731,115 @@ export function SaaSControlPanel() {
                       {selectedBranding.tenant_name}
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Control global del branding empresarial
+                      Logo, paleta y nombre aplicados a su panel
                     </p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-bold text-slate-700">Vista previa del panel</h4>
+                    <span className="text-[10px] text-slate-500">Se actualiza al editar</span>
+                  </div>
+                  <div className="flex min-h-36 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    {navigationLayout === "sidebar" ? (
+                      <div className="flex min-h-36">
+                        <div
+                          className="w-[42%] shrink-0 border-r border-white/10 p-2 text-white"
+                          style={{ backgroundColor: `rgba(15, 23, 42, ${navigationOpacity})` }}
+                        >
+                          <div className="mb-3 flex min-w-0 items-center gap-1.5">
+                            <CompanyIdentityAvatar
+                              name={selectedBranding.company_name || selectedBranding.tenant_name}
+                              logoUrl={selectedBranding.logo_url}
+                              size={24}
+                            />
+                            <span className="truncate text-[10px] font-bold">
+                              {selectedBranding.company_name || selectedBranding.tenant_name}
+                            </span>
+                          </div>
+                          {(["Dashboard", "Trabajadores", "Configuración"] as const).map(
+                            (label, index) => (
+                              <div
+                                key={label}
+                                className="mb-1 truncate rounded-md px-2 py-1.5 text-[10px]"
+                                style={
+                                  index === 0
+                                    ? {
+                                        backgroundColor: getBrandingPreviewColor(
+                                          selectedBranding.color_theme,
+                                        ),
+                                        color: "#fff",
+                                      }
+                                    : { color: "#cbd5e1" }
+                                }
+                              >
+                                {label}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1 p-3">
+                          <p className="truncate text-[10px] text-slate-500">
+                            {selectedBranding.company_name || selectedBranding.tenant_name}
+                          </p>
+                          <p className="mt-2 text-xs font-bold text-slate-800">Panel de empresa</p>
+                          <div
+                            className="mt-3 inline-flex rounded-md px-2.5 py-1 text-[10px] font-semibold text-white"
+                            style={{
+                              backgroundColor: getBrandingPreviewColor(
+                                selectedBranding.color_theme,
+                              ),
+                            }}
+                          >
+                            Acción principal
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="min-h-24 flex-1 p-3">
+                          <div className="flex items-center gap-1.5">
+                            <CompanyIdentityAvatar
+                              name={selectedBranding.company_name || selectedBranding.tenant_name}
+                              logoUrl={selectedBranding.logo_url}
+                              size={24}
+                            />
+                            <span className="truncate text-[10px] text-slate-500">
+                              {selectedBranding.company_name || selectedBranding.tenant_name}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs font-bold text-slate-800">Panel de empresa</p>
+                        </div>
+                        <nav
+                          aria-label="Vista previa del bottom navbar"
+                          className="flex h-12 items-center justify-around border-t border-white/10 text-[9px] text-slate-200"
+                          style={{
+                            backgroundColor: `rgba(15, 23, 42, ${navigationOpacity})`,
+                          }}
+                        >
+                          {(["Dashboard", "Trabajadores", "Configuración"] as const).map(
+                            (label, index) => (
+                              <span
+                                key={label}
+                                className="rounded px-2 py-1"
+                                style={
+                                  index === 0
+                                    ? {
+                                        backgroundColor: getBrandingPreviewColor(
+                                          selectedBranding.color_theme,
+                                        ),
+                                        color: "#fff",
+                                      }
+                                    : undefined
+                                }
+                              >
+                                {label}
+                              </span>
+                            ),
+                          )}
+                        </nav>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="mt-5 space-y-3">
@@ -3741,7 +3881,7 @@ export function SaaSControlPanel() {
                       <h4 className="text-xs font-black text-slate-800">Recursos visuales</h4>
                       <p className="mt-1 text-[11px] font-normal leading-5 text-slate-500">
                         Enlaza imágenes públicas por componente. Se guardan por empresa y se aplican
-                        al volver a iniciar sesión.
+                        al entrar a su panel.
                       </p>
                     </div>
                     {(
@@ -3866,6 +4006,84 @@ export function SaaSControlPanel() {
                       </span>
                     </div>
                   </label>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                    <h4 className="text-xs font-black text-slate-800">Navegación del panel</h4>
+                    <p className="mt-1 text-[11px] leading-5 text-slate-500">
+                      Elige el menú para esta empresa y ajusta su transparencia. El bottom navbar
+                      aparece abajo en móvil y escritorio.
+                    </p>
+                    <label className="mt-3 block text-xs font-bold text-slate-700">
+                      Diseño del menú
+                      <select
+                        value={navigationLayout}
+                        onChange={(e) =>
+                          setBranding((rows) =>
+                            rows.map((row) =>
+                              row.tenant_id === selectedBranding.tenant_id
+                                ? {
+                                    ...row,
+                                    visual_assets: {
+                                      ...(row.visual_assets ?? {}),
+                                      navigation: {
+                                        ...(row.visual_assets?.navigation ?? {}),
+                                        layout: e.target.value as "sidebar" | "bottom",
+                                      },
+                                    },
+                                  }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                      >
+                        <option value="sidebar">Sidebar lateral</option>
+                        <option value="bottom">Bottom navbar</option>
+                      </select>
+                    </label>
+                    <label className="mt-3 block text-xs font-bold text-slate-700">
+                      Opacidad de navegación
+                      <div className="mt-1 flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0.4"
+                          max="1"
+                          step="0.05"
+                          value={navigationOpacity}
+                          onChange={(e) =>
+                            setBranding((rows) =>
+                              rows.map((row) =>
+                                row.tenant_id === selectedBranding.tenant_id
+                                  ? {
+                                      ...row,
+                                      visual_assets: {
+                                        ...(row.visual_assets ?? {}),
+                                        navigation: {
+                                          ...(row.visual_assets?.navigation ?? {}),
+                                          opacity: Number(e.target.value),
+                                        },
+                                      },
+                                    }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="min-w-0 flex-1 accent-blue-600"
+                        />
+                        <span className="w-10 text-right font-mono text-[11px] text-slate-500">
+                          {Math.round(navigationOpacity * 100)}%
+                        </span>
+                      </div>
+                    </label>
+                    <div
+                      className="mt-3 rounded-lg px-3 py-2 text-[10px] font-semibold text-white"
+                      style={{
+                        backgroundColor: `rgba(15, 23, 42, ${navigationOpacity})`,
+                        borderLeft: `4px solid ${getBrandingPreviewColor(selectedBranding.color_theme)}`,
+                      }}
+                    >
+                      Vista rápida de la barra · {Math.round(navigationOpacity * 100)}% opacidad
+                    </div>
+                  </div>
                   <label className="block text-xs font-bold text-slate-700">
                     Opacidad visual
                     <input

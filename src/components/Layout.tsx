@@ -389,8 +389,9 @@ export function Layout({
   const [dragging, setDragging] = useState(false);
   const [dragPreview, setDragPreview] = useState<SidebarPosition | null>(null);
   const dragOriginRef = useRef<{ x: number; y: number } | null>(null);
-  const { logoUrl, companyName } = useCompanyBranding();
+  const { logoUrl, companyName, navigationLayout } = useCompanyBranding();
   const tenantContext = useTenantOptional();
+  const bottomNavbar = navigationLayout === "bottom";
   const unrestricted = isPlatformRole(userRole);
   const currentRoute = parseRoute();
   const isInsideCompany = currentRoute.kind === "admin" && Boolean(currentRoute.slug);
@@ -421,6 +422,11 @@ export function Layout({
   useEffect(() => {
     void loadCompanyBranding();
   }, []);
+
+  useEffect(() => {
+    setSidebarPos(bottomNavbar ? "bottom" : "left");
+    setMobileOpen(false);
+  }, [bottomNavbar, tenantContext?.tenantId]);
 
   const handleDragStart = useCallback(
     (e: React.PointerEvent) => {
@@ -697,8 +703,31 @@ export function Layout({
         </aside>
       )}
 
+      {bottomNavbar && !hideSidebar && (
+        <nav
+          aria-label="Navegación principal"
+          className="lg:hidden fixed inset-x-0 bottom-0 z-30 glass-sidebar border-t border-white/10"
+        >
+          <div className="flex h-16 items-center gap-1 overflow-x-auto px-2">
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                aria-current={current === item.key ? "page" : undefined}
+                onClick={() => handleNavigate(item.key)}
+                className={`flex h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg px-2 text-[10px] font-medium text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${current === item.key ? "bg-primary text-white" : "hover:bg-slate-800/80 hover:text-white"}`}
+                title={item.label}
+              >
+                {item.icon}
+                <span className="max-w-20 truncate">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
+
       {/* Mobile sidebar — always vertical on mobile regardless of desktop position */}
-      {mobileOpen && !hideSidebar && (
+      {mobileOpen && !hideSidebar && !bottomNavbar && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
           <div
             className={`w-64 glass-sidebar flex-col flex relative ${sidebarPos === "right" ? "order-2 ml-auto animate-slide-in-right border-l border-white/10" : "animate-slide-in border-r border-white/10"}`}
@@ -758,7 +787,7 @@ export function Layout({
           <div
             className={`ml-auto flex max-w-full flex-wrap items-center justify-end gap-2 ${sidebarPos === "right" ? "order-1" : ""}`}
           >
-            {!hideSidebar && (
+            {!hideSidebar && !bottomNavbar && (
               <button
                 aria-label="Abrir menú de navegación"
                 className="lg:hidden min-h-11 min-w-11 flex items-center justify-center text-slate-600 dark:text-slate-300 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -822,13 +851,15 @@ export function Layout({
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto animate-fade-in">
+        <main
+          className={`flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto animate-fade-in ${bottomNavbar ? "pb-20 lg:pb-8" : ""}`}
+        >
           {children}
         </main>
       </div>
 
       {/* Mobile close button overlay — positioned on opposite side of sidebar */}
-      {mobileOpen && !hideSidebar && (
+      {mobileOpen && !hideSidebar && !bottomNavbar && (
         <button
           aria-label="Cerrar menú de navegación"
           className={`lg:hidden fixed top-3 z-50 min-h-11 min-w-11 flex items-center justify-center text-white rounded-full glass-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${sidebarPos === "right" ? "left-3" : "right-3"}`}
