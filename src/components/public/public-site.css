@@ -236,7 +236,7 @@
   border: 1px solid rgb(148 163 184 / 42%);
   border-radius: 1.2rem 1.2rem 0.35rem 0.35rem;
   background: linear-gradient(145deg, #334155, #1e293b 70%);
-  box-shadow: 0 28px 70px -32px rgb(2 6 23 / 85%);
+  box-shadow: none;
   perspective: 1400px;
 }
 

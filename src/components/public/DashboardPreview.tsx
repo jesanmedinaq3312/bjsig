@@ -239,11 +239,13 @@ const views: Array<{
 ];
 
 const LID_CLOSED_DEG = -95;
-const LID_SCROLL_RANGE = 560;
+const LID_OPEN_ZONE = 180;
+const LID_CLOSE_RANGE = 360;
 
 export function DashboardPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [opening, setOpening] = useState(true);
+  const previewWrapRef = useRef<HTMLDivElement>(null);
   const lidRef = useRef<HTMLDivElement>(null);
   const activeView = views[activeIndex];
   const ActiveIcon = activeView.icon;
@@ -265,7 +267,13 @@ export function DashboardPreview() {
     if (!lid) return;
     let raf = 0;
     const apply = () => {
-      const t = Math.min(1, Math.max(0, window.scrollY / LID_SCROLL_RANGE));
+      const wrap = previewWrapRef.current;
+      if (!wrap) return;
+      const bounds = wrap.getBoundingClientRect();
+      const componentCenter = bounds.top + bounds.height / 2;
+      const viewportCenter = window.innerHeight / 2;
+      const distanceFromCenter = Math.abs(componentCenter - viewportCenter);
+      const t = Math.min(1, Math.max(0, (distanceFromCenter - LID_OPEN_ZONE) / LID_CLOSE_RANGE));
       lid.style.transform = `rotateX(${LID_CLOSED_DEG * t}deg)`;
     };
     const onScroll = () => {
@@ -285,6 +293,7 @@ export function DashboardPreview() {
 
   return (
     <div
+      ref={previewWrapRef}
       className="landing-preview-wrap"
       role="group"
       aria-label="Vista demostrativa e interactiva de BJSIGAPP en laptop"
