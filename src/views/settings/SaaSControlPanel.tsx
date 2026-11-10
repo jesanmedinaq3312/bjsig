@@ -43,6 +43,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { Button, Modal, Select, Spinner } from "@/components/ui";
+import { Switch } from "@/components/ui/switch";
 import { isFirstPartyImageUrl } from "@/components/IdentityAvatar";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { supabase } from "@/lib/supabase";
@@ -3212,25 +3213,38 @@ export function SaaSControlPanel() {
                           selectedPlan?.feature_keys?.[key] === true;
                         const effective = overrides[key] ?? base;
                         return (
-                          <button
+                          <div
                             key={key}
-                            type="button"
-                            role="switch"
-                            aria-checked={effective}
-                            disabled={busy}
-                            onClick={() => void toggleOverride(key)}
-                            className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-xs transition ${effective ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-slate-50 text-slate-500"}`}
+                            className={`flex min-h-14 items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition ${effective ? "border-emerald-200 bg-emerald-50/70" : "border-slate-200 bg-slate-50"}`}
                           >
-                            <span className="text-left">
-                              {FEATURE_LABELS[key]}
-                              {overrides[key] !== undefined && (
-                                <small className="ml-1 block text-[9px] font-bold uppercase tracking-wide text-amber-700">
-                                  excepción manual
-                                </small>
-                              )}
-                            </span>
-                            <span className="font-black">{effective ? "ON" : "OFF"}</span>
-                          </button>
+                            <div className="min-w-0 text-left">
+                              <p
+                                className={`truncate text-xs font-semibold ${effective ? "text-emerald-900" : "text-slate-600"}`}
+                              >
+                                {FEATURE_LABELS[key]}
+                              </p>
+                              <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+                                {overrides[key] !== undefined
+                                  ? "Excepción manual"
+                                  : effective
+                                    ? "Incluido en el plan"
+                                    : "No incluido en el plan"}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span
+                                className={`w-12 text-right text-[10px] font-bold ${effective ? "text-emerald-700" : "text-slate-500"}`}
+                              >
+                                {effective ? "Activo" : "Inactivo"}
+                              </span>
+                              <Switch
+                                checked={effective}
+                                disabled={busy}
+                                onCheckedChange={() => void toggleOverride(key)}
+                                aria-label={`${effective ? "Desactivar" : "Activar"} ${FEATURE_LABELS[key]}`}
+                              />
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
