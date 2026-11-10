@@ -283,7 +283,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
   }
 
   return (
-    <div className="wm-stage min-h-dvh bg-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.25),rgba(255,255,255,0))] flex items-center justify-center px-4 py-6 sm:p-8 relative overflow-hidden">
+    <div className="wm-stage min-h-dvh bg-slate-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.25),rgba(255,255,255,0))] flex items-start justify-center px-4 py-6 sm:items-center sm:p-8 relative overflow-x-hidden overflow-y-auto">
       {/* Luces de fondo y malla decorativa */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -549,7 +549,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                     <button
                       type="submit"
                       disabled={busy || !gpsReady || !adultConfirmed}
-                      className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                      className="relative z-10 mt-1 w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold rounded-xl hover:from-blue-400 hover:to-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99] [box-shadow:inset_0_1px_0_0_rgba(255,255,255,0.2)]"
                     >
                       {busy ? (
                         <>
@@ -581,7 +581,7 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
                         setForgotMode(true);
                         setError(null);
                       }}
-                      className="w-full text-xs text-white/50 hover:text-blue-300 font-medium flex items-center justify-center gap-1 transition-colors"
+                      className="relative z-10 mt-1 min-h-9 w-full text-xs text-white/50 hover:text-blue-300 font-medium flex items-center justify-center gap-1 transition-colors"
                     >
                       <KeyRound size={13} /> ¿Olvidaste tu contraseña?
                     </button>
