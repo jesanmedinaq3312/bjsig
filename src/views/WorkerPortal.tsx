@@ -175,7 +175,7 @@ export function WorkerPortal({
       <MotivationalBanner workerRut={workerRut} />
 
       <Card className="overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-center gap-4 p-5">
+        <div className="flex flex-col md:flex-row items-center gap-4 p-5">
           <WorkerAvatar
             name={fullName}
             rut={p?.rut ?? workerRut}
@@ -195,7 +195,12 @@ export function WorkerPortal({
               <Mail size={11} /> {p?.email ?? workerEmail}
             </p>
           </div>
-          <Button onClick={() => setShowRequestModal(true)} variant="primary" size="md">
+          <Button
+            onClick={() => setShowRequestModal(true)}
+            variant="primary"
+            size="md"
+            className="w-full md:w-auto md:shrink-0"
+          >
             <Send size={15} /> Nueva Solicitud
           </Button>
         </div>
@@ -240,14 +245,14 @@ export function WorkerPortal({
         />
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
+      <div className="flex gap-2 border-b border-slate-200 overflow-x-auto">
         {(Object.keys(TAB_LABELS) as PortalTab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             aria-selected={activeTab === tab}
             role="tab"
-            className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${activeTab === tab ? "border-blue-600 text-blue-600 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50"}`}
+            className={`min-h-11 px-3 sm:px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${activeTab === tab ? "border-blue-600 text-blue-600 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50"}`}
           >
             {TAB_LABELS[tab]}
           </button>
@@ -329,11 +334,21 @@ export function WorkerPortal({
               <XCircle size={14} /> {reqError}
             </p>
           )}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowRequestModal(false)}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => setShowRequestModal(false)}
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" loading={submitting}>
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full sm:w-auto"
+              loading={submitting}
+            >
               <Send size={14} /> Enviar
             </Button>
           </div>

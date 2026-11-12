@@ -615,11 +615,11 @@ export function WorkerModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex flex-col gap-2 pt-2 border-t border-slate-100 sm:flex-row sm:justify-end">
+          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" loading={saving}>
+          <Button type="submit" className="w-full sm:w-auto" loading={saving}>
             Guardar Trabajador
           </Button>
         </div>
@@ -673,12 +673,18 @@ function WorkerDocsSection({
 
   return (
     <section className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
         <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
           <Cloud size={14} /> Documentos en la Nube
           <InfoTooltip text="Pega aquí los enlaces de los documentos del trabajador alojados en Google Drive, OneDrive, TeraBox, Dropbox o cualquier URL directa. Podrás abrirlos desde aquí y ver su vencimiento." />
         </h4>
-        <Button type="button" variant="outline" size="sm" onClick={() => setShowForm((s) => !s)}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full sm:w-auto"
+          onClick={() => setShowForm((s) => !s)}
+        >
           <Plus size={14} /> Añadir enlace
         </Button>
       </div>
@@ -724,11 +730,17 @@ function WorkerDocsSection({
             value={docForm.expiration_date}
             onChange={(e) => setDocForm({ ...docForm, expiration_date: e.target.value })}
           />
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="secondary" size="sm" onClick={() => setShowForm(false)}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={() => setShowForm(false)}
+            >
               Cancelar
             </Button>
-            <Button type="submit" size="sm" loading={savingDoc}>
+            <Button type="submit" size="sm" className="w-full sm:w-auto" loading={savingDoc}>
               Guardar enlace
             </Button>
           </div>
@@ -742,7 +754,10 @@ function WorkerDocsSection({
       ) : (
         <div className="space-y-1.5">
           {cloudDocs.map((d) => (
-            <div key={d.id} className="flex items-center gap-2 px-3 py-2 glass-surface rounded-lg">
+            <div
+              key={d.id}
+              className="flex flex-wrap items-center gap-2 px-3 py-2 glass-surface rounded-lg"
+            >
               <Badge
                 className={
                   PROVIDER_COLORS[d.provider as CloudProvider] ??
@@ -751,7 +766,7 @@ function WorkerDocsSection({
               >
                 {d.provider}
               </Badge>
-              <span className="text-xs text-slate-600 font-medium flex-1 truncate">
+              <span className="min-w-0 text-xs text-slate-600 font-medium flex-1 truncate">
                 {d.category}
               </span>
               {d.expiration_date && (
@@ -761,14 +776,14 @@ function WorkerDocsSection({
                 href={d.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                className="min-h-10 min-w-10 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded"
                 title="Abrir documento"
               >
                 <ExternalLink size={14} />
               </a>
               <button
                 onClick={() => onDelDoc(d.id)}
-                className="p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded"
+                className="min-h-10 min-w-10 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 rounded"
                 title="Eliminar enlace"
               >
                 <Trash2 size={14} />

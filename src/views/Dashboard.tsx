@@ -772,7 +772,7 @@ function WeeklyAttendanceWidget({
 
         {/* Quick pass list */}
         <div className="border border-white/30 rounded-lg overflow-hidden glass-surface">
-          <div className="px-3 py-2 bg-white/30 border-b border-white/30 flex items-center justify-between">
+          <div className="px-3 py-3 bg-white/30 border-b border-white/30 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
               <Users size={14} /> Pase rápido de asistencia —{" "}
               {today.toLocaleDateString("es-CL", {
@@ -781,7 +781,12 @@ function WeeklyAttendanceWidget({
                 month: "short",
               })}
             </p>
-            <Button variant="outline" size="sm" onClick={() => onNavigate("calendar")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={() => onNavigate("calendar")}
+            >
               Pasar lista completa <ChevronRight size={13} />
             </Button>
           </div>
@@ -794,27 +799,32 @@ function WeeklyAttendanceWidget({
                 return (
                   <div
                     key={w.rut}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-white/40 transition-colors"
+                    className="flex flex-col gap-2 px-3 py-3 hover:bg-white/40 transition-colors sm:flex-row sm:items-center sm:gap-3"
                   >
-                    <WorkerAvatar
-                      name={w.full_name}
-                      rut={w.rut}
-                      photoUrl={w.photo_url}
-                      className="h-8 w-8 shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">{w.full_name}</p>
-                      <p className="text-[11px] text-slate-500 truncate">
-                        {w.position} · {w.rut}
-                      </p>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <WorkerAvatar
+                        name={w.full_name}
+                        rut={w.rut}
+                        photoUrl={w.photo_url}
+                        className="h-8 w-8 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">{w.full_name}</p>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {w.position} · {w.rut}
+                        </p>
+                      </div>
+                      <Badge className={`shrink-0 ${ATT_RING[att]} border-transparent`}>
+                        {att}
+                      </Badge>
                     </div>
-                    <Badge className={`shrink-0 ${ATT_RING[att]} border-transparent`}>{att}</Badge>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center justify-end gap-2 sm:shrink-0">
                       <button
                         onClick={() => quickPass(w.rut, "Presente")}
                         disabled={saving}
                         title="Marcar presente"
-                        className="w-7 h-7 rounded-md flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+                        aria-label={`Marcar presente a ${w.full_name}`}
+                        className="min-h-10 min-w-10 rounded-md flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50 transition-colors"
                       >
                         <CheckCircle2 size={15} />
                       </button>
@@ -822,7 +832,8 @@ function WeeklyAttendanceWidget({
                         onClick={() => quickPass(w.rut, "Ausente")}
                         disabled={saving}
                         title="Marcar ausente"
-                        className="w-7 h-7 rounded-md flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                        aria-label={`Marcar ausente a ${w.full_name}`}
+                        className="min-h-10 min-w-10 rounded-md flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
                       >
                         <XCircle size={15} />
                       </button>
@@ -830,7 +841,8 @@ function WeeklyAttendanceWidget({
                         onClick={() => quickPass(w.rut, "Licencia")}
                         disabled={saving}
                         title="Marcar licencia"
-                        className="w-7 h-7 rounded-md flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-100 disabled:opacity-50 transition-colors"
+                        aria-label={`Marcar licencia a ${w.full_name}`}
+                        className="min-h-10 min-w-10 rounded-md flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-100 disabled:opacity-50 transition-colors"
                       >
                         <Clock size={15} />
                       </button>

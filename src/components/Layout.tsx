@@ -776,7 +776,7 @@ export function Layout({
             className={`min-w-0 flex-1 flex items-center gap-3 ${sidebarPos === "right" ? "order-2" : ""}`}
           >
             <div>
-              <h1 className="text-base lg:text-lg font-semibold text-slate-800 dark:text-slate-100">
+              <h1 className="min-w-0 truncate text-base lg:text-lg font-semibold text-slate-800 dark:text-slate-100">
                 {navItems.find((n) => n.key === current)?.label ?? "Mi Portal"}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -834,7 +834,7 @@ export function Layout({
             )}
             <button
               onClick={onSignOut}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg border border-slate-200 transition-colors"
+              className="min-h-10 flex items-center gap-1.5 px-2 sm:px-3 text-xs font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-lg border border-slate-200 transition-colors"
               title="Cerrar sesión"
             >
               <LogOut size={14} /> Salir
@@ -842,10 +842,11 @@ export function Layout({
             {isPlatformOperator && isInsideCompany && (
               <button
                 onClick={() => navigateTo("/admin-saas")}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 rounded-lg border border-blue-200 transition-colors"
+                aria-label="Volver a Dev Team"
+                className="min-h-10 flex items-center gap-1.5 px-2 sm:px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 rounded-lg border border-blue-200 transition-colors"
                 title="Volver al panel Dev Team"
               >
-                <Grid3x3 size={14} /> Volver a Dev Team
+                <Grid3x3 size={14} /> <span className="hidden sm:inline">Volver a Dev Team</span>
               </button>
             )}
           </div>

@@ -124,7 +124,7 @@ function QuickAttButtons({
   onQuickAtt: (w: Worker, status: AttendanceStatus) => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-2">
       {QUICK_ATT.map((q) => {
         const Icon = q.icon;
         const isActive = todayAtt.get(worker.rut) === q.value;
@@ -133,7 +133,8 @@ function QuickAttButtons({
             key={q.value}
             onClick={() => onQuickAtt(worker, q.value)}
             title={q.title}
-            className="w-7 h-7 flex items-center justify-center rounded-md border text-xs font-bold transition-all bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+            aria-label={`${q.title}: ${worker.full_name}`}
+            className="h-10 w-10 shrink-0 flex items-center justify-center rounded-md border text-xs font-bold transition-all bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
           >
             <Icon size={12} />
           </button>
@@ -217,7 +218,7 @@ export function WorkerTable({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col min-[1920px]:flex-row min-[1920px]:items-center min-[1920px]:justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
           <input
@@ -251,8 +252,8 @@ export function WorkerTable({
           <EmptyState message="No hay trabajadores registrados" icon={<Users size={32} />} />
         ) : (
           <>
-            {/* ── Mobile: card layout (< 640px) ── */}
-            <div className="sm:hidden divide-y divide-slate-100">
+            {/* ── Compact: cards until the full table fits comfortably ── */}
+            <div className="min-[1920px]:hidden divide-y divide-slate-100">
               {pageItems.flatMap((w) => {
                 const isExpanded = expandedRows.has(w.id);
                 return [
@@ -304,9 +305,9 @@ export function WorkerTable({
                             <QrToday worker={w} qrByWorker={qrByWorker} />
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 mt-2.5">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2.5">
                           <QuickAttButtons worker={w} todayAtt={todayAtt} onQuickAtt={onQuickAtt} />
-                          <div className="flex gap-1 shrink-0">
+                          <div className="flex flex-wrap justify-end gap-2 shrink-0 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:flex [&>button]:items-center [&>button]:justify-center">
                             <button
                               onClick={() => onPreview(w)}
                               className="p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 rounded"
@@ -345,8 +346,8 @@ export function WorkerTable({
               })}
             </div>
 
-            {/* ── Desktop: compact table (≥ 640px) ── */}
-            <div className="hidden sm:block overflow-x-auto -mx-1 px-1">
+            {/* ── Extra-wide desktop: compact table (≥ 1920px) ── */}
+            <div className="hidden min-[1920px]:block overflow-x-auto -mx-1 px-1">
               <table className="w-full text-xs min-w-[900px]">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-500 uppercase">
@@ -421,7 +422,7 @@ export function WorkerTable({
                           <QrToday worker={w} qrByWorker={qrByWorker} />
                         </td>
                         <td className="px-3 py-2">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center gap-2">
                             {QUICK_ATT.map((q) => {
                               const Icon = q.icon;
                               const isActive = todayAtt.get(w.rut) === q.value;
@@ -430,7 +431,8 @@ export function WorkerTable({
                                   key={q.value}
                                   onClick={() => onQuickAtt(w, q.value)}
                                   title={q.title}
-                                  className={`w-7 h-7 flex items-center justify-center rounded-md border text-xs font-bold transition-all ${isActive ? q.activeClass : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
+                                  aria-label={`${q.title}: ${w.full_name}`}
+                                  className={`h-9 w-9 flex items-center justify-center rounded-md border text-xs font-bold transition-all ${isActive ? q.activeClass : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
                                 >
                                   <Icon size={12} />
                                 </button>
@@ -439,7 +441,7 @@ export function WorkerTable({
                           </div>
                         </td>
                         <td className="px-3 py-2 text-right sticky right-0 bg-white z-10 border-l border-slate-100 group-hover:bg-slate-50">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:flex [&>button]:items-center [&>button]:justify-center">
                             <button
                               onClick={() => onPreview(w)}
                               className="p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 rounded"
@@ -484,11 +486,11 @@ export function WorkerTable({
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+              <div className="flex flex-col gap-3 px-5 py-3 border-t border-slate-100 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-slate-500">
                   Página {page} de {totalPages} · {total} trabajadores
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}

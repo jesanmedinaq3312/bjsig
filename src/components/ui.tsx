@@ -27,8 +27,8 @@ export function CardHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-3">
-      <div className="min-w-0 flex-1">
+    <div className="flex flex-col items-start gap-3 px-5 pt-5 pb-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0 w-full sm:flex-1 sm:w-auto">
         <h3 className="text-base font-semibold text-slate-800">{title}</h3>
         {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
