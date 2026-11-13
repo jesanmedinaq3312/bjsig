@@ -62,6 +62,14 @@ function buildUrl(slug: string, cacheBust?: boolean): string {
   return cacheBust ? `${url}?_=${Date.now()}` : url;
 }
 
+function isLimitedNavigationEvent(slug: string, body: Record<string, unknown>): boolean {
+  return (
+    slug === "log-activity" &&
+    body.entity === "navigation" &&
+    (body.action === "page_view" || body.action === "page_time")
+  );
+}
+
 async function parseError(res: Response): Promise<EdgeFunctionResult<never>> {
   let serverMsg = "";
   const requestId = res.headers.get("x-request-id") ?? res.headers.get("x-trace-id") ?? "";
@@ -146,9 +154,13 @@ export async function callEdgeFunction<T = unknown>(
       };
     }
 
-    // Do not send administrative audit requests before MFA verification.
-    // Read the current token on every call so an upgraded session resumes immediately.
-    if (slug === "log-activity" && !canSubmitActivityAudit(accessToken)) {
+    // Only minimal navigation telemetry is permitted at AAL1. All other audit
+    // events still require MFA; the server applies the same event allowlist.
+    if (
+      slug === "log-activity" &&
+      !isLimitedNavigationEvent(slug, body) &&
+      !canSubmitActivityAudit(accessToken)
+    ) {
       return { data: null, error: MFA_REQUIRED_MESSAGE, errorCode: "MFA_REQUIRED" };
     }
 
@@ -262,7 +274,12 @@ export function callEdgeFunctionKeepalive(slug: string, body: Record<string, unk
     .then(({ data }) => {
       const token = data?.session?.access_token;
       if (!token) return;
-      if (slug === "log-activity" && !canSubmitActivityAudit(token)) return;
+      if (
+        slug === "log-activity" &&
+        !isLimitedNavigationEvent(slug, body) &&
+        !canSubmitActivityAudit(token)
+      )
+        return;
       headers["Authorization"] = `Bearer ${token}`;
       fetch(apiUrl, {
         method: "POST",

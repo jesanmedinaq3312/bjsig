@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { Fragment, useState, useEffect, useCallback } from "react";
 import {
+  Activity,
   ScrollText,
   Search,
   RefreshCw,
@@ -7,13 +8,12 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  MapPin,
-  AlertTriangle,
-  Smartphone,
+  Clock3,
   Globe,
   Monitor,
   ShieldCheck,
   User,
+  Users,
 } from "lucide-react";
 import { Card, CardHeader, Button, Badge, Spinner } from "@/components/ui";
 import { activityLogRepo } from "@/lib/repositories";
@@ -157,6 +157,14 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     label: "Inicio de sesión",
     color: "bg-slate-100 text-slate-700 border-slate-200",
   },
+  "auth.admin_signin_failed": {
+    label: "Intento de acceso administrativo fallido",
+    color: "bg-red-100 text-red-700 border-red-200",
+  },
+  "worker.signin_failed": {
+    label: "Intento de acceso de trabajador fallido",
+    color: "bg-red-100 text-red-700 border-red-200",
+  },
   "auth.signout": {
     label: "Cierre de sesión",
     color: "bg-slate-100 text-slate-700 border-slate-200",
@@ -201,6 +209,10 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     label: "Navegación",
     color: "bg-violet-100 text-violet-700 border-violet-200",
   },
+  page_time: {
+    label: "Tiempo en pantalla",
+    color: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  },
 };
 
 function metaFor(action: string) {
@@ -229,6 +241,31 @@ function relativeTime(iso: string): string {
   return `hace ${day}d`;
 }
 
+function formatDuration(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  if (safeSeconds < 60) return `${safeSeconds}s`;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainingSeconds = safeSeconds % 60;
+  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+function roleLabel(role: string | null | undefined): string {
+  if (!role) return "Sin rol";
+  const labels: Record<string, string> = {
+    worker: "Trabajador",
+    admin: "Administrador",
+    company_owner: "Dueño de empresa",
+    manager: "Manager",
+    operator: "Operador",
+    developer: "Dev Team",
+    superadmin: "Superadmin",
+    platform_owner: "Plataforma",
+    unknown: "No identificado",
+  };
+  return labels[role] ?? role.replaceAll("_", " ");
+}
+
 export function LogsView() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [tenants, setTenants] = useState<Array<{ tenant_id: string; tenant_name: string }>>([]);
@@ -237,6 +274,8 @@ export function LogsView() {
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [sessionFilter, setSessionFilter] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [count, setCount] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -249,6 +288,8 @@ export function LogsView() {
         tenantId: tenantFilter || undefined,
         action: actionFilter || undefined,
         entity: entityFilter || undefined,
+        role: roleFilter || undefined,
+        sessionId: sessionFilter || undefined,
         search: search || undefined,
         limit: PAGE_SIZE,
       });
@@ -262,7 +303,7 @@ export function LogsView() {
       setCount(0);
     }
     setLoading(false);
-  }, [actionFilter, entityFilter, search, tenantFilter]);
+  }, [actionFilter, entityFilter, roleFilter, search, sessionFilter, tenantFilter]);
 
   useEffect(() => {
     load();
@@ -296,6 +337,18 @@ export function LogsView() {
 
   const entities = Array.from(new Set(logs.map((l) => l.entity))).sort();
   const actions = Array.from(new Set(logs.map((l) => l.action))).sort();
+  const roles = Array.from(
+    new Set(logs.map((log) => log.user_role).filter((role): role is string => Boolean(role))),
+  ).sort();
+  const visibleUsers = new Set(logs.map((log) => log.user_email).filter(Boolean)).size;
+  const visiblePageViews = logs.filter((log) => log.action === "page_view").length;
+  const visibleSeconds = logs.reduce((total, log) => {
+    if (log.action !== "page_time") return total;
+    const detailSeconds = log.details?.duration_seconds;
+    return (
+      total + (log.session_duration ?? (typeof detailSeconds === "number" ? detailSeconds : 0))
+    );
+  }, 0);
 
   const [exporting, setExporting] = useState(false);
 
@@ -306,6 +359,8 @@ export function LogsView() {
         tenantId: tenantFilter || undefined,
         action: actionFilter || undefined,
         entity: entityFilter || undefined,
+        role: roleFilter || undefined,
+        sessionId: sessionFilter || undefined,
         search: search || undefined,
       });
       ExportService.toExcel(
@@ -316,14 +371,13 @@ export function LogsView() {
           Entidad: l.entity,
           "ID Entidad": l.entity_id ?? "",
           Descripción: l.entity_label ?? "",
+          Ruta: l.page_path ?? "",
+          "Segundos en pantalla": l.session_duration ?? "",
           Detalles: l.details ? JSON.stringify(l.details) : "",
-          Dispositivo: l.device_id ?? "",
           IP: l.ip_hint ?? "",
           Navegador: l.user_agent ?? "",
           Rol: l.user_role ?? "",
           Sesión: l.session_id ?? "",
-          Latitud: l.latitude ?? "",
-          Longitud: l.longitude ?? "",
         })),
         "Logs",
         "logs_actividad",
@@ -340,12 +394,61 @@ export function LogsView() {
         <ScrollText size={22} className="text-blue-600" />
         <h2 className="text-lg font-semibold text-slate-800">Registro de Actividad (Logs)</h2>
         <Badge className="bg-slate-100 text-slate-600 border-slate-200">{count} registros</Badge>
+        {sessionFilter && (
+          <button
+            type="button"
+            onClick={() => setSessionFilter("")}
+            className="ml-auto rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100"
+            title="Quitar filtro de sesión"
+          >
+            Recorrido de sesión · {sessionFilter.slice(0, 8)}… ×
+          </button>
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <Activity size={15} className="text-blue-600" />
+            Eventos
+          </div>
+          <p className="mt-2 text-2xl font-black text-slate-900">{count.toLocaleString("es-CL")}</p>
+          <p className="mt-1 text-[10px] text-slate-400">total según filtros aplicados</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <Users size={15} className="text-violet-600" />
+            Usuarios
+          </div>
+          <p className="mt-2 text-2xl font-black text-slate-900">{visibleUsers}</p>
+          <p className="mt-1 text-[10px] text-slate-400">usuarios únicos en los eventos cargados</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <ScrollText size={15} className="text-emerald-600" />
+            Vistas
+          </div>
+          <p className="mt-2 text-2xl font-black text-slate-900">{visiblePageViews}</p>
+          <p className="mt-1 text-[10px] text-slate-400">
+            vistas dentro de los últimos registros cargados
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <Clock3 size={15} className="text-cyan-600" />
+            Tiempo visible estimado
+          </div>
+          <p className="mt-2 text-2xl font-black text-slate-900">
+            {formatDuration(visibleSeconds)}
+          </p>
+          <p className="mt-1 text-[10px] text-slate-400">suma de los eventos de página cargados</p>
+        </div>
       </div>
 
       <Card>
         <CardHeader
-          title="Auditoría de Seguridad"
-          subtitle="Cada acción queda registrada con usuario, rol, fecha, IP, navegador, dispositivo y ubicación GPS. Los logs son inmutables: no se pueden editar ni eliminar. Cumple con Ley 21.663 (ciberseguridad) y Ley 19.628 (protección de datos personales)."
+          title="Auditoría de actividad"
+          subtitle="Eventos de acceso y navegación por usuario/rol, sesión seudónima validada por servidor, IP y navegador cuando están disponibles, y tiempo estimado con la pestaña visible. Esta auditoría de navegación no recopila GPS ni crea un fingerprint persistente del dispositivo."
         />
         <div className="px-5 pb-5 space-y-4">
           {/* Filters */}
@@ -402,6 +505,19 @@ export function LogsView() {
                 </option>
               ))}
             </select>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              aria-label="Filtrar registros por rol"
+            >
+              <option value="">Todos los roles</option>
+              {roles.map((role) => (
+                <option key={role} value={role}>
+                  {roleLabel(role)}
+                </option>
+              ))}
+            </select>
             <Button variant="outline" size="sm" onClick={load} disabled={loading}>
               <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Actualizar
             </Button>
@@ -436,12 +552,11 @@ export function LogsView() {
                     <tr className="bg-slate-50 text-left text-xs text-slate-500 uppercase">
                       <th className="px-4 py-2.5 font-medium">Fecha</th>
                       <th className="px-4 py-2.5 font-medium">Usuario</th>
-                      <th className="px-4 py-2.5 font-medium">Acción</th>
-                      <th className="px-4 py-2.5 font-medium">Descripción</th>
-                      <th className="px-4 py-2.5 font-medium">GPS</th>
-                      <th className="px-4 py-2.5 font-medium">Dispositivo</th>
-                      <th className="px-4 py-2.5 font-medium">IP</th>
                       <th className="px-4 py-2.5 font-medium">Rol</th>
+                      <th className="px-4 py-2.5 font-medium">Acción</th>
+                      <th className="px-4 py-2.5 font-medium">Ruta / descripción</th>
+                      <th className="px-4 py-2.5 font-medium">Tiempo visible</th>
+                      <th className="px-4 py-2.5 font-medium">IP</th>
                       <th className="px-4 py-2.5 font-medium w-8"></th>
                     </tr>
                   </thead>
@@ -450,9 +565,8 @@ export function LogsView() {
                       const meta = metaFor(log.action);
                       const isOpen = expanded === log.id;
                       return (
-                        <>
+                        <Fragment key={log.id}>
                           <tr
-                            key={log.id}
                             className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer"
                             onClick={() => setExpanded(isOpen ? null : log.id)}
                           >
@@ -470,38 +584,29 @@ export function LogsView() {
                               </span>
                             </td>
                             <td className="px-4 py-2.5">
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs font-medium ${log.user_role === "admin" ? "text-blue-600" : "text-violet-600"}`}
+                              >
+                                {log.user_role === "admin" ? (
+                                  <ShieldCheck size={12} />
+                                ) : (
+                                  <User size={12} />
+                                )}
+                                {roleLabel(log.user_role)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5">
                               <Badge className={meta.color}>{meta.label}</Badge>
                             </td>
                             <td className="px-4 py-2.5">
                               <span className="text-xs text-slate-600">
-                                {log.entity_label ?? log.entity}
+                                {log.page_path ?? log.entity_label ?? log.entity}
                               </span>
                             </td>
                             <td className="px-4 py-2.5">
-                              {log.latitude != null && log.longitude != null ? (
-                                <span
-                                  className="inline-flex items-center gap-1 text-xs text-emerald-600"
-                                  title={`${log.latitude.toFixed(5)}, ${log.longitude.toFixed(5)}`}
-                                >
-                                  <MapPin size={12} /> {log.latitude.toFixed(3)},{" "}
-                                  {log.longitude.toFixed(3)}
-                                </span>
-                              ) : (
-                                <span
-                                  className="inline-flex items-center gap-1 text-xs text-amber-500"
-                                  title="Sin coordenadas GPS"
-                                >
-                                  <AlertTriangle size={12} /> Sin GPS
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-2.5">
-                              {log.device_id ? (
-                                <span
-                                  className="inline-flex items-center gap-1 text-xs text-slate-500 font-mono"
-                                  title={log.device_id}
-                                >
-                                  <Smartphone size={12} /> {log.device_id.slice(0, 12)}…
+                              {log.session_duration != null && log.session_duration > 0 ? (
+                                <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-cyan-700">
+                                  <Clock3 size={12} /> {formatDuration(log.session_duration)}
                                 </span>
                               ) : (
                                 <span className="text-xs text-slate-400">—</span>
@@ -519,22 +624,6 @@ export function LogsView() {
                                 <span className="text-xs text-slate-400">—</span>
                               )}
                             </td>
-                            <td className="px-4 py-2.5">
-                              {log.user_role ? (
-                                <span
-                                  className={`inline-flex items-center gap-1 text-xs font-medium ${log.user_role === "admin" ? "text-blue-600" : "text-violet-600"}`}
-                                >
-                                  {log.user_role === "admin" ? (
-                                    <ShieldCheck size={12} />
-                                  ) : (
-                                    <User size={12} />
-                                  )}{" "}
-                                  {log.user_role}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-400">—</span>
-                              )}
-                            </td>
                             <td className="px-4 py-2.5 text-center">
                               {isOpen ? (
                                 <ChevronUp size={14} className="text-slate-400" />
@@ -545,7 +634,7 @@ export function LogsView() {
                           </tr>
                           {isOpen && (
                             <tr className="bg-slate-50/60">
-                              <td colSpan={9} className="px-4 py-3">
+                              <td colSpan={8} className="px-4 py-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                                   <div>
                                     <p className="text-slate-400 font-medium mb-0.5">
@@ -585,6 +674,21 @@ export function LogsView() {
                                       </p>
                                     </div>
                                   )}
+                                  {log.session_id && (
+                                    <div className="md:col-span-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          setSessionFilter(log.session_id!);
+                                          setExpanded(null);
+                                        }}
+                                      >
+                                        Ver recorrido de esta sesión
+                                      </Button>
+                                    </div>
+                                  )}
                                   {log.page_path && (
                                     <div>
                                       <p className="text-slate-400 font-medium mb-0.5">Página</p>
@@ -599,9 +703,7 @@ export function LogsView() {
                                         Tiempo en página
                                       </p>
                                       <p className="font-mono text-[11px] text-slate-600">
-                                        {log.session_duration >= 60
-                                          ? `${Math.floor(log.session_duration / 60)}m ${log.session_duration % 60}s`
-                                          : `${log.session_duration}s`}
+                                        {formatDuration(log.session_duration)}
                                       </p>
                                     </div>
                                   )}
@@ -609,7 +711,7 @@ export function LogsView() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </Fragment>
                       );
                     })}
                   </tbody>

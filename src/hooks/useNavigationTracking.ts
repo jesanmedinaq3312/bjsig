@@ -1,144 +1,158 @@
-import { useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabase";
-import { logger } from "@/lib/logger";
+import { useCallback, useEffect, useRef } from "react";
+import { audit, isRemoteAuditDisabled, type AuditEntry } from "@/lib/audit";
+import { canSubmitActivityAudit } from "@/lib/activityAuth";
 import { callEdgeFunction, callEdgeFunctionKeepalive } from "@/lib/edgeFunctions";
-import { isRemoteAuditDisabled } from "@/lib/audit";
-import {
-  getServerDeviceId,
-  getCachedGps,
-  getBrowserFingerprint,
-  getCookieMetadata,
-  getSessionDurationSeconds,
-  getNavigationContext,
-} from "@/lib/gps";
+import { logger } from "@/lib/logger";
+import { supabase } from "@/lib/supabase";
 
-function buildPageViewPayload(
-  prevPath: string,
-  duration: number,
-  reason?: string,
-): Record<string, unknown> {
-  return {
-    action: "page_view",
-    entity: "navigation",
-    entity_label: prevPath,
-    details: { duration_seconds: duration, page_path: prevPath, ...(reason ? { reason } : {}) },
-    page_path: prevPath,
-    session_duration: duration,
-    session_id: null as string | null,
-    device_id: null as string | null,
-    client_ua: navigator.userAgent,
-    fingerprint: getBrowserFingerprint(),
-    cookie_data: getCookieMetadata(),
-    session_total_duration: getSessionDurationSeconds(),
-    referrer: getNavigationContext().referrer,
-    viewport: getNavigationContext().viewport,
-    latitude: null as number | null,
-    longitude: null as number | null,
-  };
+const MAX_RECORDED_SECONDS = 24 * 60 * 60;
+type SendStatus = "sent" | "queued" | "mfa" | "failed" | "disabled";
+
+function normalizePagePath(value: string): string {
+  const path = value.trim().split(/[?#]/, 1)[0] || "/";
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("\\")) return "/unknown";
+  return path.slice(0, 240);
 }
 
-function logPageView(payload: Record<string, unknown>) {
-  if (isRemoteAuditDisabled()) return;
-  // Sin sesión activa el registro no tiene permisos: se omite en silencio.
-  supabase.auth.getSession().then(({ data }) => {
-    if (!data?.session) return;
-    callEdgeFunction("log-activity", payload).then(({ error, errorCode }) => {
-      if (error && errorCode !== "MFA_REQUIRED")
-        logger.warn("[tracking] log-activity error:", error);
-    });
-  });
+function secondsBetween(startedAt: number, endedAt: number): number {
+  return Math.min(MAX_RECORDED_SECONDS, Math.max(0, Math.floor((endedAt - startedAt) / 1000)));
 }
 
-export function useNavigationTracking(
-  pagePath: string,
-  sessionId: string | null,
-  userEmail: string | null,
-  userRole: string | null,
-) {
-  const startTimeRef = useRef<number>(Date.now());
-  const prevPathRef = useRef<string>(pagePath);
-  const sessionIdRef = useRef<string | null>(sessionId);
-  const tokenRef = useRef<string | null>(null);
+export function useNavigationTracking(pagePath: string, userEmail: string | null) {
+  const pathRef = useRef(normalizePagePath(pagePath));
+  const userRef = useRef<string | null>(null);
+  const activeSinceRef = useRef<number | null>(null);
+  const pendingPageViewRef = useRef<string | null>(null);
+
+  const sendEvent = useCallback(
+    async (payload: Record<string, unknown>, keepalive = false): Promise<SendStatus> => {
+      if (isRemoteAuditDisabled()) return "disabled";
+      if (keepalive) {
+        callEdgeFunctionKeepalive("log-activity", payload);
+        return "sent";
+      }
+
+      const result = await callEdgeFunction("log-activity", payload);
+      if (result.errorCode === "MFA_REQUIRED") return "mfa";
+      if (result.error) {
+        if (!navigator.onLine) {
+          await audit(payload as unknown as AuditEntry);
+          return "queued";
+        }
+        logger.warn("[tracking] log-activity error:", result.error);
+        return "failed";
+      }
+      return "sent";
+    },
+    [],
+  );
+
+  const recordPageView = useCallback(
+    (path: string) => {
+      pendingPageViewRef.current = path;
+      const payload = {
+        action: "page_view",
+        entity: "navigation",
+        entity_label: path,
+        page_path: path,
+        details: { event: "view_entered" },
+      };
+      void sendEvent(payload).then((status) => {
+        if (status !== "mfa" && pendingPageViewRef.current === path) {
+          pendingPageViewRef.current = null;
+        }
+      });
+    },
+    [sendEvent],
+  );
+
+  const recordPageTime = useCallback(
+    (reason: string, keepalive = false) => {
+      const startedAt = activeSinceRef.current;
+      activeSinceRef.current = null;
+      if (startedAt === null) return;
+
+      const seconds = secondsBetween(startedAt, performance.now());
+      if (seconds < 1) return;
+
+      const path = pathRef.current;
+      const payload = {
+        action: "page_time",
+        entity: "navigation",
+        entity_label: path,
+        page_path: path,
+        session_duration: seconds,
+        details: { duration_seconds: seconds, page_path: path, reason },
+      };
+      void sendEvent(payload, keepalive).catch((error) => {
+        logger.warn("[tracking] page_time send failed:", error);
+      });
+    },
+    [sendEvent],
+  );
 
   useEffect(() => {
-    sessionIdRef.current = sessionId;
-  }, [sessionId]);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      tokenRef.current = data?.session?.access_token ?? null;
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      tokenRef.current = session?.access_token ?? null;
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const now = Date.now();
-    const duration = Math.floor((now - startTimeRef.current) / 1000);
-    const prevPath = prevPathRef.current;
-
-    if (prevPath && duration > 0) {
-      const basePayload = buildPageViewPayload(prevPath, duration);
-      basePayload.session_id = sessionIdRef.current;
-
-      Promise.all([getServerDeviceId(), getCachedGps()])
-        .then(([deviceId, gps]) => {
-          basePayload.device_id = deviceId;
-          if (gps) {
-            basePayload.latitude = gps.latitude;
-            basePayload.longitude = gps.longitude;
-          }
-          logPageView(basePayload);
-        })
-        .catch(() => {
-          logPageView(basePayload);
-        });
+    if (!userEmail) {
+      userRef.current = null;
+      pathRef.current = normalizePagePath(pagePath);
+      activeSinceRef.current = null;
+      pendingPageViewRef.current = null;
+      return;
     }
 
-    startTimeRef.current = now;
-    prevPathRef.current = pagePath;
-  }, [pagePath, userEmail, userRole]);
+    const normalizedPath = normalizePagePath(pagePath);
+    const normalizedUser = userEmail.trim().toLowerCase();
+
+    if (userRef.current !== normalizedUser) {
+      if (userRef.current) recordPageTime("identity_changed");
+      userRef.current = normalizedUser;
+      pathRef.current = normalizedPath;
+      activeSinceRef.current = document.visibilityState === "hidden" ? null : performance.now();
+      recordPageView(normalizedPath);
+      return;
+    }
+
+    if (pathRef.current !== normalizedPath) {
+      recordPageTime("route_change");
+      pathRef.current = normalizedPath;
+      activeSinceRef.current = document.visibilityState === "hidden" ? null : performance.now();
+      recordPageView(normalizedPath);
+    }
+  }, [pagePath, recordPageTime, recordPageView, userEmail]);
 
   useEffect(() => {
-    const handleVisibility = () => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const pendingPath = pendingPageViewRef.current;
+      if (
+        pendingPath &&
+        userRef.current &&
+        session?.access_token &&
+        canSubmitActivityAudit(session.access_token)
+      ) {
+        pendingPageViewRef.current = null;
+        recordPageView(pendingPath);
+      }
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, [recordPageView]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        const path = prevPathRef.current;
-        if (path && duration > 0) {
-          const payload = buildPageViewPayload(path, duration, "tab_hidden");
-          payload.session_id = sessionIdRef.current;
-          getCachedGps()
-            .then((gps) => {
-              if (gps) {
-                payload.latitude = gps.latitude;
-                payload.longitude = gps.longitude;
-              }
-              logPageView(payload);
-            })
-            .catch(() => logPageView(payload));
-        }
-      } else {
-        startTimeRef.current = Date.now();
+        recordPageTime("tab_hidden");
+      } else if (userRef.current) {
+        activeSinceRef.current = performance.now();
       }
     };
+    const handleBeforeUnload = () => recordPageTime("unload", true);
 
-    const handleBeforeUnload = () => {
-      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      const path = prevPathRef.current;
-      if (path && duration > 0 && tokenRef.current) {
-        const payload = buildPageViewPayload(path, duration, "unload");
-        payload.session_id = sessionIdRef.current;
-        callEdgeFunctionKeepalive("log-activity", payload);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      recordPageTime("component_unmount", true);
     };
-  }, [userEmail, userRole]);
+  }, [recordPageTime]);
 }

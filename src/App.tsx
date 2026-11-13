@@ -260,7 +260,6 @@ export function App() {
   };
   const [loadTimeout, setLoadTimeout] = useState(false);
   const deniedViewRef = useRef<ViewKey | null>(null);
-  const sessionId = session?.user?.id ?? null;
   const userEmail = session?.user?.email ?? null;
 
   // Permission gate: map views to permission keys
@@ -309,12 +308,18 @@ export function App() {
   const effectiveView: ViewKey =
     unrestricted && isPlatformView && hasPermission ? "saas" : hasPermission ? view : "dashboard";
 
-  useNavigationTracking(
-    isWorker ? "workerportal" : effectiveView,
-    gpsAccessStatus === "disabled" || gpsAccessStatus === "verified" ? sessionId : null,
-    userEmail,
-    userRole ?? null,
-  );
+  const trackingPagePath = isWorker
+    ? "/worker/portal"
+    : route.kind === "platform"
+      ? "/platform/saas"
+      : `/admin/${effectiveView}`;
+  const trackingUserEmail =
+    session &&
+    emailOtpStatus !== "pending" &&
+    (gpsAccessStatus === "disabled" || gpsAccessStatus === "verified")
+      ? userEmail
+      : null;
+  useNavigationTracking(trackingPagePath, trackingUserEmail);
 
   // Ruteo: /admin y /<empresa>/admin/<vista> son administrativos; el resto es portal del trabajador
   const isAdminRoute = route.kind === "admin";
