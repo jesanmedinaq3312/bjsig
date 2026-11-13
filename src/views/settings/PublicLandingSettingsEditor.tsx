@@ -2,13 +2,17 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, Eye, Globe2, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { VisualAssets } from "@/lib/logo";
+import {
+  DEFAULT_SAAS_LANDING,
+  fetchSaasLandingSettings,
+  type SaasLandingSettings,
+} from "@/lib/saasLanding";
 
 const PREVIEW_STORAGE_KEY = "bjsig-public-landing-preview";
 const inputClass =
   "mt-1 min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20";
 const imageKeys = ["favicon_url", "header_image_url", "hero_image_url"] as const;
 type ImageKey = (typeof imageKeys)[number];
-type LandingCopyKey = "hero_title" | "hero_description" | "cta_label";
 type IconKey = "brand" | "hero" | "feature" | "cta";
 
 function record(value: unknown): Record<string, unknown> {
@@ -85,6 +89,7 @@ export function PublicLandingSettingsEditor() {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [landingPreview, setLandingPreview] = useState<SaasLandingSettings | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,20 +116,44 @@ export function PublicLandingSettingsEditor() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    let mounted = true;
+    void fetchSaasLandingSettings()
+      .then((settings) => {
+        if (mounted) setLandingPreview(settings);
+      })
+      .catch(() => {
+        // If the new migration is not present yet, the legacy copy remains a visual fallback.
+      });
+    const onLandingUpdated = (event: Event) => {
+      const settings = (event as CustomEvent<SaasLandingSettings>).detail;
+      if (settings) setLandingPreview(settings);
+    };
+    window.addEventListener("bjsig:saas-landing-updated", onLandingUpdated);
+    return () => {
+      mounted = false;
+      window.removeEventListener("bjsig:saas-landing-updated", onLandingUpdated);
+    };
+  }, []);
+
   const dirty = JSON.stringify(draft) !== JSON.stringify(savedDraft);
   const safeHeroUrl = safePreviewUrl(draft.hero_image_url);
   const opacity = draft.hero_opacity ?? 0.8;
+  const previewTitle =
+    landingPreview?.heroTitle ||
+    draft.landing?.hero_title?.trim() ||
+    DEFAULT_SAAS_LANDING.heroTitle;
+  const previewDescription =
+    landingPreview?.heroDescription ||
+    draft.landing?.hero_description?.trim() ||
+    DEFAULT_SAAS_LANDING.heroDescription;
+  const previewCta =
+    landingPreview?.primaryCtaLabel ||
+    draft.landing?.cta_label?.trim() ||
+    DEFAULT_SAAS_LANDING.primaryCtaLabel;
 
   function updateImage(key: ImageKey, value: string) {
     setDraft((current) => ({ ...current, [key]: value }));
-    setFeedback(null);
-  }
-
-  function updateCopy(key: LandingCopyKey, value: string) {
-    setDraft((current) => ({
-      ...current,
-      landing: { ...current.landing, [key]: value },
-    }));
     setFeedback(null);
   }
 
@@ -210,8 +239,10 @@ export function PublicLandingSettingsEditor() {
               Landing principal
             </h2>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-              Edita el contenido global de <code className="font-semibold text-slate-800">/</code>.
-              Estos ajustes no modifican la identidad visual de ninguna empresa.
+              Edita los recursos visuales globales de{" "}
+              <code className="font-semibold text-slate-800">/</code>. El título, la descripción, el
+              botón, la visibilidad y WhatsApp se administran en la tarjeta de contenido de esta
+              misma sección.
             </p>
           </div>
         </div>
@@ -261,62 +292,14 @@ export function PublicLandingSettingsEditor() {
       ) : !loadError ? (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
           <form onSubmit={save} className="space-y-5">
-            <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">Mensaje principal</h3>
-                <p className="mt-1 text-sm leading-5 text-slate-600">
-                  Los campos vacíos conservan el texto predeterminado de la landing.
-                </p>
-              </div>
-              <label
-                className="block text-sm font-semibold text-slate-800"
-                htmlFor="global-hero-title"
-              >
-                Título principal
-                <input
-                  id="global-hero-title"
-                  value={draft.landing?.hero_title ?? ""}
-                  maxLength={160}
-                  onChange={(event) => updateCopy("hero_title", event.target.value)}
-                  placeholder="Software multiempresa de RR. HH. y operaciones"
-                  className={inputClass}
-                />
-                <span className="mt-1 block text-xs font-normal text-slate-600">
-                  {(draft.landing?.hero_title ?? "").length}/160 caracteres
-                </span>
-              </label>
-              <label
-                className="block text-sm font-semibold text-slate-800"
-                htmlFor="global-hero-description"
-              >
-                Descripción principal
-                <textarea
-                  id="global-hero-description"
-                  value={draft.landing?.hero_description ?? ""}
-                  maxLength={400}
-                  rows={4}
-                  onChange={(event) => updateCopy("hero_description", event.target.value)}
-                  placeholder="Describe brevemente el propósito de BJSIGAPP."
-                  className={`${inputClass} resize-y leading-6`}
-                />
-                <span className="mt-1 block text-xs font-normal text-slate-600">
-                  {(draft.landing?.hero_description ?? "").length}/400 caracteres
-                </span>
-              </label>
-              <label
-                className="block text-sm font-semibold text-slate-800"
-                htmlFor="global-cta-label"
-              >
-                Texto del botón principal
-                <input
-                  id="global-cta-label"
-                  value={draft.landing?.cta_label ?? ""}
-                  maxLength={100}
-                  onChange={(event) => updateCopy("cta_label", event.target.value)}
-                  placeholder="Solicitar una demo"
-                  className={inputClass}
-                />
-              </label>
+            <section className="rounded-3xl border border-blue-100 bg-blue-50/70 p-5">
+              <h3 className="text-base font-bold text-slate-900">Copy y publicación</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-700">
+                El contenido, el teléfono de contacto y la publicación se editan en la tarjeta
+                <strong> Landing pública de BJSIGAPP</strong> que aparece arriba. Este formulario
+                conserva intactos los textos heredados mientras guarda imágenes, favicon, iconos y
+                opacidad.
+              </p>
             </section>
 
             <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5">
@@ -415,7 +398,7 @@ export function PublicLandingSettingsEditor() {
           <aside className="space-y-3 xl:sticky xl:top-24" aria-label="Vista previa de la landing">
             <div className="flex items-baseline justify-between gap-3">
               <h3 className="text-sm font-bold text-slate-900">Vista previa del hero</h3>
-              <span className="text-xs text-slate-600">Borrador sin publicar</span>
+              <span className="text-xs text-slate-600">Visuales en borrador</span>
             </div>
             <div
               className="overflow-hidden rounded-3xl border border-slate-300 bg-slate-950 bg-cover bg-center text-white"
@@ -433,15 +416,13 @@ export function PublicLandingSettingsEditor() {
                   />
                 )}
                 <h4 className="max-w-xl text-3xl font-bold leading-tight sm:text-4xl">
-                  {draft.landing?.hero_title?.trim() ||
-                    "Software multiempresa de RR. HH. y operaciones"}
+                  {previewTitle}
                 </h4>
                 <p className="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:text-base">
-                  {draft.landing?.hero_description?.trim() ||
-                    "Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa."}
+                  {previewDescription}
                 </p>
                 <span className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-bold text-white">
-                  {draft.landing?.cta_label?.trim() || "Solicitar una demo"}
+                  {previewCta}
                 </span>
               </div>
             </div>

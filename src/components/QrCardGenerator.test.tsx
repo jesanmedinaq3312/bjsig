@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQrPrintDocument } from "./QrCardGenerator";
+import { buildQrPrintDocument } from "@/lib/qrCardPrint";
 
 describe("QR print document", () => {
   it("writes the company name as title text and adds no inline script", () => {

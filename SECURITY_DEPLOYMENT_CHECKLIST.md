@@ -20,6 +20,13 @@
 
 > **GPS:** `_headers` permite `geolocation=(self)` en el checkout y el login sólo solicita captura tras una acción del usuario; el escáner captura al procesar la marca y descarta ubicaciones vencidas. Desplegar y verificar la cabecera en HTTPS. La coordenada del navegador no demuestra por sí sola presencia física.
 
+## PR #2: controles de publicación de landing
+
+- La migración `20261107190000_saas_landing_controls.sql` agrega settings públicos y RPCs restringidos a `is_platform_owner()`. Aplicarla primero en staging y revisar las funciones y permisos del catálogo antes de producción.
+- La migración `20261113000100_saas_landing_legacy_copy_seed.sql` transfiere el copy global existente sólo si los settings SaaS siguen en sus valores iniciales. Verificar título, descripción y CTA tras la migración.
+- Probar en staging que el sitio principal use la configuración SaaS, que el fallo de carga mantenga el fallback anterior, que una landing desactivada no publique contenido y que `/empresa/:slug` sólo exponga empresas activas con landing habilitada.
+- No aplicar SQL directamente a producción desde esta lista; confirmar el proyecto destino y el respaldo conforme al procedimiento de release.
+
 ## Otros cambios locales pendientes de despliegue
 
 - **Inalterabilidad QR:** se eliminó la acción de sobrescritura y se preparó `20261109070000_qr_attendance_marks_immutable.sql`. Aplicar y verificar primero en staging; implementar por separado la regularización bilateral antes de permitir correcciones.

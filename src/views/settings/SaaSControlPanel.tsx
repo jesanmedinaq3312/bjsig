@@ -33,6 +33,7 @@ import {
   Check,
   Clock3,
   ExternalLink,
+  Globe2,
   ImageOff,
   Link2,
   Mail,
@@ -40,7 +41,6 @@ import {
   X,
   ShieldCheck,
   LockKeyhole,
-  Globe2,
 } from "lucide-react";
 import { Button, Modal, Select, Spinner } from "@/components/ui";
 import { Switch } from "@/components/ui/switch";
@@ -70,6 +70,7 @@ import {
 } from "@/components/saas/OnboardingWelcomeModal";
 import { DataGovernancePanel } from "@/components/saas/DataGovernancePanel";
 import { PublicLandingSettingsEditor } from "./PublicLandingSettingsEditor";
+import { SaasLandingEditor } from "@/components/saas/SaasLandingEditor";
 
 const WorkerPortal = lazy(() =>
   import("@/views/WorkerPortal").then((module) => ({
@@ -1669,6 +1670,39 @@ export function SaaSControlPanel() {
     }
   }
 
+  async function setTenantLandingEnabled(tenant: TenantOverview, enabled: boolean) {
+    if (!enabled) {
+      const ok = await confirm({
+        title: "¿Desactivar landing pública?",
+        message: `La página /empresa/${tenant.tenant_slug} dejará de estar disponible. El acceso al sistema se controla por separado.`,
+        confirmText: "Desactivar landing",
+        type: "warning",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const { error } = await supabase.rpc("set_saas_tenant_landing_enabled", {
+        _tenant_id: tenant.tenant_id,
+        _enabled: enabled,
+      });
+      if (error) throw error;
+      setBranding((rows) =>
+        rows.map((row) =>
+          row.tenant_id === tenant.tenant_id ? { ...row, landing_enabled: enabled } : row,
+        ),
+      );
+      setMessage(
+        `Landing de ${tenant.tenant_name}: ${enabled ? "activada" : "desactivada"}. El sistema operativo no cambió.`,
+      );
+    } catch (error) {
+      setMessage(authorizationErrorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function enterCompany(tenant: TenantOverview) {
     setBusy(true);
     setEnteringTenantId(tenant.tenant_id);
@@ -3017,6 +3051,33 @@ export function SaaSControlPanel() {
                     >
                       <Edit3 size={13} /> Editar
                     </button>
+                    {!showTrash && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void setTenantLifecycle(
+                              tenant,
+                              tenant.tenant_active ? "suspendida" : "activa",
+                            )
+                          }
+                          disabled={busy}
+                          title={
+                            tenant.tenant_active
+                              ? "Suspender sistema por impago o pausa manual"
+                              : "Reactivar sistema y accesos de la empresa"
+                          }
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50 ${tenant.tenant_active ? "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100" : "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"}`}
+                        >
+                          {tenant.tenant_active ? (
+                            <PauseCircle size={13} />
+                          ) : (
+                            <RotateCcw size={13} />
+                          )}
+                          {tenant.tenant_active ? "Pausar sistema" : "Reactivar sistema"}
+                        </button>
+                      </>
+                    )}
                     {tenant.tenant_status === "cortada" ? (
                       <button
                         type="button"
@@ -3314,7 +3375,12 @@ export function SaaSControlPanel() {
           </section>
         )}
 
-        {activeSection === "main-landing" && <PublicLandingSettingsEditor />}
+        {activeSection === "main-landing" && (
+          <section className="space-y-5">
+            <SaasLandingEditor />
+            <PublicLandingSettingsEditor />
+          </section>
+        )}
 
         {activeSection === "landing" && (
           <section className="space-y-5">
@@ -3588,28 +3654,6 @@ export function SaaSControlPanel() {
                           )
                         }
                         className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-bold text-slate-700">
-                      <span>
-                        <span className="block">Landing pública activa</span>
-                        <span className="mt-0.5 block font-normal text-slate-400">
-                          Permite mostrar esta identidad en la landing.
-                        </span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={selectedBranding.landing_enabled ?? true}
-                        onChange={(e) =>
-                          setBranding((rows) =>
-                            rows.map((row) =>
-                              row.tenant_id === selectedBranding.tenant_id
-                                ? { ...row, landing_enabled: e.target.checked }
-                                : row,
-                            ),
-                          )
-                        }
-                        className="h-5 w-5 accent-blue-600"
                       />
                     </label>
                   </div>
@@ -4133,15 +4177,12 @@ export function SaaSControlPanel() {
                     <input
                       type="checkbox"
                       checked={selectedBranding.landing_enabled ?? true}
-                      onChange={(e) =>
-                        setBranding((rows) =>
-                          rows.map((row) =>
-                            row.tenant_id === selectedBranding.tenant_id
-                              ? { ...row, landing_enabled: e.target.checked }
-                              : row,
-                          ),
-                        )
-                      }
+                      onChange={(e) => {
+                        const tenant = tenants.find(
+                          (item) => item.tenant_id === selectedBranding.tenant_id,
+                        );
+                        if (tenant) void setTenantLandingEnabled(tenant, e.target.checked);
+                      }}
                       className="h-5 w-5 accent-blue-600"
                     />
                   </label>

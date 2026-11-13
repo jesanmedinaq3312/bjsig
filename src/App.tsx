@@ -22,6 +22,7 @@ import { DeveloperNoticeBanner } from "@/components/DeveloperNoticeBanner";
 import { canAccessPermission, isPlatformRole } from "@/lib/roleAccess";
 import { hasOperationalAccess } from "@/lib/authorization";
 import { PublicDocument, PublicLanding } from "@/views/PublicLanding";
+import { CompanyPublicLanding } from "@/components/public/CompanyPublicLanding";
 import { NotFoundPage, UnauthorizedPage } from "@/views/ErrorPage";
 import {
   parseRoute,
@@ -188,6 +189,9 @@ export function App() {
   const [route, setRoute] = useState<ParsedRoute>(() => parseRoute());
   const previewParams = new URLSearchParams(window.location.search);
   const publicPath = window.location.pathname;
+  const companyLandingSlug = publicPath
+    .match(/^\/empresa\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i)?.[1]
+    .toLowerCase();
   const previewWorkerRut =
     previewParams.get("preview") === "worker" ? previewParams.get("worker_rut") : null;
   const previewEmail = previewParams.get("preview_email") ?? "";
@@ -217,12 +221,13 @@ export function App() {
       !authLoading &&
       session &&
       (userRole === "developer" || userRole === "superadmin") &&
+      !companyLandingSlug &&
       !parseRoute().view
     ) {
       setView("saas");
       if (parseRoute().kind !== "platform") navigateTo("/admin-saas", true);
     }
-  }, [authLoading, session, userRole]);
+  }, [authLoading, session, userRole, companyLandingSlug]);
 
   // Sincroniza la vista con la URL /<empresa>/admin/<vista>
   useEffect(
@@ -250,7 +255,8 @@ export function App() {
       (gpsAccessStatus === "disabled" || gpsAccessStatus === "verified") &&
       emailOtpStatus !== "pending" &&
       !isWorker &&
-      route.kind !== "platform",
+      route.kind !== "platform" &&
+      !companyLandingSlug,
     route.slug,
   );
   const { runInBackground } = useLoading();
@@ -382,8 +388,12 @@ export function App() {
     );
   }
 
+  if (companyLandingSlug) {
+    return <CompanyPublicLanding slug={companyLandingSlug} />;
+  }
+
   if (!session) {
-    if (publicPath === "/") return <PublicLanding />;
+    if (publicPath === "/") return <PublicLanding initialLanding={null} />;
     if (publicPath === "/privacidad") return <PublicDocument kind="privacy" />;
     if (publicPath === "/terminos") return <PublicDocument kind="terms" />;
     if (publicPath === "/contacto") return <PublicDocument kind="contact" />;
