@@ -111,6 +111,10 @@ export function workerLoginRateLimitKey(email: string, ip: string | null): strin
   return `${email.toLowerCase().trim()}:worker_login:${ip ?? "unknown"}`;
 }
 
+export function adminLoginRateLimitKey(email: string, ip: string | null): string {
+  return `${email.toLowerCase().trim()}:admin_login:${ip ?? "unknown"}`;
+}
+
 export async function recordLoginAttempt(
   svc: SupabaseClient,
   identifier: string,
@@ -160,6 +164,8 @@ export async function logAction(
   const allowedDetailKeys = new Set([
     "result",
     "reason",
+    "source",
+    "reported_by_client",
     "must_change_password",
     "elapsed_hours",
     "expiry_hours",

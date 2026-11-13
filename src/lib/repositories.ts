@@ -496,6 +496,8 @@ export class ActivityLogRepository extends BaseRepository<ActivityLog> {
     tenantId?: string;
     action?: string;
     entity?: string;
+    role?: string;
+    sessionId?: string;
     search?: string;
     limit?: number;
   }): Promise<{ rows: ActivityLog[]; total: number }> {
@@ -506,6 +508,8 @@ export class ActivityLogRepository extends BaseRepository<ActivityLog> {
     if (opts.tenantId) query = query.eq("tenant_id", opts.tenantId);
     if (opts.action) query = query.eq("action", opts.action);
     if (opts.entity) query = query.eq("entity", opts.entity);
+    if (opts.role) query = query.eq("user_role", opts.role);
+    if (opts.sessionId) query = query.eq("session_id", opts.sessionId);
     if (opts.search) {
       query = query.or(`user_email.ilike.%${opts.search}%,entity_label.ilike.%${opts.search}%`);
     }
@@ -519,12 +523,16 @@ export class ActivityLogRepository extends BaseRepository<ActivityLog> {
     tenantId?: string;
     action?: string;
     entity?: string;
+    role?: string;
+    sessionId?: string;
     search?: string;
   }): Promise<ActivityLog[]> {
     let query = supabase.from(this.table).select("*").order("created_at", { ascending: false });
     if (opts.tenantId) query = query.eq("tenant_id", opts.tenantId);
     if (opts.action) query = query.eq("action", opts.action);
     if (opts.entity) query = query.eq("entity", opts.entity);
+    if (opts.role) query = query.eq("user_role", opts.role);
+    if (opts.sessionId) query = query.eq("session_id", opts.sessionId);
     if (opts.search) {
       query = query.or(`user_email.ilike.%${opts.search}%,entity_label.ilike.%${opts.search}%`);
     }

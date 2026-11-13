@@ -168,6 +168,35 @@ Deno.test("record_login_failure uses the same account/IP key checked by prefligh
     "shared rate-limit identifier",
   );
   equal(harness.state.attempts[0].success, false, "failed login result");
+  equal(harness.state.auditRows.length, 1, "failed login is visible in activity_logs");
+  equal(harness.state.auditRows[0].action, "worker.signin_failed", "worker event action");
+  equal(
+    harness.state.auditRows[0].tenant_id,
+    "00000000-0000-0000-0000-000000000001",
+    "tenant scope",
+  );
+  assert(
+    JSON.stringify(harness.state.auditRows[0].details).includes('"reported_by_client":true'),
+    "the event must disclose that it was reported by the client",
+  );
+});
+
+Deno.test("record_login_failure keeps the admin rate-limit bucket separate", async () => {
+  const harness = makeHarness();
+  const response = await handleRecordLoginFailure(
+    harness.svc,
+    request(),
+    { email: EMAIL, surface: "admin" },
+    {},
+  );
+
+  equal(response.status, 200, "status");
+  equal(
+    harness.state.attempts[0].identifier,
+    `${EMAIL}:admin_login:203.0.113.10`,
+    "admin rate-limit identifier",
+  );
+  equal(harness.state.auditRows[0].action, "auth.admin_signin_failed", "admin event action");
 });
 
 Deno.test("record_login_failure rejects when the shared rate limit is exhausted", async () => {
@@ -176,6 +205,7 @@ Deno.test("record_login_failure rejects when the shared rate limit is exhausted"
 
   equal(response.status, 429, "status");
   equal(harness.state.attempts.length, 0, "blocked attempt must not add another row");
+  equal(harness.state.auditRows.length, 0, "rate-limited requests must not flood activity_logs");
 });
 
 Deno.test(

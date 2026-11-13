@@ -9,6 +9,8 @@ export interface AuditEntry {
   tenant_id?: string | null;
   entity_label?: string | null;
   details?: Record<string, unknown> | null;
+  page_path?: string | null;
+  session_duration?: number | null;
   /** Kept for backwards compatibility; never collected automatically. */
   device_id?: string | null;
   /** Kept for backwards compatibility; never collected automatically. */
@@ -78,6 +80,11 @@ function buildPayload(entry: AuditEntry): Record<string, unknown> {
     entity_id: entry.entity_id?.trim().slice(0, 120) || null,
     tenant_id: entry.tenant_id ?? null,
     entity_label: entry.entity_label?.slice(0, 240) || null,
+    page_path: entry.page_path?.slice(0, 240) || null,
+    session_duration:
+      typeof entry.session_duration === "number" && Number.isFinite(entry.session_duration)
+        ? Math.max(0, Math.min(86400, Math.floor(entry.session_duration)))
+        : null,
     details: entry.details ? sanitizeValue(entry.details) : null,
   };
 }
@@ -216,8 +223,8 @@ export async function audit(entry: AuditEntry): Promise<void> {
     }
 
     const { error: fnError, errorCode } = await callEdgeFunction("log-activity", payload);
-    // Pre-verification events must not be replayed under a later user's session.
-    // The verified authentication event is recorded after MFA by useAuth.
+    // Generic pre-verification audit events must not be replayed under a later
+    // user's session. The narrow navigation allowlist is handled separately.
     if (errorCode === "MFA_REQUIRED") return;
     if (isPermissionError(fnError)) {
       remoteAuditDisabled = true;

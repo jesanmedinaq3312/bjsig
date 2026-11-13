@@ -29,7 +29,7 @@ import {
 } from "@/lib/logo";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { friendlyError } from "@/lib/networkError";
-import { callEdgeFunction } from "@/lib/edgeFunctions";
+import { callEdgeFunction, callEdgeFunctionAnon } from "@/lib/edgeFunctions";
 import { supabase } from "@/lib/supabase";
 import { SUPABASE_CONFIGURED } from "@/lib/supabaseConfig";
 import { audit } from "@/lib/audit";
@@ -231,6 +231,17 @@ export function AuthScreen({ tenantSlug = null }: { tenantSlug?: string | null }
     } catch (err) {
       const msg = friendlyError(err);
       setError(msg.includes("Invalid login credentials") ? "Credenciales inválidas" : msg);
+      if (msg.toLowerCase().includes("invalid login credentials")) {
+        try {
+          await callEdgeFunctionAnon("worker-auth", {
+            action: "record_login_failure",
+            email,
+            surface: "admin",
+          });
+        } catch {
+          // El registro es de mejor esfuerzo y nunca debe ocultar el error de acceso.
+        }
+      }
       await audit({
         action: "admin.signin_failed",
         entity: "auth",

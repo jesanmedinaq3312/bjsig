@@ -10,6 +10,8 @@ type Payload = {
   entity_id?: string | null;
   entity_label?: string | null;
   details?: Record<string, unknown> | null;
+  page_path?: string | null;
+  session_duration?: number | null;
 };
 
 function json(request: Request, body: unknown, status: number) {
@@ -48,6 +50,44 @@ function safeUuid(value: string | null | undefined): string | null {
     : null;
 }
 
+function verifiedSessionId(authHeader: string): string | null {
+  const token = authHeader.match(/^Bearer\s+(.+)$/i)?.[1];
+  const encodedPayload = token?.split(".")[1];
+  if (!encodedPayload) return null;
+  try {
+    const normalized = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const claims = JSON.parse(atob(normalized)) as Record<string, unknown>;
+    return safeUuid(typeof claims.session_id === "string" ? claims.session_id : null);
+  } catch {
+    return null;
+  }
+}
+
+function safePagePath(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const path = value.trim().split(/[?#]/, 1)[0];
+  if (
+    !path ||
+    path.length > 240 ||
+    !(
+      path === "/worker/portal" ||
+      path === "/platform/saas" ||
+      path === "/unknown" ||
+      /^\/admin\/[a-z0-9_-]{1,80}$/i.test(path)
+    )
+  ) {
+    return null;
+  }
+  return path;
+}
+
+function isLimitedNavigationEvent(payload: Payload): boolean {
+  return (
+    payload.entity === "navigation" &&
+    (payload.action === "page_view" || payload.action === "page_time")
+  );
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: getCorsHeaders(request) });
@@ -67,10 +107,16 @@ Deno.serve(async (request) => {
     const { data: userData, error: userError } = await userClient.auth.getUser();
     if (userError || !userData.user) return json(request, { error: "Sesión inválida." }, 401);
 
-    // Audit events are an administrative control and require an AAL2 session.
+    const payload = (await request.json()) as Payload;
+    if (!payload.action?.trim() || !payload.entity?.trim())
+      return json(request, { error: "action y entity son obligatorios." }, 400);
+    const limitedNavigationEvent = isLimitedNavigationEvent(payload);
+
+    // Generic audit events remain AAL2-only. Only the allowlisted, minimal
+    // page-view/time events are accepted at AAL1 for roles without mandatory MFA.
     const { data: aal, error: aalError } =
       await userClient.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalError || aal?.currentLevel !== "aal2")
+    if (aalError || (aal?.currentLevel !== "aal2" && !limitedNavigationEvent))
       return json(request, { error: "MFA_REQUIRED" }, 403);
 
     const gpsAccess = await checkGpsSessionAccess(userClient);
@@ -81,16 +127,14 @@ Deno.serve(async (request) => {
         gpsAccess.code === "GPS_REQUIRED" ? 403 : 503,
       );
 
-    const payload = (await request.json()) as Payload;
-    if (!payload.action?.trim() || !payload.entity?.trim())
-      return json(request, { error: "action y entity son obligatorios." }, 400);
-    const { data: isPlatformOwner } = await userClient.rpc("is_platform_owner");
+    const { data: platformOwnerData } = await userClient.rpc("is_platform_owner");
     const { data: currentTenantId } = await userClient.rpc("current_tenant_id");
+    const isPlatformOwner = platformOwnerData === true;
     const requestedTenant = safeUuid(payload.tenant_id);
-    const tenantId =
-      requestedTenant || (typeof currentTenantId === "string" ? currentTenantId : null);
-    if (!tenantId) return json(request, { error: "TENANT_REQUIRED" }, 400);
-    if (!isPlatformOwner && currentTenantId !== tenantId)
+    const serverTenantId = typeof currentTenantId === "string" ? currentTenantId : null;
+    const tenantId = limitedNavigationEvent ? serverTenantId : requestedTenant || serverTenantId;
+    if (!tenantId && !isPlatformOwner) return json(request, { error: "TENANT_REQUIRED" }, 400);
+    if (tenantId && !isPlatformOwner && currentTenantId !== tenantId)
       return json(request, { error: "TENANT_BOUNDARY_VIOLATION" }, 403);
 
     const ip = firstForwardedIp(request);
@@ -118,15 +162,41 @@ Deno.serve(async (request) => {
     }
 
     const { data: roleData } = await userClient.rpc("current_user_role");
+    const pagePath = safePagePath(payload.page_path);
+    const sessionDuration =
+      typeof payload.session_duration === "number" && Number.isFinite(payload.session_duration)
+        ? Math.max(0, Math.min(86400, Math.floor(payload.session_duration)))
+        : null;
+    const navigationReason = payload.details?.reason;
+    const details = limitedNavigationEvent
+      ? {
+          event: payload.action,
+          ...(payload.action === "page_time" && sessionDuration !== null
+            ? { duration_seconds: sessionDuration }
+            : {}),
+          ...(typeof navigationReason === "string" &&
+          [
+            "tab_hidden",
+            "route_change",
+            "unload",
+            "component_unmount",
+            "identity_changed",
+          ].includes(navigationReason)
+            ? { reason: navigationReason }
+            : {}),
+        }
+      : payload.details
+        ? safeValue(payload.details)
+        : null;
     const { error: insertError } = await admin.from("activity_logs").insert({
       tenant_id: tenantId,
       // Identity is resolved from the validated JWT, never from browser input.
       user_email: userData.user.email || "unknown",
       action: payload.action.trim().slice(0, 120),
       entity: payload.entity.trim().slice(0, 80),
-      entity_id: safeUuid(payload.entity_id),
-      entity_label: payload.entity_label?.slice(0, 240) || null,
-      details: payload.details ? safeValue(payload.details) : null,
+      entity_id: limitedNavigationEvent ? null : safeUuid(payload.entity_id),
+      entity_label: limitedNavigationEvent ? pagePath : payload.entity_label?.slice(0, 240) || null,
+      details,
       ip_hint: ip,
       user_agent: request.headers.get("user-agent"),
       user_role:
@@ -135,7 +205,10 @@ Deno.serve(async (request) => {
           : isPlatformOwner
             ? "platform_owner"
             : "tenant_user",
-      // No session identifiers, fingerprint, cookies, GPS, referrer or viewport are persisted.
+      session_id: verifiedSessionId(authHeader),
+      page_path: pagePath,
+      session_duration: sessionDuration,
+      // Deliberately omit persistent browser fingerprints, cookies, GPS, referrer and viewport.
     });
     if (insertError) return json(request, { error: "No se pudo persistir el log." }, 500);
     return json(request, { ok: true, decision: policy.decision }, 200);

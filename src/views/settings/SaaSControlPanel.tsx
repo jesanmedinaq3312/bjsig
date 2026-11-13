@@ -76,6 +76,9 @@ const WorkerPortal = lazy(() =>
     default: module.WorkerPortal,
   })),
 );
+const LogsView = lazy(() =>
+  import("@/views/Logs").then((module) => ({ default: module.LogsView })),
+);
 
 interface TenantOverview {
   tenant_id: string;
@@ -509,6 +512,7 @@ export function SaaSControlPanel() {
     | "containers"
     | "settings"
     | "monitoring"
+    | "audit"
     | "portal"
     | "captadores"
     | "devteam"
@@ -2159,6 +2163,7 @@ export function SaaSControlPanel() {
       icon: Zap,
       items: [
         { key: "monitoring", label: "Monitoreo" },
+        { key: "audit", label: "Auditoría" },
         { key: "portal", label: "Portales trabajadores" },
         { key: "backup", label: "Respaldos" },
       ],
@@ -4403,6 +4408,26 @@ export function SaaSControlPanel() {
                 </div>
               )}
             </div>
+          </section>
+        )}
+        {activeSection === "audit" && (
+          <section className="space-y-3">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3">
+              <h2 className="text-sm font-black text-slate-900">Auditoría de actividad</h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Eventos de acceso, roles, recorridos y tiempo estimado en pantalla. El alcance entre
+                empresas depende de las políticas de acceso de la sesión Dev Team.
+              </p>
+            </div>
+            <Suspense
+              fallback={
+                <div className="flex justify-center rounded-2xl bg-white p-10">
+                  <Spinner />
+                </div>
+              }
+            >
+              <LogsView />
+            </Suspense>
           </section>
         )}
         {activeSection === "devteam" && (
