@@ -49,6 +49,7 @@
     { "path": "/cookies", "title": "Política de cookies" },
     { "path": "/trabajador", "title": "Portal personal del trabajador" },
     { "path": "/portal-trabajador", "title": "Portal personal del trabajador" },
+    { "path": "/empresa/:slug", "title": "Landing pública de empresa" },
     { "path": "/:slug", "title": "Portal personal por empresa" },
     { "path": "/admin", "title": "Acceso operativo" },
     { "path": "/admin/:view", "title": "Panel operativo" },

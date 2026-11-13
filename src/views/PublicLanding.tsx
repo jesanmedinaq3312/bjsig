@@ -7,11 +7,15 @@ import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { getPublicModulePath } from "@/lib/publicModules";
 import { loadPublicLandingBranding, useCompanyBranding } from "@/lib/logo";
+import {
+  buildWhatsAppUrl,
+  DEFAULT_SAAS_LANDING,
+  fetchSaasLandingSettings,
+  type SaasLandingSettings,
+} from "@/lib/saasLanding";
 
 const PREVIEW_STORAGE_KEY = "bjsig-public-landing-preview";
-
-const demoUrl =
-  "https://wa.me/56941228089?text=Hola%2C%20quiero%20solicitar%20una%20demo%20de%20BJSIGAPP.";
+const demoMessage = "Hola, quiero solicitar una demostración de BJSIGAPP.";
 
 const questions = [
   {
@@ -60,7 +64,7 @@ const differentiators = [
   },
 ];
 
-function LeadForm() {
+function LeadForm({ whatsappPhone }: { whatsappPhone: string }) {
   const [form, setForm] = useState({ name: "", company: "", contact: "", teamSize: "" });
   const update = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement>) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -79,11 +83,7 @@ function LeadForm() {
     ]
       .filter(Boolean)
       .join("\n");
-    window.open(
-      `https://wa.me/56941228089?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    window.open(buildWhatsAppUrl(whatsappPhone, message), "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -166,9 +166,33 @@ function SoftwareStructuredData() {
   );
 }
 
-export function PublicLanding() {
+export function PublicLanding({
+  initialLanding = null,
+}: {
+  initialLanding?: SaasLandingSettings | null;
+}) {
   const { iconUrls, landingContent } = useCompanyBranding();
   const [previewMode, setPreviewMode] = useState(false);
+  const [landingSettings, setLandingSettings] = useState<SaasLandingSettings | null>(
+    initialLanding,
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    setLandingSettings(initialLanding);
+    if (!initialLanding) {
+      void fetchSaasLandingSettings()
+        .then((settings) => {
+          if (mounted) setLandingSettings(settings);
+        })
+        .catch(() => {
+          if (mounted) setLandingSettings(null);
+        });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [initialLanding]);
 
   useEffect(() => {
     let previewAssets: unknown;
@@ -186,6 +210,33 @@ export function PublicLanding() {
     }
     void loadPublicLandingBranding(previewAssets);
   }, []);
+
+  if (landingSettings?.enabled === false) {
+    return (
+      <main className="public-site flex min-h-screen items-center justify-center bg-slate-950 px-5 text-white">
+        <section className="max-w-lg text-center">
+          <h1 className="text-3xl font-black tracking-tight">BJSIGAPP</h1>
+          <p className="mt-4 text-base leading-7 text-slate-300">
+            El sitio público está temporalmente no disponible. Los accesos de empresa y trabajador
+            continúan en sus enlaces habituales.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  const heroTitle =
+    landingSettings?.heroTitle || landingContent.heroTitle || DEFAULT_SAAS_LANDING.heroTitle;
+  const heroDescription =
+    landingSettings?.heroDescription ||
+    landingContent.heroDescription ||
+    DEFAULT_SAAS_LANDING.heroDescription;
+  const ctaLabel =
+    landingSettings?.primaryCtaLabel ||
+    landingContent.ctaLabel ||
+    DEFAULT_SAAS_LANDING.primaryCtaLabel;
+  const whatsappPhone = landingSettings?.whatsappPhone || DEFAULT_SAAS_LANDING.whatsappPhone;
+  const demoUrl = buildWhatsAppUrl(whatsappPhone, demoMessage);
 
   return (
     <div className="public-site min-h-screen bg-white text-slate-900">
@@ -225,19 +276,17 @@ export function PublicLanding() {
                 />
               )}
               <h1 className="public-h1 text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
-                {landingContent.heroTitle || "Software multiempresa de RR. HH. y operaciones"}
+                {heroTitle}
               </h1>
               <p className="public-lead mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-                {landingContent.heroDescription ||
-                  "Administra personas, asistencia, turnos, prevención, documentos y procesos internos desde una plataforma SaaS. Configura módulos, permisos e identidad para cada empresa."}
+                {heroDescription}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#contacto"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  {landingContent.ctaLabel || "Solicitar una demo"}{" "}
-                  <ArrowRight size={16} aria-hidden="true" />
+                  {ctaLabel} <ArrowRight size={16} aria-hidden="true" />
                 </a>
                 <a
                   href="/trabajador"
@@ -493,7 +542,7 @@ export function PublicLanding() {
               </a>
             </div>
             <div className="rounded-2xl bg-white p-5 text-slate-900 sm:p-8">
-              <LeadForm />
+              <LeadForm whatsappPhone={whatsappPhone} />
             </div>
           </div>
         </section>
