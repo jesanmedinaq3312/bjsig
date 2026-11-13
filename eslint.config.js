@@ -15,6 +15,7 @@ export default tseslint.config(
       "coverage",
       "playwright-report",
       "test-results",
+      "src/integrations/supabase/types.ts",
     ],
   },
   {
