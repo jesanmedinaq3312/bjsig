@@ -130,6 +130,7 @@ export type Database = {
       }
       allowed_emails: {
         Row: {
+          access_expires_at: string | null
           active: boolean
           ad_synced: boolean
           created_at: string
@@ -143,6 +144,7 @@ export type Database = {
           worker_rut: string | null
         }
         Insert: {
+          access_expires_at?: string | null
           active?: boolean
           ad_synced?: boolean
           created_at?: string
@@ -156,6 +158,7 @@ export type Database = {
           worker_rut?: string | null
         }
         Update: {
+          access_expires_at?: string | null
           active?: boolean
           ad_synced?: boolean
           created_at?: string
@@ -234,6 +237,167 @@ export type Database = {
             referencedColumns: ["tenant_id", "rut"]
           },
         ]
+      }
+      attendance_rectifications: {
+        Row: {
+          created_at: string
+          id: string
+          prev_hash: string | null
+          proposed_at: string
+          proposed_scan_type: string | null
+          reason: string
+          requested_by: string
+          response_hash: string | null
+          row_hash: string | null
+          scan_event_id: string | null
+          status: string
+          tenant_id: string
+          worker_comment: string | null
+          worker_ip: string | null
+          worker_response_at: string | null
+          worker_rut: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prev_hash?: string | null
+          proposed_at: string
+          proposed_scan_type?: string | null
+          reason: string
+          requested_by?: string
+          response_hash?: string | null
+          row_hash?: string | null
+          scan_event_id?: string | null
+          status?: string
+          tenant_id?: string
+          worker_comment?: string | null
+          worker_ip?: string | null
+          worker_response_at?: string | null
+          worker_rut: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prev_hash?: string | null
+          proposed_at?: string
+          proposed_scan_type?: string | null
+          reason?: string
+          requested_by?: string
+          response_hash?: string | null
+          row_hash?: string | null
+          scan_event_id?: string | null
+          status?: string
+          tenant_id?: string
+          worker_comment?: string | null
+          worker_ip?: string | null
+          worker_response_at?: string | null
+          worker_rut?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_rectifications_scan_event_id_fkey"
+            columns: ["scan_event_id"]
+            isOneToOne: false
+            referencedRelation: "qr_scan_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_rectifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_reports: {
+        Row: {
+          created_at: string
+          generated_by: string | null
+          id: string
+          period_end: string
+          period_start: string
+          period_type: string
+          response_hash: string | null
+          row_hash: string
+          summary: Json
+          tenant_id: string
+          worker_comment: string | null
+          worker_response_at: string | null
+          worker_rut: string
+          worker_status: string
+        }
+        Insert: {
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          period_type: string
+          response_hash?: string | null
+          row_hash: string
+          summary?: Json
+          tenant_id?: string
+          worker_comment?: string | null
+          worker_response_at?: string | null
+          worker_rut: string
+          worker_status?: string
+        }
+        Update: {
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          response_hash?: string | null
+          row_hash?: string
+          summary?: Json
+          tenant_id?: string
+          worker_comment?: string | null
+          worker_response_at?: string | null
+          worker_rut?: string
+          worker_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_time_sync: {
+        Row: {
+          checked_at: string
+          error: string | null
+          id: string
+          official_time: string | null
+          offset_ms: number | null
+          source: string
+          within_tolerance: boolean
+        }
+        Insert: {
+          checked_at?: string
+          error?: string | null
+          id?: string
+          official_time?: string | null
+          offset_ms?: number | null
+          source?: string
+          within_tolerance?: boolean
+        }
+        Update: {
+          checked_at?: string
+          error?: string | null
+          id?: string
+          official_time?: string | null
+          offset_ms?: number | null
+          source?: string
+          within_tolerance?: boolean
+        }
+        Relationships: []
       }
       brain_graph_layout: {
         Row: {
@@ -2759,11 +2923,18 @@ export type Database = {
           longitude: number | null
           name: string | null
           notes: string | null
+          official_offset_ms: number | null
+          prev_hash: string | null
+          receipt_code: string | null
+          row_hash: string | null
           scan_date: string | null
           scan_time: string | null
           scan_type: string | null
+          server_received_at: string | null
           status: string | null
           tenant_id: string
+          time_source: string | null
+          time_within_tolerance: boolean | null
           updated_at: string
           validated: boolean
           worker_rut: string | null
@@ -2783,11 +2954,18 @@ export type Database = {
           longitude?: number | null
           name?: string | null
           notes?: string | null
+          official_offset_ms?: number | null
+          prev_hash?: string | null
+          receipt_code?: string | null
+          row_hash?: string | null
           scan_date?: string | null
           scan_time?: string | null
           scan_type?: string | null
+          server_received_at?: string | null
           status?: string | null
           tenant_id: string
+          time_source?: string | null
+          time_within_tolerance?: boolean | null
           updated_at?: string
           validated?: boolean
           worker_rut?: string | null
@@ -2807,11 +2985,18 @@ export type Database = {
           longitude?: number | null
           name?: string | null
           notes?: string | null
+          official_offset_ms?: number | null
+          prev_hash?: string | null
+          receipt_code?: string | null
+          row_hash?: string | null
           scan_date?: string | null
           scan_time?: string | null
           scan_type?: string | null
+          server_received_at?: string | null
           status?: string | null
           tenant_id?: string
+          time_source?: string | null
+          time_within_tolerance?: boolean | null
           updated_at?: string
           validated?: boolean
           worker_rut?: string | null
@@ -3848,6 +4033,39 @@ export type Database = {
           name?: string
           sort_order?: number
           storage_limit_bytes?: number | null
+        }
+        Relationships: []
+      }
+      saas_public_landing_settings: {
+        Row: {
+          enabled: boolean
+          hero_description: string
+          hero_title: string
+          primary_cta_label: string
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+          whatsapp_phone: string
+        }
+        Insert: {
+          enabled?: boolean
+          hero_description?: string
+          hero_title?: string
+          primary_cta_label?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          whatsapp_phone?: string
+        }
+        Update: {
+          enabled?: boolean
+          hero_description?: string
+          hero_title?: string
+          primary_cta_label?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          whatsapp_phone?: string
         }
         Relationships: []
       }
@@ -5852,6 +6070,11 @@ export type Database = {
           change_log: Database["public"]["Tables"]["shift_change_logs"]["Row"]
         }[]
       }
+      attendance_summary: {
+        Args: { _end: string; _rut: string; _start: string; _tenant: string }
+        Returns: Json
+      }
+      attendance_time_tolerance_ms: { Args: never; Returns: number }
       attest_gps_session: {
         Args: {
           p_accuracy_m: number
@@ -5954,6 +6177,10 @@ export type Database = {
         Args: { p_tenant_id: string; p_worker_rut: string }
         Returns: undefined
       }
+      dt_inspector_data: {
+        Args: { _from: string; _kind: string; _rut?: string; _to: string }
+        Returns: Json
+      }
       enforce_gps_session_access: { Args: never; Returns: undefined }
       epp_adjust_stock: {
         Args: { p_delta: number; p_item_id: string; p_size_label: string }
@@ -5979,12 +6206,32 @@ export type Database = {
         }[]
       }
       fetch_public_landing_settings: { Args: never; Returns: Json }
+      fetch_public_saas_landing: {
+        Args: never
+        Returns: {
+          enabled: boolean
+          hero_description: string
+          hero_title: string
+          primary_cta_label: string
+          whatsapp_phone: string
+        }[]
+      }
       fetch_public_tenant_branding: {
         Args: { _slug: string }
         Returns: {
           color_theme: string
           company_name: string
           glass_opacity: string
+          logo_url: string
+          visual_assets: Json
+        }[]
+      }
+      fetch_public_tenant_landing: {
+        Args: { _slug: string }
+        Returns: {
+          color_theme: string
+          company_name: string
+          landing_cta_label: string
           logo_url: string
           visual_assets: Json
         }[]
@@ -6120,6 +6367,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      generate_attendance_report: {
+        Args: { _rut: string; _start: string; _type: string }
+        Returns: string
+      }
       get_effective_tenant_access: {
         Args: { _tenant_id: string }
         Returns: {
@@ -6138,6 +6389,7 @@ export type Database = {
       gps_gate_enabled: { Args: never; Returns: boolean }
       gps_session_is_verified: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_dt_inspector: { Args: never; Returns: boolean }
       is_platform_identity: { Args: { _email: string }; Returns: boolean }
       is_platform_owner: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
@@ -6161,6 +6413,7 @@ export type Database = {
           _tenant_id: string
         }
         Returns: {
+          access_expires_at: string | null
           active: boolean
           ad_synced: boolean
           created_at: string
@@ -6188,6 +6441,7 @@ export type Database = {
           _worker_rut: string
         }
         Returns: {
+          access_expires_at: string | null
           active: boolean
           ad_synced: boolean
           created_at: string
@@ -6265,6 +6519,14 @@ export type Database = {
         Args: { _templates: Json; _tenant_id: string }
         Returns: number
       }
+      respond_attendance_rectification: {
+        Args: { _accept: boolean; _comment?: string; _id: string; _ip?: string }
+        Returns: undefined
+      }
+      respond_attendance_report: {
+        Args: { _comment?: string; _conforme: boolean; _id: string }
+        Returns: undefined
+      }
       restore_saas_tenant: {
         Args: { _reason?: string; _tenant_id: string }
         Returns: {
@@ -6299,6 +6561,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_saas_tenant_landing_enabled: {
+        Args: { _enabled: boolean; _tenant_id: string }
+        Returns: undefined
+      }
       set_saas_tenant_lifecycle: {
         Args: { _reason?: string; _status: string; _tenant_id: string }
         Returns: {
@@ -6311,6 +6577,16 @@ export type Database = {
       shift_actor_can_write: { Args: never; Returns: boolean }
       update_public_landing_settings: {
         Args: { _visual_assets: Json }
+        Returns: undefined
+      }
+      update_saas_public_landing: {
+        Args: {
+          _enabled: boolean
+          _hero_description: string
+          _hero_title: string
+          _primary_cta_label: string
+          _whatsapp_phone: string
+        }
         Returns: undefined
       }
       update_saas_tenant_branding:
@@ -6357,6 +6633,8 @@ export type Database = {
           tenant_ids: string[]
         }[]
       }
+      verify_attendance_chain: { Args: never; Returns: Json }
+      verify_attendance_receipt: { Args: { _code: string }; Returns: Json }
       verify_saas_log_isolation: {
         Args: never
         Returns: {
