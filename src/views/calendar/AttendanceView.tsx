@@ -29,6 +29,7 @@ import { useLoading } from "@/components/LoadingProvider";
 import { WorkerAvatar } from "@/components/WorkerAvatar";
 import type { AppData } from "@/hooks/useAppData";
 import type { AttendanceStatus, DailyShift } from "@/lib/types";
+import { getChileAttendanceTime } from "@/lib/chileAttendanceTime";
 import {
   STANDARD_EPP,
   suggestShift,
@@ -50,7 +51,7 @@ export function AttendanceView({
   onOpenQrScanner: () => void;
 }) {
   const { workers, shifts, eppLogs, qrScans } = data;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getChileAttendanceTime(new Date()).scanDate;
   const [selectedDate, setSelectedDate] = useState(today);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<{
@@ -93,6 +94,7 @@ export function AttendanceView({
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [hhtValues, setHhtValues] = useState<Record<string, number>>({});
   const [eppChecks, setEppChecks] = useState<EppCheckState>({});
+  const [reviewedRuts, setReviewedRuts] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     const newAtt: Record<string, AttendanceStatus> = {};
@@ -133,6 +135,7 @@ export function AttendanceView({
     setSavedMsg(null);
     setExpandedRut(null);
     setDirty(false);
+    setReviewedRuts(new Set());
   }, [activeWorkers, todayShifts, eppLogs, selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps -- reviewed dependency set; unstable callback recreation is intentional to avoid loops
 
   const counts = useMemo(() => {
@@ -169,11 +172,14 @@ export function AttendanceView({
       ...prev,
       [rut]: status === "Presente" ? (prev[rut] ?? 8) : 0,
     }));
+    setReviewedRuts((prev) => new Set(prev).add(rut));
     setDirty(true);
   }
 
   function setHht(rut: string, value: number) {
-    setHhtValues((prev) => ({ ...prev, [rut]: value }));
+    const safeValue = Number.isFinite(value) ? Math.min(24, Math.max(0, value)) : 0;
+    setHhtValues((prev) => ({ ...prev, [rut]: safeValue }));
+    setReviewedRuts((prev) => new Set(prev).add(rut));
     setDirty(true);
   }
 
@@ -187,6 +193,7 @@ export function AttendanceView({
     });
     setAttendance(nextAtt);
     setHhtValues(nextHht);
+    setReviewedRuts(new Set(activeWorkers.map((w) => w.rut)));
     setDirty(true);
   }
 
@@ -199,6 +206,7 @@ export function AttendanceView({
     });
     setAttendance(nextAtt);
     setHhtValues(nextHht);
+    setReviewedRuts(new Set(activeWorkers.map((w) => w.rut)));
     setDirty(true);
   }
 
@@ -210,6 +218,7 @@ export function AttendanceView({
         [item]: { ...prev[rut]?.[item], [phase]: !prev[rut]?.[item]?.[phase] },
       },
     }));
+    setReviewedRuts((prev) => new Set(prev).add(rut));
     setDirty(true);
   }
 
@@ -223,6 +232,7 @@ export function AttendanceView({
       });
       return { ...prev, [rut]: updated };
     });
+    setReviewedRuts((prev) => new Set(prev).add(rut));
     setDirty(true);
   }
 
@@ -230,36 +240,38 @@ export function AttendanceView({
     setSaving(true);
     setSavedMsg(null);
     try {
-      const rows: Omit<DailyShift, "id" | "created_at">[] = activeWorkers.map((w) => {
-        const status = attendance[w.rut] ?? "Presente";
-        const suggestion = suggestShift(
-          w.shift_cycle,
-          new Date(selectedDate + "T00:00"),
-          data.shiftDefs,
-        );
-        const eppI = eppChecks[w.rut] ?? {};
-        const eppInicio: Record<string, boolean> = {};
-        const eppTermino: Record<string, boolean> = {};
-        Object.entries(eppI).forEach(([item, val]) => {
-          eppInicio[item] = val.inicio;
-          eppTermino[item] = val.termino;
+      const rows: Omit<DailyShift, "id" | "created_at">[] = activeWorkers
+        .filter((w) => reviewedRuts.has(w.rut))
+        .map((w) => {
+          const status = attendance[w.rut] ?? "Presente";
+          const suggestion = suggestShift(
+            w.shift_cycle,
+            new Date(selectedDate + "T00:00"),
+            data.shiftDefs,
+          );
+          const eppI = eppChecks[w.rut] ?? {};
+          const eppInicio: Record<string, boolean> = {};
+          const eppTermino: Record<string, boolean> = {};
+          Object.entries(eppI).forEach(([item, val]) => {
+            eppInicio[item] = val.inicio;
+            eppTermino[item] = val.termino;
+          });
+          return {
+            date: selectedDate,
+            worker_rut: w.rut,
+            attendance_status: status,
+            shift_name: suggestion.label,
+            ast_signed: todayShifts.get(w.rut)?.ast_signed ?? false,
+            calculated_hht: hhtValues[w.rut] ?? (status === "Presente" ? 8 : 0),
+            epp_inicio: eppInicio,
+            epp_termino: eppTermino,
+            notes: todayShifts.get(w.rut)?.notes ?? null,
+          };
         });
-        return {
-          date: selectedDate,
-          worker_rut: w.rut,
-          attendance_status: status,
-          shift_name: suggestion.label,
-          ast_signed: todayShifts.get(w.rut)?.ast_signed ?? false,
-          calculated_hht: hhtValues[w.rut] ?? (status === "Presente" ? 8 : 0),
-          epp_inicio: eppInicio,
-          epp_termino: eppTermino,
-          notes: todayShifts.get(w.rut)?.notes ?? null,
-        };
-      });
-      await shiftRepo.upsertMany(rows);
+      if (rows.length > 0) await shiftRepo.upsertMany(rows);
       setSavedMsg({
         type: "ok",
-        text: `Transacción confirmada para ${activeWorkers.length} trabajadores.`,
+        text: `Transacción confirmada para ${rows.length} trabajadores revisados.`,
       });
       setDirty(false);
     } catch (e) {
@@ -278,7 +290,7 @@ export function AttendanceView({
       void runInBackground("Sincronizando asistencia", saveAttendance).catch(() => {});
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [dirty, attendance, hhtValues, eppChecks, selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps -- reviewed dependency set; unstable callback recreation is intentional to avoid loops
+  }, [dirty, attendance, hhtValues, eppChecks, selectedDate, reviewedRuts]); // eslint-disable-line react-hooks/exhaustive-deps -- reviewed dependency set; unstable callback recreation is intentional to avoid loops
 
   async function deleteAttendance(rut: string) {
     try {
@@ -293,7 +305,13 @@ export function AttendanceView({
         new Date(selectedDate + "T00:00"),
         data.shiftDefs,
       );
-      setAtt(rut, sug.working ? "Presente" : "Descanso");
+      setAttendance((prev) => ({ ...prev, [rut]: sug.working ? "Presente" : "Descanso" }));
+      setHhtValues((prev) => ({ ...prev, [rut]: sug.working ? 8 : 0 }));
+      setReviewedRuts((prev) => {
+        const next = new Set(prev);
+        next.delete(rut);
+        return next;
+      });
       setSavedMsg({ type: "ok", text: `Registro eliminado para ${rut}.` });
     } catch (e) {
       setSavedMsg({

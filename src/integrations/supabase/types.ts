@@ -2911,6 +2911,8 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          captured_scan_date: string | null
+          captured_scan_time: string | null
           data: Json
           date: string | null
           device_id: string | null
@@ -2942,6 +2944,8 @@ export type Database = {
         Insert: {
           amount?: number
           created_at?: string
+          captured_scan_date?: string | null
+          captured_scan_time?: string | null
           data?: Json
           date?: string | null
           device_id?: string | null
@@ -2973,6 +2977,8 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          captured_scan_date?: string | null
+          captured_scan_time?: string | null
           data?: Json
           date?: string | null
           device_id?: string | null

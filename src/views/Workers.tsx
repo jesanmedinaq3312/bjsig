@@ -18,8 +18,8 @@ import { useLoading } from "@/components/LoadingProvider";
 import type { Worker, AttendanceStatus, CloudProvider } from "@/lib/types";
 import type { AppData } from "@/hooks/useAppData";
 import { normalizeRut, formatRut } from "@/lib/rut";
+import { getChileAttendanceTime } from "@/lib/chileAttendanceTime";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
-import { logger } from "@/lib/logger";
 import { canManageWorkers } from "@/lib/roleHierarchy";
 import { WorkerTable } from "./workers/WorkerTable";
 import { WorkerModal } from "./workers/WorkerModal";
@@ -282,22 +282,8 @@ export function WorkersView({
             entity_label: normalizedForm.full_name,
           });
 
-          if (normalizedForm.hire_date) {
-            try {
-              await shiftRepo.generateForWorker(
-                normalizedRut,
-                normalizedForm.shift_cycle,
-                normalizedForm.hire_date,
-              );
-              await audit({
-                action: "shift.auto_generate",
-                entity: "daily_shifts",
-                entity_label: `${normalizedForm.full_name} — ${normalizedForm.shift_cycle}`,
-              });
-            } catch (e) {
-              logger.warn("Shift auto-generation failed:", e);
-            }
-          }
+          // La contratación define el ciclo programado, no asistencia observada.
+          // Los turnos se muestran como sugerencias y se persisten al pasar lista.
 
           if (normalizedForm.email) {
             try {
@@ -396,7 +382,7 @@ export function WorkersView({
 
   async function handleQuickAtt(w: Worker, status: AttendanceStatus) {
     try {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getChileAttendanceTime(new Date()).scanDate;
       await shiftRepo.upsertMany([
         {
           date: today,

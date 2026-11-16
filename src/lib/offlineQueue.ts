@@ -18,7 +18,7 @@ import { isNetworkError } from "./networkError";
 
 const DB_NAME = "gyc_offline_queue";
 const STORE = "pending_scans";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 interface QueuedScan {
   id: string;
@@ -27,6 +27,8 @@ interface QueuedScan {
   scan_type: string;
   scan_date: string;
   scan_time: string;
+  captured_scan_date: string;
+  captured_scan_time: string;
   latitude: number | null;
   longitude: number | null;
   gps_accuracy: number | null;
@@ -44,6 +46,20 @@ function openDB(): Promise<IDBDatabase> {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: "id" });
+      } else if (req.transaction) {
+        const store = req.transaction.objectStore(STORE);
+        const cursorRequest = store.openCursor();
+        cursorRequest.onsuccess = () => {
+          const cursor = cursorRequest.result;
+          if (!cursor) return;
+          const scan = cursor.value as QueuedScan;
+          cursor.update({
+            ...scan,
+            captured_scan_date: scan.captured_scan_date ?? scan.scan_date,
+            captured_scan_time: scan.captured_scan_time ?? scan.scan_time,
+          });
+          cursor.continue();
+        };
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -166,6 +182,8 @@ export async function syncQueuedScans(): Promise<SyncResult> {
             scan_type: scan.scan_type,
             scan_date: scan.scan_date,
             scan_time: scan.scan_time,
+            captured_scan_date: scan.captured_scan_date,
+            captured_scan_time: scan.captured_scan_time,
             validated: true,
             notes: scan.notes,
             latitude: scan.latitude,
@@ -233,6 +251,8 @@ export async function saveScanOrQueue(scan: {
   scan_type: string;
   scan_date: string;
   scan_time: string;
+  captured_scan_date?: string;
+  captured_scan_time?: string;
   latitude: number | null;
   longitude: number | null;
   gps_accuracy: number | null;
@@ -243,6 +263,8 @@ export async function saveScanOrQueue(scan: {
   const idempotencyKey = crypto.randomUUID();
   const payload = {
     ...scan,
+    captured_scan_date: scan.captured_scan_date ?? scan.scan_date,
+    captured_scan_time: scan.captured_scan_time ?? scan.scan_time,
     device_id: deviceId,
     idempotency_key: idempotencyKey,
   };
@@ -261,6 +283,8 @@ export async function saveScanOrQueue(scan: {
         scan_type: payload.scan_type,
         scan_date: payload.scan_date,
         scan_time: payload.scan_time,
+        captured_scan_date: payload.captured_scan_date,
+        captured_scan_time: payload.captured_scan_time,
         validated: true,
         notes: payload.notes,
         latitude: payload.latitude,

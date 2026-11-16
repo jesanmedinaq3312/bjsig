@@ -22,6 +22,19 @@ const swalMixin = Swal.mixin({
   buttonsStyling: false,
 });
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
+    return entities[character] ?? character;
+  });
+}
+
 interface ProcessScanDeps {
   workers: Worker[];
   selectedType: QrScanType;
@@ -219,6 +232,8 @@ export function useScanProcessor({
           scan_type: currentType,
           scan_date: today,
           scan_time: chileTime.isoInstant,
+          captured_scan_date: today,
+          captured_scan_time: chileTime.isoInstant,
           latitude: gps?.latitude ?? null,
           longitude: gps?.longitude ?? null,
           gps_accuracy: gps?.accuracy ?? null,
@@ -243,7 +258,13 @@ export function useScanProcessor({
           return;
         }
 
-        await logAudit(worker, currentType, deviceId, gps, gpsMissing);
+        let auditFailed = false;
+        try {
+          await logAudit(worker, currentType, deviceId, gps, gpsMissing);
+        } catch {
+          // La marca ya es durable. No inducir un segundo escaneo por un fallo secundario.
+          auditFailed = true;
+        }
 
         const result: ScanResult = {
           ok: true,
@@ -260,12 +281,12 @@ export function useScanProcessor({
           icon: "success",
           title: "Asistencia registrada",
           html: `<div style="text-align:left;font-size:14px;line-height:1.7">
-          <p style="margin:0 0 10px;font-size:16px;font-weight:600;color:${typeMeta.swalColor}">${typeMeta.label}</p>
-          <p style="margin:0 0 4px"><strong>Trabajador:</strong> ${worker.full_name}</p>
-          <p style="margin:0 0 4px"><strong>RUT:</strong> ${worker.rut}</p>
-          <p style="margin:0 0 4px"><strong>Fecha:</strong> ${today}</p>
-          <p style="margin:0 0 4px"><strong>Hora:</strong> ${timeStr}</p>
-          <p style="margin:0 0 4px"><strong>Dispositivo:</strong> ${deviceId.slice(0, 12)}...</p>
+          <p style="margin:0 0 10px;font-size:16px;font-weight:600;color:${typeMeta.swalColor}">${escapeHtml(typeMeta.label)}</p>
+          <p style="margin:0 0 4px"><strong>Trabajador:</strong> ${escapeHtml(worker.full_name)}</p>
+          <p style="margin:0 0 4px"><strong>RUT:</strong> ${escapeHtml(worker.rut)}</p>
+          <p style="margin:0 0 4px"><strong>Fecha:</strong> ${escapeHtml(today)}</p>
+          <p style="margin:0 0 4px"><strong>Hora:</strong> ${escapeHtml(timeStr)}</p>
+          <p style="margin:0 0 4px"><strong>Dispositivo:</strong> ${escapeHtml(deviceId.slice(0, 12))}...</p>
           ${
             gpsMissing
               ? '<p style="margin:0;color:#d97706"><strong>GPS:</strong> No disponible (Marcaje sin GPS)</p>'
@@ -273,6 +294,7 @@ export function useScanProcessor({
                 ? `<p style="margin:0 0 4px"><strong>GPS:</strong> ${gps.latitude.toFixed(5)}, ${gps.longitude.toFixed(5)}${gps.accuracy ? ` (±${Math.round(gps.accuracy)}m)` : ""}</p>`
                 : '<p style="margin:0;color:#64748b"><strong>GPS:</strong> No disponible</p>'
           }
+          ${auditFailed ? '<p style="margin:8px 0 0;color:#b45309"><strong>Auditoría:</strong> pendiente de reintento; la marca sí quedó guardada.</p>' : ""}
         </div>`,
           confirmButtonText: "Aceptar",
           timer: 6000,
@@ -287,6 +309,13 @@ export function useScanProcessor({
             "info",
             "Guardado sin conexion",
             `${worker.full_name} — ${typeMeta.label} se enviara cuando se recupere la red.`,
+          );
+        }
+        if (auditFailed) {
+          toast(
+            "warning",
+            "Auditoría pendiente",
+            "La marca quedó guardada y se debe reintentar su auditoría.",
           );
         }
         data.reload().catch(() => {});
