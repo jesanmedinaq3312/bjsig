@@ -35,8 +35,7 @@ jobs:
       - name: Dependency audit (production gate)
         run: bun audit --production
       - name: Dependency audit (all advisories)
-        continue-on-error: true
-        run: bun audit
+        run: bun audit --audit-level=moderate
 
   tenant-e2e:
     # Enable only after configuring isolated staging users and URL/key.
