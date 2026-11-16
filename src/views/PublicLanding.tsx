@@ -5,6 +5,9 @@ import { DashboardPreview } from "@/components/public/DashboardPreview";
 import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
+import rrhhOficina from "@/assets/landing-rrhh-oficina.jpg";
+import trabajadorTerreno from "@/assets/landing-trabajador-terreno.jpg";
+import prevencionImg from "@/assets/landing-prevencion.jpg";
 import { getPublicModulePath } from "@/lib/publicModules";
 import { loadPublicLandingBranding, useCompanyBranding } from "@/lib/logo";
 import {
@@ -171,7 +174,7 @@ export function PublicLanding({
 }: {
   initialLanding?: SaasLandingSettings | null;
 }) {
-  const { iconUrls, landingContent } = useCompanyBranding();
+  const { iconUrls, landingContent, heroImages } = useCompanyBranding();
   const [previewMode, setPreviewMode] = useState(false);
   const [landingSettings, setLandingSettings] = useState<SaasLandingSettings | null>(
     initialLanding,
@@ -321,6 +324,37 @@ export function PublicLanding({
                   ),
                 )}
               </ul>
+              {heroImages.length > 0 && (
+                <ul className="mt-8 flex flex-wrap gap-3" aria-label="Destacados">
+                  {heroImages.map((image, index) => {
+                    const img = (
+                      <img
+                        src={image.image_url}
+                        alt={image.alt || ""}
+                        loading="lazy"
+                        className="h-20 w-32 rounded-xl border border-white/15 object-cover sm:h-24 sm:w-40"
+                      />
+                    );
+                    const external = /^https:/i.test(image.link_url ?? "");
+                    return (
+                      <li key={`${image.image_url}-${index}`}>
+                        {image.link_url ? (
+                          <a
+                            href={image.link_url}
+                            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                            aria-label={image.alt || "Abrir enlace"}
+                            className="block rounded-xl transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                          >
+                            {img}
+                          </a>
+                        ) : (
+                          img
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
             <DashboardPreview />
           </div>
@@ -332,6 +366,19 @@ export function PublicLanding({
               <h2 className="public-h2 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
                 Una plataforma SaaS para gestionar personas y operación por empresa
               </h2>
+              <figure className="mt-8 overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+                <img
+                  src={rrhhOficina}
+                  alt="Equipo de RR. HH. revisando turnos y dotación en un computador"
+                  width={1280}
+                  height={960}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <figcaption className="bg-white px-4 py-3 text-xs text-slate-500">
+                  Planificación de turnos y dotación desde la oficina de RR. HH.
+                </figcaption>
+              </figure>
             </div>
             <div className="max-w-3xl">
               <p className="public-body text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
@@ -395,6 +442,14 @@ export function PublicLanding({
               >
                 Probar un flujo real <ArrowRight size={15} aria-hidden="true" />
               </a>
+              <img
+                src={prevencionImg}
+                alt="Encargada de prevención realizando charla de seguridad con su equipo"
+                width={1280}
+                height={960}
+                loading="lazy"
+                className="mt-8 aspect-[16/10] w-full max-w-xl rounded-2xl border border-white/10 object-cover"
+              />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {differentiators.map(({ title, text }) => (
@@ -450,6 +505,14 @@ export function PublicLanding({
               >
                 Conocer el Portal del Trabajador <ArrowRight size={15} aria-hidden="true" />
               </a>
+              <img
+                src={trabajadorTerreno}
+                alt="Trabajador en faena registrando su asistencia desde el celular"
+                width={1280}
+                height={960}
+                loading="lazy"
+                className="mt-8 aspect-[16/9] w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
+              />
             </div>
           </div>
 

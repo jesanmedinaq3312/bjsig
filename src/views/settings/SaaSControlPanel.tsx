@@ -70,6 +70,7 @@ import {
 } from "@/components/saas/OnboardingWelcomeModal";
 import { DataGovernancePanel } from "@/components/saas/DataGovernancePanel";
 import { PublicLandingSettingsEditor } from "./PublicLandingSettingsEditor";
+import { HeroImagesEditor } from "./HeroImagesEditor";
 import { SaasLandingEditor } from "@/components/saas/SaasLandingEditor";
 
 const WorkerPortal = lazy(() =>
@@ -3749,6 +3750,7 @@ export function SaaSControlPanel() {
         )}
         {activeSection === "branding" && (
           <section className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
+            <HeroImagesEditor />
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="border-b border-slate-100 px-5 py-4">
                 <h2 className="text-sm font-black text-slate-900">Identidad visual por empresa</h2>

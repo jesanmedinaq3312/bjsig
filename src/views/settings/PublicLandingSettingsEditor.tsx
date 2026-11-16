@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, Eye, Globe2, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import type { VisualAssets } from "@/lib/logo";
+import { sanitizeHeroImages, type VisualAssets } from "@/lib/logo";
 import {
   DEFAULT_SAAS_LANDING,
   fetchSaasLandingSettings,
@@ -46,6 +46,8 @@ function normalizeDraft(value: unknown): VisualAssets {
       hero_description: text(landing.hero_description),
       cta_label: text(landing.cta_label),
     },
+    // Las imágenes del hero se editan en Identidad visual; se conservan al guardar aquí.
+    hero_images: sanitizeHeroImages(source.hero_images),
   };
 }
 

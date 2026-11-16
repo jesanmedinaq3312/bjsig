@@ -37,7 +37,17 @@ type Branding = {
     heroDescription: string;
     ctaLabel: string;
   };
+  heroImages: HeroImage[];
 };
+
+/** Imagen opcionalmente enlazada que se muestra en el hero de la landing principal. */
+export type HeroImage = {
+  image_url: string;
+  alt?: string;
+  link_url?: string;
+};
+
+export const MAX_HERO_IMAGES = 6;
 
 let branding: Branding = {
   logoUrl: DEFAULT_COMPANY_LOGO_URL,
@@ -50,6 +60,7 @@ let branding: Branding = {
   navigationOpacity: null,
   iconUrls: { brand: "", hero: "", feature: "", cta: "" },
   landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
+  heroImages: [],
 };
 let loaded = false;
 let fallbackCompanyName = "Empresa";
@@ -130,6 +141,7 @@ export async function loadCompanyBranding(force = false): Promise<void> {
         navigationOpacity: null,
         iconUrls: { brand: "", hero: "", feature: "", cta: "" },
         landingContent: { heroTitle: "", heroDescription: "", ctaLabel: "" },
+        heroImages: [],
       };
       loaded = true;
       applyDynamicBranding(branding);
@@ -240,6 +252,7 @@ export type VisualAssets = {
     hero_description?: string;
     cta_label?: string;
   };
+  hero_images?: HeroImage[];
 };
 
 export function sanitizeTenantNavigationConfig(value: unknown): {
@@ -268,6 +281,38 @@ function publicAssetUrl(value: unknown): string {
   } catch {
     return "";
   }
+}
+
+/** Accepts HTTPS links or same-site paths such as /contacto or #modulos. */
+export function safeHeroLinkUrl(value: unknown): string {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 2048) return "";
+  if (/^\/(?!\/)[^\s"<>]*$/.test(trimmed) || /^#[\w-]+$/.test(trimmed)) return trimmed;
+  try {
+    return new URL(trimmed).protocol === "https:" ? trimmed : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Drops hero images without a secure image URL and caps the list. */
+export function sanitizeHeroImages(value: unknown): HeroImage[] {
+  if (!Array.isArray(value)) return [];
+  const images: HeroImage[] = [];
+  for (const item of value) {
+    if (typeof item !== "object" || item === null) continue;
+    const entry = item as Record<string, unknown>;
+    const imageUrl = publicAssetUrl(entry.image_url);
+    if (!imageUrl) continue;
+    images.push({
+      image_url: imageUrl,
+      alt: typeof entry.alt === "string" ? entry.alt.trim().slice(0, 120) : "",
+      link_url: safeHeroLinkUrl(entry.link_url),
+    });
+    if (images.length >= MAX_HERO_IMAGES) break;
+  }
+  return images;
 }
 
 /** Keeps public landing content within the small, safe set of editable fields. */
@@ -306,6 +351,7 @@ export function sanitizePublicLandingAssets(value: unknown): VisualAssets {
         typeof landing.hero_description === "string" ? landing.hero_description.slice(0, 400) : "",
       cta_label: typeof landing.cta_label === "string" ? landing.cta_label.slice(0, 100) : "",
     },
+    hero_images: sanitizeHeroImages(assets.hero_images),
   };
 }
 
@@ -346,6 +392,7 @@ function normalizeVisualAssets(assets?: VisualAssets | null) {
       heroDescription: assets?.landing?.hero_description?.trim() || "",
       ctaLabel: assets?.landing?.cta_label?.trim() || "",
     },
+    heroImages: sanitizeHeroImages(assets?.hero_images),
   };
 }
 
