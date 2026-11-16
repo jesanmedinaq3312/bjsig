@@ -1820,16 +1820,25 @@ export function SaaSControlPanel() {
         ],
       };
       for (const table of BACKUP_TABLES) {
-        const { data, error } = await supabase
-          .from(table)
-          .select("*")
-          .eq("tenant_id", tenant.tenant_id)
-          .limit(10000);
-        if (error) throw new Error(`${table}: ${error.message}`);
-        backup[table] = (data ?? []) as unknown[];
+        const pageSize = 1000;
+        let pageOffset = 0;
+        const rows: unknown[] = [];
+        while (true) {
+          const { data, error } = await supabase
+            .from(table)
+            .select("*")
+            .eq("tenant_id", tenant.tenant_id)
+            .range(pageOffset, pageOffset + pageSize - 1);
+          if (error) throw new Error(`${table}: ${error.message}`);
+          const page = data ?? [];
+          rows.push(...page);
+          if (page.length < pageSize) break;
+          pageOffset += pageSize;
+        }
+        backup[table] = rows;
       }
       const stamp = new Date().toISOString().replaceAll(":", "-").replace(/\..+/, "");
-      const base = `respaldo-${tenant.tenant_slug}-${stamp}`;
+      const base = `exportacion-${tenant.tenant_slug}-${stamp}`;
       if (format === "json")
         downloadText(
           JSON.stringify(
@@ -1863,7 +1872,7 @@ export function SaaSControlPanel() {
       if (format === "pdf") {
         const rows = Object.entries(backup).map(([table, records]) => [table, records.length]);
         await ExportService.toPdf(
-          `Respaldo · ${tenant.tenant_name}`,
+          `Exportación de datos · ${tenant.tenant_name}`,
           ["Tabla", "Registros"],
           rows,
           `${base}.pdf`,
@@ -1876,9 +1885,15 @@ export function SaaSControlPanel() {
         entity_id: tenant.tenant_id,
         entity_label: tenant.tenant_name,
         tenant_id: tenant.tenant_id,
-        details: { format, tables: Object.keys(backup) },
+        details: {
+          format,
+          tables: Object.keys(backup),
+          record_counts: Object.fromEntries(
+            Object.entries(backup).map(([table, records]) => [table, records.length]),
+          ),
+        },
       });
-      setMessage(`Respaldo ${format.toUpperCase()} generado para ${tenant.tenant_name}.`);
+      setMessage(`Exportación ${format.toUpperCase()} generada para ${tenant.tenant_name}.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo generar el respaldo.");
     } finally {

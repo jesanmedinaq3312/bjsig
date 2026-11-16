@@ -144,7 +144,7 @@ export function BackupsPanel({
             </div>
             <div>
               <p className="font-semibold text-slate-800 text-sm">SQLite (.sql)</p>
-              <p className="text-xs text-slate-500">Dump completo SQL</p>
+              <p className="text-xs text-slate-500">Exportación local de datos</p>
             </div>
           </div>
           <Button
@@ -181,8 +181,8 @@ export function BackupsPanel({
               <FileJson size={18} className="text-amber-600" />
             </div>
             <div>
-              <p className="font-semibold text-slate-800 text-sm">JSON (Backup)</p>
-              <p className="text-xs text-slate-500">Respaldo completo</p>
+              <p className="font-semibold text-slate-800 text-sm">JSON (exportación)</p>
+              <p className="text-xs text-slate-500">Datos disponibles en la aplicación</p>
             </div>
           </div>
           <Button
@@ -204,8 +204,9 @@ export function BackupsPanel({
         <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-700">
-            Los respaldos automáticos garantizan la trazabilidad exigida por la{" "}
-            <strong>Ley 16.744</strong> e <strong>ISO 45001</strong>.
+            Las exportaciones de esta pantalla no sustituyen un respaldo gestionado ni una prueba de
+            restauración. Confirma con el responsable técnico que los respaldos automáticos estén
+            configurados y que se pruebe su recuperación periódicamente.
           </p>
         </div>
 
