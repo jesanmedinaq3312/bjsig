@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, ImagePlus, Link2, Save, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import {
-  MAX_HERO_IMAGES,
-  safeHeroLinkUrl,
-  sanitizeHeroImages,
-  type HeroImage,
-} from "@/lib/logo";
+import { MAX_HERO_IMAGES, safeHeroLinkUrl, sanitizeHeroImages, type HeroImage } from "@/lib/logo";
 
 const inputClass =
   "mt-1 min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20";
@@ -110,10 +105,12 @@ export function HeroImagesEditor() {
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
         <div>
-          <h2 className="text-sm font-black text-slate-900">Imágenes del hero · Landing principal</h2>
+          <h2 className="text-sm font-black text-slate-900">
+            Imágenes del hero · Landing principal
+          </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Agrega hasta {MAX_HERO_IMAGES} imágenes HTTPS. Cada una puede llevar a un enlace (HTTPS o
-            una ruta del sitio, como /contacto).
+            Agrega hasta {MAX_HERO_IMAGES} imágenes HTTPS. Cada una puede llevar a un enlace (HTTPS
+            o una ruta del sitio, como /contacto).
           </p>
         </div>
         <button
@@ -175,10 +172,20 @@ export function HeroImagesEditor() {
               </label>
             </div>
             <div className="flex gap-1 sm:flex-col">
-              <button type="button" aria-label="Subir" onClick={() => move(index, -1)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100">
+              <button
+                type="button"
+                aria-label="Subir"
+                onClick={() => move(index, -1)}
+                className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              >
                 <ArrowUp size={16} />
               </button>
-              <button type="button" aria-label="Bajar" onClick={() => move(index, 1)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100">
+              <button
+                type="button"
+                aria-label="Bajar"
+                onClick={() => move(index, 1)}
+                className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              >
                 <ArrowDown size={16} />
               </button>
               <button
