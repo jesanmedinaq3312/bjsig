@@ -19,7 +19,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    logger.error("ErrorBoundary caught:", error, info);
+    logger.child("render.app").error("Unhandled render error", error, {
+      componentStack: info.componentStack,
+    });
   }
 
   private handleReset = (): void => {

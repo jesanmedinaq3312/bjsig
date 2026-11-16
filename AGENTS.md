@@ -11,6 +11,8 @@
 
 <!-- LOVABLE:END -->
 
+- Application diagnostics use the shared logger and its bounded sanitizer, with child scopes for subsystem context; this keeps browser/Worker logs searchable without emitting raw credentials or request payloads.
+
 - Preserve HTTP 429 retry metadata with the shared rate-limit error so worker authentication can pause submissions without weakening server-side protection.
 - Do not add or reintroduce Turnstile/CAPTCHA in worker or administrator authentication. Preserve server-side IP/account rate limits, generic recovery responses, password policy, session/MFA checks and RLS; client guards never replace these controls.
 - Gate all activity-log requests, including unload requests, on the current token's AAL2 claim and on no prior server MFA_REQUIRED rejection of that same token; keep MFA_REQUIRED separate from permission denial; this avoids repeated pre-MFA requests and permanent audit shutdown while leaving server verification authoritative.

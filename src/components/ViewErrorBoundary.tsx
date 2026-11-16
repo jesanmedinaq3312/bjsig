@@ -25,11 +25,9 @@ export class ViewErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    logger.error(
-      `[ViewErrorBoundary${this.props.viewName ? `: ${this.props.viewName}` : ""}]`,
-      error,
-      info,
-    );
+    logger.child("render.view", { view: this.props.viewName }).error("View render failed", error, {
+      componentStack: info.componentStack,
+    });
   }
 
   private handleRetry = (): void => {
