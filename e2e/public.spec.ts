@@ -95,12 +95,12 @@ test("landing muestra accesos y formulario de demo sin envío automático", asyn
     "/#comparativa",
   );
   await expect(
-    page.getByRole("heading", { name: /Compara por lo que tu operación necesita conectar/i }),
+    page.getByRole("heading", { name: /BJSIGAPP conecta RR\. HH\. con prevención y terreno/i }),
   ).toBeVisible();
   await expect(page.locator("#comparativa")).toContainText(
-    "No verificado en las páginas oficiales",
+    "no se encontró respaldo en los enlaces",
   );
-  await expect(page.locator('#comparativa a[href^="https://"]')).toHaveCount(25);
+  await expect(page.locator('#comparativa a[href^="https://"]')).toHaveCount(30);
   const whatsapp = page.getByRole("button", { name: /Solicitar demo por WhatsApp/i });
   await expect(whatsapp).toBeVisible();
   await expect(whatsapp).not.toHaveAttribute("href");

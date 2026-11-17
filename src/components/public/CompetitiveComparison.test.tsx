@@ -1,24 +1,27 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CompetitiveComparison } from "./CompetitiveComparison";
 
 describe("CompetitiveComparison", () => {
-  it("compara seis sistemas sin presentar lo no verificado como función inexistente", () => {
+  it("destaca el flujo operativo de BJSIGAPP y diferencia los enfoques de la competencia", () => {
     render(<CompetitiveComparison />);
 
     expect(
-      screen.getByRole("heading", { name: "Compara por lo que tu operación necesita conectar" }),
+      screen.getByRole("heading", {
+        name: "BJSIGAPP conecta RR. HH. con prevención y terreno",
+      }),
     ).toBeVisible();
-    const table = screen.getByRole("table");
-    for (const platform of ["BJSIGAPP", "Buk", "Talana", "GeoVictoria", "Factorial", "Rex+"]) {
-      expect(within(table).getByText(platform)).toBeInTheDocument();
-    }
     expect(
-      within(table).getAllByText(/No verificado en las páginas oficiales consultadas/).length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText(/no significa que no exista/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/matrices IPER/).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Revisar un flujo real/i })).toHaveAttribute(
+      screen.getByRole("heading", {
+        name: "Una operación conectada, no solo una lista de módulos",
+      }),
+    ).toBeVisible();
+    for (const platform of ["Buk", "Talana", "GeoVictoria", "Factorial", "Rex+"]) {
+      expect(screen.getAllByRole("heading", { name: platform }).length).toBeGreaterThan(0);
+    }
+    expect(screen.getByText(/Seguimiento por empresa/)).toBeInTheDocument();
+    expect(screen.getByText(/No verificado.*no significa que la función no exista/i)).toBeVisible();
+    expect(screen.getByRole("link", { name: /Verlo en una demo/i })).toHaveAttribute(
       "href",
       "#contacto",
     );
@@ -26,7 +29,7 @@ describe("CompetitiveComparison", () => {
 
   it("expone fuentes oficiales enlazadas con apertura segura", () => {
     render(<CompetitiveComparison />);
-    fireEvent.click(screen.getByText("Ver fuentes oficiales consultadas"));
+    fireEvent.click(screen.getByText("Ver todas las fuentes oficiales consultadas"));
 
     const source = screen
       .getAllByRole("link", { name: "Control de asistencia" })
