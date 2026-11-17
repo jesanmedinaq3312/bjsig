@@ -1,36 +1,34 @@
-import { ArrowRight, ArrowUpRight, Check, CircleHelp } from "lucide-react";
+import { ArrowRight, Check, CircleHelp } from "lucide-react";
 
-type SourceLink = { label: string; url: string };
 type Competitor = {
   id: string;
   name: string;
   category: string;
   focus: string;
-  highlights: string[];
-  bjsigDifference: string;
-  sources: SourceLink[];
+  publicFeatures: string[];
+  notIdentified: string;
 };
 
-const workflowSteps = [
+const bjsigFeatures = [
   {
     number: "01",
-    title: "Personas",
-    detail: "Fichas, procesos laborales, documentos y solicitudes.",
+    title: "RR. HH. + jornada",
+    detail: "Personas, documentos, solicitudes, asistencia y turnos conectados por empresa.",
   },
   {
     number: "02",
-    title: "Jornada",
-    detail: "Asistencia y turnos vinculados a trabajadores y sucursales.",
+    title: "EPP con trazabilidad",
+    detail: "Inventario, entregas, firmas, movimientos y reposición vinculados a cada trabajador.",
   },
   {
     number: "03",
-    title: "Prevención en terreno",
-    detail: "EPP, incidentes, charlas, matrices IPER y auditoría ISO.",
+    title: "Prevención operativa",
+    detail: "Actividades de terreno, incidentes, charlas, matrices IPER y auditoría ISO.",
   },
   {
     number: "04",
-    title: "Seguimiento por empresa",
-    detail: "Responsables, evidencias, permisos y módulos por organización.",
+    title: "Contexto multiempresa",
+    detail: "Empresas, sucursales, permisos, identidad y módulos configurables por organización.",
   },
 ];
 
@@ -40,151 +38,63 @@ const competitors: Competitor[] = [
     name: "Buk",
     category: "Suite de gestión de personas",
     focus:
-      "Automatización de procesos de RR. HH. con remuneraciones, asistencia y atención al colaborador.",
-    highlights: [
+      "Su oferta pública combina remuneraciones, asistencia, servicio al colaborador y herramientas de SST.",
+    publicFeatures: [
       "Remuneraciones y control de asistencia.",
-      "SST documental, requisitos y evidencias de cumplimiento.",
-      "Entrega de EPP y charlas; las inspecciones en terreno aparecen como próximas.",
+      "SST documental, evidencias, entrega de EPP y charlas.",
     ],
-    bjsigDifference:
-      "BJSIGAPP pone al mismo nivel la prevención operacional y el seguimiento en terreno —incluidos IPER e incidentes— dentro del contexto de cada empresa.",
-    sources: [
-      { label: "Administración de personas", url: "https://www.buk.cl/productos/administracion" },
-      {
-        label: "Remuneraciones",
-        url: "https://www.buk.cl/productos/administracion/software-de-remuneraciones",
-      },
-      {
-        label: "Control de asistencia",
-        url: "https://www.buk.cl/productos/administracion/control-de-asistencia",
-      },
-      {
-        label: "Seguridad y salud en el trabajo",
-        url: "https://www.buk.cl/productos/administracion/seguridad-salud-en-el-trabajo-sst",
-      },
-      {
-        label: "Servicio al colaborador",
-        url: "https://www.buk.cl/productos/administracion/servicio-al-colaborador",
-      },
-    ],
+    notIdentified:
+      "No encontramos descrito un flujo de registro y seguimiento de incidentes SST con IPER y acciones correctivas de terreno.",
   },
   {
     id: "talana",
     name: "Talana",
     category: "Gestión de RR. HH. all-in-one",
     focus: "Centraliza gestión de personas, remuneraciones, asistencia y autoservicio móvil.",
-    highlights: [
-      "Nómina, asistencia y planificación de turnos.",
-      "Portal y app para documentos, permisos y vacaciones.",
-      "Capacitaciones obligatorias con registros y trazabilidad.",
+    publicFeatures: [
+      "Nómina, marcaciones y planificación de turnos.",
+      "Portal del trabajador y capacitaciones con registros y trazabilidad.",
     ],
-    bjsigDifference:
-      "BJSIGAPP une la gestión de personas y turnos con EPP, incidentes e IPER, además de capacitaciones y seguimiento preventivo.",
-    sources: [
-      { label: "Sitio oficial", url: "https://web.talana.com/" },
-      { label: "Remuneraciones", url: "https://web.talana.com/software-remuneraciones" },
-      {
-        label: "Asistencia de personal",
-        url: "https://web.talana.com/software-de-asistencia-de-personal",
-      },
-      {
-        label: "Administración de RR. HH.",
-        url: "https://web.talana.com/software-administracion-recursos-humanos",
-      },
-      {
-        label: "Capacitación en seguridad y salud",
-        url: "https://web.talana.com/blog/capacitacion-en-seguridad-y-salud",
-      },
-    ],
+    notIdentified:
+      "No encontramos descritos control operativo de entrega de EPP ni gestión de incidentes SST e IPER como módulos de producto.",
   },
   {
     id: "geovictoria",
     name: "GeoVictoria",
     category: "Asistencia y gestión del tiempo",
-    focus: "Marcación, planificación de turnos, control de acceso y operación en varias sedes.",
-    highlights: [
-      "Marcación por distintos medios y reportes de jornada.",
-      "Planificador de turnos, permisos y vacaciones.",
-      "Integra datos de asistencia con nómina; no se confirma procesamiento de nómina propio.",
+    focus:
+      "Se orienta a marcación, planificación de turnos, control de acceso y operación en varias sedes.",
+    publicFeatures: [
+      "Marcaciones por distintos medios, turnos y reportes de jornada.",
+      "Permisos y vacaciones; integración de datos de asistencia con nómina.",
     ],
-    bjsigDifference:
-      "BJSIGAPP agrega a la jornada de trabajo los procesos de personas y prevención operacional en el mismo contexto multiempresa configurable.",
-    sources: [
-      { label: "Sitio oficial Chile", url: "https://www.geovictoria.com/es-cl/" },
-      {
-        label: "Planificador inteligente",
-        url: "https://www.geovictoria.com/es-cl/servicios/planificador-inteligente/",
-      },
-      {
-        label: "Permisos y vacaciones",
-        url: "https://www.geovictoria.com/es-cl/servicios/permisos-y-vacaciones/",
-      },
-      {
-        label: "Control de acceso",
-        url: "https://www.geovictoria.com/es-cl/servicios/control-de-acceso/",
-      },
-      {
-        label: "Asistencia y cumplimiento de subcontratación",
-        url: "https://www.geovictoria.com/es-cl/blog/control-de-asistencia-en-el-cumplimiento-de-la-ley-de-subcontratacion/",
-      },
-    ],
+    notIdentified:
+      "No encontramos descritos módulos de EPP, registro de incidentes SST, matrices IPER o auditoría ISO.",
   },
   {
     id: "factorial",
     name: "Factorial",
     category: "RR. HH., nómina y tiempo",
-    focus: "Procesos de personas y administración con herramientas de nómina, asistencia y turnos.",
-    highlights: [
-      "Nóminas y gestión de variables.",
-      "Fichaje, turnos y planificación de horarios.",
-      "Portal del empleado con documentos y solicitudes.",
+    focus: "Reúne procesos de personas, nómina, fichaje, turnos y portal del empleado.",
+    publicFeatures: [
+      "Nómina, control de asistencia y planificación de horarios.",
+      "Portal con documentos y solicitudes de trabajadores.",
     ],
-    bjsigDifference:
-      "BJSIGAPP pone el foco adicional en prevención, EPP e incidentes en terreno, organizados por empresa, sucursal y permisos.",
-    sources: [
-      { label: "Sitio oficial Chile", url: "https://factorialhr.cl/" },
-      { label: "Nóminas", url: "https://factorialhr.cl/nominas" },
-      { label: "Control de asistencia", url: "https://factorialhr.cl/control-asistencia" },
-      { label: "Gestión de turnos", url: "https://factorial.com/cl/gestion-turnos" },
-      { label: "Portal del empleado", url: "https://factorial.com/cl/portal-del-empleado" },
-    ],
+    notIdentified:
+      "No encontramos descrito un flujo operativo SST para control de EPP, incidentes, matrices IPER y auditorías ISO.",
   },
   {
     id: "rex-plus",
     name: "Rex+",
     category: "Remuneraciones y gestión de personas",
-    focus: "Gestión laboral con asistencia, múltiples empresas y autoservicio del colaborador.",
-    highlights: [
-      "Remuneraciones, personas y gestión de varios RUT.",
-      "Control de asistencia y portal del colaborador.",
-      "Canal de denuncias Ley Karin, una función distinta de la gestión de incidentes SST.",
+    focus: "Publica remuneraciones, asistencia, varias empresas y autoservicio del colaborador.",
+    publicFeatures: [
+      "Gestión de personas y remuneraciones para varios RUT.",
+      "Control de asistencia, portal y canal de denuncias Ley Karin.",
     ],
-    bjsigDifference:
-      "BJSIGAPP conecta los procesos de personas con la prevención diaria: EPP, incidentes, charlas, IPER y seguimiento de terreno.",
-    sources: [
-      {
-        label: "Software de recursos humanos",
-        url: "https://rexmas.com/software-de-recursos-humanos/",
-      },
-      {
-        label: "Software de remuneraciones",
-        url: "https://rexmas.com/software-de-remuneraciones/",
-      },
-      { label: "Control de asistencia", url: "https://rexmas.com/control-de-asistencia/" },
-      { label: "Portal del colaborador", url: "https://rexmas.com/portal-del-colaborador/" },
-      {
-        label: "Ley Karin y canal de denuncias",
-        url: "https://rexmas.com/ley-karin-canal-de-denuncias/",
-      },
-    ],
+    notIdentified:
+      "No encontramos descritos control de EPP, incidentes de seguridad laboral o matrices IPER. El canal Ley Karin es un flujo diferente.",
   },
-];
-
-const bjsigSources: SourceLink[] = [
-  { label: "Módulos públicos de BJSIGAPP", url: "/modulos" },
-  { label: "Prevención y trabajo en terreno", url: "/modulos/prevencion-de-riesgos" },
-  { label: "EPP e inventario", url: "/modulos/epp-e-inventario" },
-  { label: "Plataforma multiempresa", url: "/modulos/plataforma-multiempresa" },
 ];
 
 export function CompetitiveComparison() {
@@ -195,10 +105,10 @@ export function CompetitiveComparison() {
       className="scroll-mt-20 bg-slate-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16">
+        <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-end lg:gap-14">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-700">
-              Comparativa por enfoque
+              Lo que nos hace distintos
             </p>
             <h2
               id="competitive-comparison-title"
@@ -208,67 +118,67 @@ export function CompetitiveComparison() {
             </h2>
           </div>
           <p className="public-body max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Buk, Talana, GeoVictoria, Factorial y Rex+ tienen ofertas con focos distintos en gestión
-            de personas, nómina o control del tiempo. La propuesta de BJSIGAPP es poner en primer
-            plano el vínculo entre trabajador, jornada, prevención y operación de cada empresa.
+            No es solo gestionar personas o marcar asistencia. BJSIGAPP reúne ese trabajo con EPP,
+            incidentes y prevención operativa, y permite mantener el contexto de cada empresa,
+            sucursal y equipo.
           </p>
         </div>
 
         <article className="relative mt-8 overflow-hidden rounded-3xl bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/10 sm:mt-10 sm:p-8 lg:p-10">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl"
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-600/25 blur-3xl"
           />
           <div className="relative">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-cyan-200/25 bg-cyan-200/10 px-3 text-xs font-bold uppercase tracking-[0.12em] text-cyan-200">
                 <Check size={14} aria-hidden="true" />
-                Nuestra diferencia
+                BJSIGAPP sí tiene
               </span>
-              <span className="text-sm text-slate-400">BJSIGAPP</span>
+              <span className="text-sm text-slate-400">
+                Funciones propias, no promesas sobre terceros
+              </span>
             </div>
-            <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-10">
-              <div>
-                <h3 className="max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-                  Una operación conectada, no solo una lista de módulos
-                </h3>
-                <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                  La diferenciación está en relacionar los procesos de personas y asistencia con
-                  prevención y trabajo en terreno, conservando el contexto de la empresa en cada
-                  etapa.
-                </p>
-              </div>
-              <ol className="grid gap-3 sm:grid-cols-2">
-                {workflowSteps.map((step) => (
-                  <li
-                    key={step.number}
-                    className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 sm:p-5"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-cyan-300">
-                        {step.number}
-                      </span>
-                      <h4 className="text-sm font-bold text-white sm:text-base">{step.title}</h4>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-300 sm:text-sm sm:leading-6">
-                      {step.detail}
-                    </p>
-                  </li>
-                ))}
-              </ol>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {bjsigFeatures.map((feature) => (
+                <div
+                  key={feature.number}
+                  className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 sm:p-5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-cyan-300">
+                      {feature.number}
+                    </span>
+                    <h3 className="text-sm font-bold text-white sm:text-base">{feature.title}</h3>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-300 sm:text-sm sm:leading-6">
+                    {feature.detail}
+                  </p>
+                </div>
+              ))}
             </div>
 
             <div className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-3xl text-xs leading-5 text-slate-300 sm:text-sm sm:leading-6">
-                Empresas, sucursales, permisos, identidad y módulos se configuran según cada
-                organización. La demostración permite confirmar el alcance habilitado para tu caso.
+                <strong className="font-bold text-white">La diferencia:</strong> personas, jornada,
+                prevención y trazabilidad dentro de la misma plataforma multiempresa. Módulos y
+                alcance pueden variar según la configuración habilitada para cada organización.
               </p>
-              <a
-                href="#contacto"
-                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-              >
-                Verlo en una demo <ArrowRight size={15} aria-hidden="true" />
-              </a>
+              <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                <a
+                  href="/modulos/prevencion-de-riesgos"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                >
+                  Ver módulos BJSIGAPP <ArrowRight size={15} aria-hidden="true" />
+                </a>
+                <a
+                  href="#contacto"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                >
+                  Solicitar demo <ArrowRight size={15} aria-hidden="true" />
+                </a>
+              </div>
             </div>
           </div>
         </article>
@@ -277,15 +187,15 @@ export function CompetitiveComparison() {
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                El panorama de otras plataformas
+                Diferencias en la oferta pública revisada
               </p>
               <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
-                Cada una comunica una fortaleza distinta
+                El diferencial está en la prevención operativa
               </h3>
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-600">
-              Comparamos su foco público, no la lista completa de lo que cada proveedor podría
-              ofrecer en otros planes o configuraciones.
+              En vez de enviar al usuario a otras páginas, mostramos aquí los focos y las funciones
+              que no encontramos descritas públicamente para cada plataforma.
             </p>
           </div>
 
@@ -305,99 +215,42 @@ export function CompetitiveComparison() {
 
                 <div className="mt-4 border-t border-slate-100 pt-4">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-                    Lo que destaca públicamente
+                    Foco visible
                   </p>
                   <ul className="mt-2 space-y-2">
-                    {competitor.highlights.map((highlight) => (
-                      <li key={highlight} className="flex gap-2 text-xs leading-5 text-slate-700">
+                    {competitor.publicFeatures.map((feature) => (
+                      <li key={feature} className="flex gap-2 text-xs leading-5 text-slate-700">
                         <Check
                           size={14}
                           className="mt-0.5 shrink-0 text-slate-500"
                           aria-hidden="true"
                         />
-                        <span>{highlight}</span>
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="mt-4 rounded-xl bg-blue-50 p-3.5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-blue-800">
-                    Dónde se distingue BJSIGAPP
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                  <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-amber-900">
+                    <CircleHelp size={14} aria-hidden="true" />
+                    No identificado en sus páginas
                   </p>
                   <p className="mt-1.5 text-xs leading-5 text-slate-700">
-                    {competitor.bjsigDifference}
+                    {competitor.notIdentified}
                   </p>
                 </div>
-
-                <a
-                  href={competitor.sources[0].url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto inline-flex min-h-10 items-center gap-1 pt-4 text-xs font-semibold text-blue-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
-                >
-                  Ver enfoque oficial <ArrowUpRight size={13} aria-hidden="true" />
-                </a>
               </article>
             ))}
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-600 sm:text-sm">
-          <span className="inline-flex items-start gap-2">
-            <CircleHelp size={15} className="mt-0.5 shrink-0 text-slate-500" aria-hidden="true" />
-            <span>
-              Revisión de páginas oficiales al 16 de noviembre de 2026. «No verificado» significa
-              que no se encontró respaldo en los enlaces consultados; no significa que la función no
-              exista. Planes, disponibilidad, integraciones y configuración deben confirmarse con
-              cada proveedor.
-            </span>
-          </span>
-        </div>
-
-        <details className="mt-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-          <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700">
-            Ver todas las fuentes oficiales consultadas
-            <ArrowRight size={16} className="shrink-0 text-blue-700" aria-hidden="true" />
-          </summary>
-          <ul className="mt-4 grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            <li>
-              <h4 className="font-semibold text-slate-900">BJSIGAPP</h4>
-              <ul className="mt-1 space-y-1">
-                {bjsigSources.map((source) => (
-                  <li key={source.url}>
-                    <a
-                      href={source.url}
-                      className="inline-flex min-h-8 items-center text-blue-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
-                    >
-                      {source.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </li>
-            {competitors.map((competitor) => (
-              <li key={competitor.id}>
-                <h4 className="font-semibold text-slate-900">{competitor.name}</h4>
-                <ul className="mt-1 space-y-1">
-                  {competitor.sources.map((source) => (
-                    <li key={source.url}>
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-8 items-center gap-1 text-blue-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
-                      >
-                        {source.label}
-                        <ArrowUpRight size={13} aria-hidden="true" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <p className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-600 sm:text-sm">
+          Revisión de páginas oficiales de producto al 16 de noviembre de 2026. «No encontramos
+          descrito» indica solo el alcance de las páginas revisadas; no confirma que el proveedor no
+          tenga esa función en otro módulo, plan o configuración. Las capacidades de BJSIGAPP
+          también dependen de los módulos habilitados para cada organización.
+        </p>
       </div>
     </section>
   );

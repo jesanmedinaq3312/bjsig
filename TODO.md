@@ -8,5 +8,7 @@
 
 ## Comparativa competitiva en la landing (16 de noviembre de 2026)
 - [x] Agregar, sin quitar ni reemplazar información existente de la landing, un componente comparativo entre BJSIGAPP, Buk, Talana, GeoVictoria y otros sistemas pertinentes.
-- [x] Resaltar funciones documentadas de BJSIGAPP y presentar las capacidades de competidores con fuentes oficiales, sin afirmar como inexistentes las funciones que no estén identificadas en las páginas revisadas.
+- [x] Priorizar visualmente funciones de BJSIGAPP en RR. HH., asistencia, EPP, incidentes, prevención de riesgos, IPER, ISO y contexto multiempresa.
+- [x] Resumir focos y funciones públicas de competidores con base en la revisión realizada, sin enlaces salientes a sus plataformas.
+- [x] Expresar las funciones de competidores que no se identificaron como no verificadas en sus páginas públicas consultadas, sin afirmar su inexistencia absoluta.
 - [x] Mantener navegación accesible y presentación adaptable a móvil; validar diagnóstico de TypeScript, pruebas y build.

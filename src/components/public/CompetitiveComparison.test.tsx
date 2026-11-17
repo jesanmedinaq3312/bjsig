@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CompetitiveComparison } from "./CompetitiveComparison";
 
 describe("CompetitiveComparison", () => {
-  it("destaca el flujo operativo de BJSIGAPP y diferencia los enfoques de la competencia", () => {
+  it("destaca funciones propias de BJSIGAPP y diferencias concretas por plataforma", () => {
     render(<CompetitiveComparison />);
 
     expect(
@@ -11,39 +11,35 @@ describe("CompetitiveComparison", () => {
         name: "BJSIGAPP conecta RR. HH. con prevención y terreno",
       }),
     ).toBeVisible();
-    expect(
-      screen.getByRole("heading", {
-        name: "Una operación conectada, no solo una lista de módulos",
-      }),
-    ).toBeVisible();
+    expect(screen.getByText("BJSIGAPP sí tiene")).toBeVisible();
+    expect(screen.getByText(/EPP con trazabilidad/)).toBeInTheDocument();
+    expect(screen.getByText(/Prevención operativa/)).toBeInTheDocument();
+
     for (const platform of ["Buk", "Talana", "GeoVictoria", "Factorial", "Rex+"]) {
-      expect(screen.getAllByRole("heading", { name: platform }).length).toBeGreaterThan(0);
+      expect(screen.getByRole("heading", { name: platform })).toBeInTheDocument();
     }
-    expect(screen.getByText(/Seguimiento por empresa/)).toBeInTheDocument();
-    expect(screen.getByText(/No verificado.*no significa que la función no exista/i)).toBeVisible();
-    expect(screen.getByRole("link", { name: /Verlo en una demo/i })).toHaveAttribute(
+    expect(
+      screen.getByText(
+        /No encontramos descrito un flujo de registro y seguimiento de incidentes SST/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/el canal Ley Karin es un flujo diferente/i)).toBeInTheDocument();
+    expect(screen.getByText(/no confirma que el proveedor no tenga esa función/i)).toBeVisible();
+  });
+
+  it("no enlaza a sitios de competidores y mantiene las rutas de BJSIGAPP", () => {
+    render(<CompetitiveComparison />);
+
+    const comparison = document.getElementById("comparativa");
+    expect(comparison).not.toBeNull();
+    expect(comparison?.querySelectorAll('a[href^="https://"]')).toHaveLength(0);
+    expect(screen.getByRole("link", { name: /Ver módulos BJSIGAPP/i })).toHaveAttribute(
+      "href",
+      "/modulos/prevencion-de-riesgos",
+    );
+    expect(screen.getByRole("link", { name: /Solicitar demo/i })).toHaveAttribute(
       "href",
       "#contacto",
     );
-  });
-
-  it("expone fuentes oficiales enlazadas con apertura segura", () => {
-    render(<CompetitiveComparison />);
-    fireEvent.click(screen.getByText("Ver todas las fuentes oficiales consultadas"));
-
-    const source = screen
-      .getAllByRole("link", { name: "Control de asistencia" })
-      .find(
-        (link) =>
-          link.getAttribute("href") ===
-          "https://www.buk.cl/productos/administracion/control-de-asistencia",
-      );
-    expect(source).toBeDefined();
-    expect(source).toHaveAttribute(
-      "href",
-      "https://www.buk.cl/productos/administracion/control-de-asistencia",
-    );
-    expect(source).toHaveAttribute("target", "_blank");
-    expect(source).toHaveAttribute("rel", "noopener noreferrer");
   });
 });
