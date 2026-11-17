@@ -1,10 +1,14 @@
 # Roadmap y cierre de brechas — BJSIGAPP
 
-**Actualizado:** 17 de noviembre de 2026. **Ámbito:** inspección del código local y documentos versionados; no constituye una auditoría del estado remoto ni una opinión legal.
+**Actualizado:** 17 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
-## Iteración activa — 1. Seguridad de cuentas de plataforma
+## Iteración activa — 2. RPC/RLS de asistencia y autorización tenant
 
-**Estado:** corrección local implementada, pendiente de ejecutar la suite Edge en un entorno con Deno/Bun y de validar en staging aislado. **Presupuesto operativo:** 300 tokens; esta iteración se mantuvo acotada al control de autorización de cuentas.
+**Estado:** migración aplicada en `BJSIG`; catálogo y privilegios remotos verificados. No existe un proyecto staging separado en la cuenta, por lo que quedan pendientes los escenarios runtime con identidades sintéticas y la validación multi-tenant. **Presupuesto operativo:** 300 tokens; la iteración se mantuvo acotada a la RPC `attendance_summary`.
+
+### Iteración 1 — cuentas de plataforma
+
+**Estado:** corrección local implementada; la ejecución de Deno/CI y los efectos Auth/allowlist/memberships con identidades sintéticas siguen pendientes.
 
 - [x] Verificar el estado de `main`, historial reciente y consumidores de `canManageAccount`/`canGrantTenantRole`.
 - [x] Impedir que un `developer` administre cuentas de plataforma o conceda roles `developer`/`superadmin`.
@@ -12,9 +16,19 @@
 - [x] Añadir pruebas unitarias para developer, superadmin, elevación de privilegios y scope vacío.
 - [x] Eliminar la revalidación duplicada basada en `tenantIds.every(...)` durante el borrado; la decisión centralizada es la única puerta.
 - [ ] Ejecutar las pruebas nuevas de Deno y las comprobaciones CI; el checkout actual no tiene Deno ni dependencias Node instaladas.
-- [ ] Probar los efectos Auth/`allowed_emails`/`tenant_memberships` con identidades sintéticas en staging; no se ejecutó producción.
+- [ ] Probar los efectos Auth/`allowed_emails`/`tenant_memberships` con identidades sintéticas; no hay staging separado disponible.
 
-**Evidencia de esta iteración:** `git diff --check` pasó. `npm run typecheck`, `npm run lint` y `npm test` no pudieron iniciar por dependencias ausentes (`vite/client`, `eslint`, `vitest`). No se declara cierre hasta completar esas ejecuciones y la validación de staging.
+### Iteración 2 — evidencia y criterios
+
+- [x] Confirmar que `attendance_integrity_remediation` y `server_attendance_authorization` ya estaban aplicadas; no se reaplicó historial remoto.
+- [x] Aplicar `20261117171959 / attendance_summary_authorization` en el único proyecto `BJSIG`.
+- [x] Mover el cálculo a `private.attendance_summary_unchecked`, sin ejecución para `anon`/`authenticated`.
+- [x] Proteger el wrapper público con sesión, tenant activo/asignado, rol efectivo, permisos efectivos y RUT propio para `worker`.
+- [x] Verificar remotamente `SECURITY DEFINER`, privilegios y `EXECUTE` sólo para `authenticated`.
+- [x] Verificar `git diff --check` y la estructura de la migración local.
+- [ ] Ejecutar pruebas runtime negativas/positivas con worker, roles tenant, developer asignado, superadmin y dos tenants sintéticos.
+
+**Evidencia de Iteración 2:** migración registrada remotamente como `20261117171959`; `attendance_summary` tiene `authenticated_execute=true` y `anon_execute=false`; helper privado y autorización no tienen ejecución para roles cliente. La validación de datos/RLS con identidades reales no se declara cerrada por ausencia de staging separado.
 
 > Se retiró el porcentaje global heredado de 78 %: no había una metodología vigente para calcularlo. Los estados anteriores por fase son registros históricos y no prueban por sí solos que una migración siga aplicada en Supabase.
 

@@ -1,11 +1,11 @@
 # Plan de remediación — BJSIGAPP
 
 **Fecha:** 1 de noviembre de 2026  
-**Alcance de este documento:** planificación basada en el backlog adjunto y una revisión de solo lectura del repositorio local. **No se modificó código ni se ejecutó SQL o cambios en Supabase.**
+**Alcance de este documento:** planificación basada en el backlog adjunto, revisión del repositorio local y la migración incremental de Iteración 2 autorizada explícitamente para el único proyecto Supabase `BJSIG`. Las verificaciones remotas se limitaron a catálogo, funciones, grants y registro de migración; no se leyeron filas operativas.
 
 ## Estado y restricciones
 
-La vista previa de BJSIGAPP está activa y conectada localmente al proyecto Supabase BJSIG. Los valores de Preview están en `.env.local`, excluido por Git; no se guardaron en la configuración administrada del proyecto. Se confirmó el nombre y estado del proyecto, pero no se inspeccionaron tablas, filas, políticas ni funciones del Supabase desplegado.
+La vista previa de BJSIGAPP está activa y conectada localmente al proyecto Supabase BJSIG. Los valores de Preview están en `.env.local`, excluido por Git; no se guardaron en la configuración administrada del proyecto. Se confirmó el nombre y estado del proyecto y se verificaron por catálogo las funciones, grants y migraciones relevantes; no se leyeron filas de negocio ni existe un staging separado disponible.
 
 La regla de negocio indicada por el usuario se toma como requisito: **solo el Dev Team está autorizado a acceder al portal de trabajadores**. La implementación actual parece permitir sesiones `worker` en ese portal; debe corregirse antes de considerar cerrado el riesgo. Cualquier migración o escritura sobre la base compartida queda fuera de este plan y requerirá revisión del SQL exacto, respaldo comprobable y aprobación expresa previa.
 
@@ -30,8 +30,8 @@ La regla de negocio indicada por el usuario se toma como requisito: **solo el De
 
 ## Puertas de aprobación y seguridad
 
-- **Ahora:** únicamente este plan; no se cambió código, esquema, políticas, datos ni funciones desplegadas.
-- **Antes de un cambio de base:** consulta de catálogo, dump de esquema, respaldo y restauración probada en staging; propuesta con SQL exacto, tablas/roles afectados, impacto, verificación y rollback. La aprobación del objetivo general no sustituye la aprobación del SQL concreto.
+- **Ahora:** Iteración 2 aplicada sólo en el proyecto `BJSIG` con aprobación explícita: `attendance_summary_authorization` quedó registrada remotamente como `20261117171959`. No se modificaron filas de negocio. Las pruebas runtime multi-tenant siguen pendientes.
+- **Antes de un cambio de base adicional:** consulta de catálogo, propuesta con SQL exacto, tablas/roles afectados, impacto, verificación y rollback. Cuando exista staging, añadir respaldo/restauración probada e identidades sintéticas; la aprobación del objetivo general no sustituye la aprobación del SQL concreto.
 - **Antes de desplegar Edge Functions:** revisar sus fuentes completas, probarlas en staging y mostrar qué endpoints/secretos/redirects cambiarían.
 - **Antes de políticas de privacidad o textos legales:** validación por asesor legal y fuente oficial. Este plan no es asesoría jurídica ni determina la fecha legal.
 - **Antes de E2E CRUD:** ambiente aislado, identidades de prueba y cleanup por IDs creados por el test; no usar cuentas ni trabajadores reales.
@@ -45,4 +45,4 @@ La regla de negocio indicada por el usuario se toma como requisito: **solo el De
 
 ## Siguiente paso sugerido
 
-Ejecutar **solo la Fase 0 en modo de lectura**: inventario de fuentes, catálogo RLS y comparación de esquema. Entregar sus diferencias y la matriz Dev Team/tenant para revisión; después preparar un primer lote de cambios locales de contención. Ningún SQL productivo se ejecutará sin la aprobación específica indicada arriba.
+Continuar la **Fase 0/2 con pruebas runtime aisladas**: obtener identidades sintéticas y, si se habilita, un staging separado para probar worker propio, roles tenant, developer asignado, superadmin y dos tenants. No aplicar otro SQL al proyecto compartido sin la aprobación específica del texto, impacto, verificación y rollback.

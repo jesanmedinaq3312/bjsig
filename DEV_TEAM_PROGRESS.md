@@ -10,6 +10,16 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [ ] Ejecutar pruebas Deno/CI y validar efectos Auth + tablas de autorización en staging sintético.
 - **Estado:** en progreso; no cerrado hasta contar con evidencia ejecutable y staging.
 
+## Iteración 2 — RPC/RLS de asistencia
+
+- [x] Confirmado que las migraciones base de asistencia ya estaban aplicadas en el único proyecto `BJSIG`.
+- [x] Aplicada `attendance_summary_authorization` (registrada remotamente como `20261117171959`).
+- [x] Añadida autorización interna: sesión, tenant solicitado, asignación de developer, rol/permisos efectivos y RUT propio para `worker`.
+- [x] Separado el cálculo en `private.attendance_summary_unchecked`; el helper y el cálculo no tienen `EXECUTE` para roles cliente.
+- [x] Verificados privilegios: `attendance_summary` sólo puede ejecutarla `authenticated`; `anon` no tiene acceso.
+- [ ] Ejecutar smoke tests positivos/negativos con identidades sintéticas y dos tenants; no existe staging separado disponible.
+- **Estado:** aplicada y verificada por catálogo; abierta hasta completar validación runtime multi-tenant.
+
 ## Proyección y cobranza
 
 - [x] La interfaz calcula y muestra métricas de cartera, próximos cobros y proyección base a 90 días a partir de datos de la aplicación.
