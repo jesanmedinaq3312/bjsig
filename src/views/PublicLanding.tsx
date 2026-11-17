@@ -284,7 +284,7 @@ export function PublicLanding({
               <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/75 to-slate-950/95 lg:bg-gradient-to-r lg:from-slate-950 lg:via-slate-950/80 lg:to-slate-950/30" />
             </div>
           )}
-          {heroImageUrl && heroLinkUrl && (
+          {heroLinkUrl && (
             <a
               href={heroLinkUrl}
               aria-label="Abrir enlace de la imagen principal"
