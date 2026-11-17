@@ -5,6 +5,7 @@ describe("sanitizePublicLandingAssets", () => {
   it("conserva campos permitidos y solo URLs HTTPS válidas", () => {
     const result = sanitizePublicLandingAssets({
       hero_image_url: "https://cdn.example.com/hero.jpg",
+      hero_link_url: "/modulos?from=hero",
       header_image_url: "javascript:alert(1)",
       hero_opacity: 0.45,
       landing: {
@@ -21,6 +22,7 @@ describe("sanitizePublicLandingAssets", () => {
     });
 
     expect(result.hero_image_url).toBe("https://cdn.example.com/hero.jpg");
+    expect(result.hero_link_url).toBe("/modulos?from=hero");
     expect(result.header_image_url).toBe("");
     expect(result.hero_opacity).toBe(0.45);
     expect(result.icon_urls).toMatchObject({ brand: "", hero: "https://cdn.example.com/hero.svg" });
@@ -37,10 +39,12 @@ describe("sanitizePublicLandingAssets", () => {
       hero_opacity: 1.4,
       landing: { hero_title: "T".repeat(200), hero_description: 12, cta_label: "C".repeat(120) },
       hero_image_url: "https://example.com/" + "x".repeat(2050),
+      hero_link_url: "javascript:alert(1)",
     });
 
     expect(result.hero_opacity).toBe(0.8);
     expect(result.hero_image_url).toBe("");
+    expect(result.hero_link_url).toBe("");
     expect(result.landing?.hero_title).toHaveLength(160);
     expect(result.landing?.hero_description).toBe("");
     expect(result.landing?.cta_label).toHaveLength(100);

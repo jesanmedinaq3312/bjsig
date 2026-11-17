@@ -175,7 +175,7 @@ export function PublicLanding({
 }: {
   initialLanding?: SaasLandingSettings | null;
 }) {
-  const { iconUrls, landingContent, heroImages } = useCompanyBranding();
+  const { iconUrls, landingContent, heroImageUrl, heroLinkUrl, heroImages } = useCompanyBranding();
   const [previewMode, setPreviewMode] = useState(false);
   const [landingSettings, setLandingSettings] = useState<SaasLandingSettings | null>(
     initialLanding,
@@ -264,13 +264,21 @@ export function PublicLanding({
       <PublicHeader />
       <main id="contenido">
         <section
-          className="public-hero bg-slate-950 bg-cover bg-center px-4 pb-16 pt-14 text-white sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24"
+          className="public-hero relative overflow-hidden bg-slate-950 bg-cover bg-center px-4 pb-16 pt-14 text-white sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24"
           style={{
             backgroundImage:
               "linear-gradient(rgba(2,6,23,var(--brand-hero-opacity)),rgba(2,6,23,var(--brand-hero-opacity))),var(--brand-hero-image)",
           }}
         >
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+          {heroImageUrl && heroLinkUrl && (
+            <a
+              href={heroLinkUrl}
+              aria-label="Abrir enlace de la imagen principal"
+              data-testid="hero-background-link"
+              className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-cyan-300"
+            />
+          )}
+          <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <div className="max-w-2xl">
               {iconUrls.hero && (
                 <img

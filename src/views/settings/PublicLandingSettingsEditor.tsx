@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ExternalLink, Eye, Globe2, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { sanitizeHeroImages, type VisualAssets } from "@/lib/logo";
+import { safeHeroLinkUrl, sanitizeHeroImages, type VisualAssets } from "@/lib/logo";
 import {
   DEFAULT_SAAS_LANDING,
   fetchSaasLandingSettings,
@@ -12,7 +12,7 @@ const PREVIEW_STORAGE_KEY = "bjsig-public-landing-preview";
 const inputClass =
   "mt-1 min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20";
 const imageKeys = ["favicon_url", "header_image_url", "hero_image_url"] as const;
-type ImageKey = (typeof imageKeys)[number];
+type ImageKey = (typeof imageKeys)[number] | "hero_link_url";
 type IconKey = "brand" | "hero" | "feature" | "cta";
 
 function record(value: unknown): Record<string, unknown> {
@@ -34,6 +34,7 @@ function normalizeDraft(value: unknown): VisualAssets {
     favicon_url: text(source.favicon_url),
     header_image_url: text(source.header_image_url),
     hero_image_url: text(source.hero_image_url),
+    hero_link_url: safeHeroLinkUrl(source.hero_link_url),
     hero_opacity: Number.isFinite(opacity) && opacity >= 0 && opacity <= 1 ? opacity : 0.8,
     icon_urls: {
       brand: text(icons.brand),
@@ -71,6 +72,8 @@ function validateDraft(draft: VisualAssets): string | null {
     if (!isSecureAssetUrl(draft[key] ?? ""))
       return "Usa una URL HTTPS válida para las imágenes y el favicon.";
   }
+  if (draft.hero_link_url && safeHeroLinkUrl(draft.hero_link_url) !== draft.hero_link_url.trim())
+    return "El enlace del hero debe ser HTTPS o una ruta segura del sitio (por ejemplo /modulos).";
   for (const url of Object.values(draft.icon_urls ?? {})) {
     if (!isSecureAssetUrl(url ?? "")) return "Usa una URL HTTPS válida para los iconos.";
   }
@@ -325,6 +328,20 @@ export function PublicLandingSettingsEditor() {
                     />
                   </label>
                 ))}
+                <label className="block text-sm font-semibold text-slate-800">
+                  Enlace de la imagen principal
+                  <input
+                    type="text"
+                    maxLength={2048}
+                    value={draft.hero_link_url ?? ""}
+                    onChange={(event) => updateImage("hero_link_url", event.target.value)}
+                    placeholder="/modulos o https://..."
+                    className={inputClass}
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    El fondo completo del hero será clickeable sin cubrir el título ni los botones.
+                  </span>
+                </label>
               </div>
               <label
                 className="block text-sm font-semibold text-slate-800"

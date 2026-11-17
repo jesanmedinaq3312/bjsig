@@ -2,9 +2,9 @@
 
 **Actualizado:** 17 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
-## Iteración activa — 2. RPC/RLS de asistencia y autorización tenant
+## Iteración activa — 3. Hero público configurable y enlace seguro
 
-**Estado:** migración aplicada en `BJSIG`; catálogo y privilegios remotos verificados. No existe un proyecto staging separado en la cuenta, por lo que quedan pendientes los escenarios runtime con identidades sintéticas y la validación multi-tenant. **Presupuesto operativo:** 300 tokens; la iteración se mantuvo acotada a la RPC `attendance_summary`.
+**Estado:** implementación local completada y migración aplicada en `BJSIG`; catálogo y privilegios remotos verificados. No existe un proyecto staging separado en la cuenta. **Presupuesto operativo:** 300 tokens; la iteración se mantuvo acotada al hero público y su configuración Dev Team.
 
 ### Iteración 1 — cuentas de plataforma
 
@@ -30,12 +30,25 @@
 
 **Evidencia de Iteración 2:** migración registrada remotamente como `20261117171959`; `attendance_summary` tiene `authenticated_execute=true` y `anon_execute=false`; helper privado y autorización no tienen ejecución para roles cliente. La validación de datos/RLS con identidades reales no se declara cerrada por ausencia de staging separado.
 
+### Iteración 3 — hero público configurable
+
+**Estado:** completada en código y aplicada/verificada por catálogo en `BJSIG`; queda pendiente la validación E2E ejecutable porque este checkout no tiene dependencias Node instaladas. La migración remota quedó registrada como `20261117172816`.
+
+- [x] Agregar `hero_link_url` al contrato seguro de `visual_assets`, aceptando sólo HTTPS, rutas internas o anclas locales.
+- [x] Mostrar el fondo del hero como enlace accesible detrás del H1, sin bloquear botones, navegación ni lectura del contenido.
+- [x] Exponer el enlace en el editor de Landing principal del panel Dev Team y conservar la previsualización responsive.
+- [x] Añadir regresión de sanitización y smoke E2E para 390, 768 y 1440 px, incluyendo ausencia de overflow horizontal.
+- [x] Aplicar `public_landing_hero_link` en `BJSIG`; la RPC de escritura conserva `SECURITY DEFINER`, `anon_execute=false` y `authenticated_execute=true`.
+- [ ] Ejecutar typecheck, Vitest, ESLint y E2E cuando se restauren las dependencias del checkout; actualmente `node_modules` no está instalado.
+
+**Evidencia de Iteración 3:** `update_public_landing_settings(jsonb)` remoto valida `hero_link_url`; la RPC de lectura mantiene `anon_execute=true` y `authenticated_execute=true`; no se modificaron filas operativas. La prueba runtime visual queda declarada pendiente por limitación del entorno.
+
 > Se retiró el porcentaje global heredado de 78 %: no había una metodología vigente para calcularlo. Los estados anteriores por fase son registros históricos y no prueban por sí solos que una migración siga aplicada en Supabase.
 
 ## Estado comprobable de esta revisión
 
 - **Código local:** el producto contiene módulos de SaaS, personas, portal de trabajador, turnos, asistencia QR, nómina, Ley Karin, incidentes/CPHS, Gobierno de Datos y registros de auditoría.
-- **Validación local:** TypeScript pasó; Vitest pasó con 44 pruebas y `worker-auth` con 17 pruebas Deno; build Vite/Nitro pasó; ESLint terminó sin errores y con una advertencia de Fast Refresh en `QrCardGenerator.tsx`.
+- **Validación local histórica:** TypeScript pasó; Vitest pasó con 44 pruebas y `worker-auth` con 17 pruebas Deno; build Vite/Nitro pasó; ESLint terminó sin errores y con una advertencia de Fast Refresh en `QrCardGenerator.tsx`. En Iteración 3 no se pudo repetir esta batería porque el checkout actual no tiene `node_modules`.
 - **Supabase/hosting:** inspección read-only: `worker-auth` remoto observado en v49 no exige tokens Turnstile; `/auth/v1/settings` no mostró un indicador público de CAPTCHA. No se desplegó ni modificó el proyecto y el ajuste CAPTCHA del dashboard sigue sin confirmar. Una migración en el checkout no equivale a una migración aplicada.
 - **Asistencia/GPS:** el código usa fecha laboral `America/Santiago`, instante UTC, captura GPS reciente al procesar QR y ya no ofrece sobrescritura en la interfaz. La migración append-only `20261109070000_qr_attendance_marks_immutable.sql` está versionada, pero su aplicación está pendiente de staging.
 - **Portal de trabajador:** existe en el código y forma parte del flujo de producto. Por instrucción del cliente se retiró Turnstile/CAPTCHA de los fuentes locales; signup público continúa cerrado. La versión remota v49 no contiene la barrera Turnstile, pero difiere de la fuente local y no se desplegó. El CAPTCHA de Supabase Auth y el smoke test de ingreso con worker sintético siguen pendientes. No asumir que el portal sea “Dev Team-only”.

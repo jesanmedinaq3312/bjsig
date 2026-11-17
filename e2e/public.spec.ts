@@ -115,6 +115,39 @@ test("landing muestra accesos y formulario de demo sin envío automático", asyn
   );
 });
 
+test("hero responsive conserva el H1 y enlaza su imagen de fondo", async ({ page }) => {
+  await page.route("**/rest/v1/rpc/fetch_public_landing_settings", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        hero_image_url: "https://cdn.example.com/bjsig-hero.webp",
+        hero_link_url: "/modulos",
+        hero_opacity: 0.72,
+      }),
+    });
+  });
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const hero = page.locator(".public-hero");
+    await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(hero.getByTestId("hero-background-link")).toHaveAttribute("href", "/modulos");
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      content: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.content, `hero overflow at ${viewport.width}px`).toBeLessThanOrEqual(
+      dimensions.viewport + 1,
+    );
+  }
+});
+
 test("menú móvil permite abrir y cerrar navegación sin overflow horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

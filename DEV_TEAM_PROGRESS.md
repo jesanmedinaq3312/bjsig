@@ -32,6 +32,17 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [ ] Confirmar/aplicar la migración `20261109044500_public_landing_settings.sql` en staging y probar persistencia/publicación y permisos de lectura/escritura.
 - [ ] Verificar preview público, accesibilidad y comportamiento responsive tras el despliegue; los datos de demostración deben seguir identificados como ilustrativos.
 
+## Iteración 3 — hero público configurable
+
+- [x] Agregado `hero_link_url` al JSON global de landing con validación server-side: HTTPS, ruta interna o ancla local; se rechazan `javascript:`, `data:` y enlaces externos no HTTPS.
+- [x] El fondo del hero se renderiza como enlace accesible detrás del H1 y no intercepta los botones ni la navegación.
+- [x] El panel Dev Team permite editar el enlace junto con la imagen principal y conserva la vista previa del hero.
+- [x] Agregadas pruebas unitarias de sanitización y un smoke E2E responsive para 390, 768 y 1440 px.
+- [x] Aplicada en `BJSIG` la migración `public_landing_hero_link`, registrada remotamente como `20261117172816`.
+- [x] Verificados privilegios remotos: escritura sólo para `authenticated` (`anon=false`), lectura pública preservada (`anon=true`).
+- [ ] Ejecutar Vitest, typecheck, lint y E2E en un checkout con dependencias Node; el entorno actual no tiene `node_modules`.
+- **Estado:** implementación y migración completadas; verificación runtime pendiente por limitación del entorno y ausencia de staging separado.
+
 ## Validación y operación
 
 - [x] TypeScript, Vitest (**44**), pruebas Deno de `worker-auth` (**17**), ESLint y build se ejecutan localmente; ESLint conserva una advertencia Fast Refresh no bloqueante.

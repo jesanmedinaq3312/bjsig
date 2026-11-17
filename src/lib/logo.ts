@@ -23,6 +23,7 @@ type Branding = {
   faviconUrl: string;
   headerImageUrl: string;
   heroImageUrl: string;
+  heroLinkUrl: string;
   heroOpacity: number;
   navigationLayout: "sidebar" | "bottom";
   navigationOpacity: number | null;
@@ -55,6 +56,7 @@ let branding: Branding = {
   faviconUrl: "",
   headerImageUrl: "",
   heroImageUrl: "",
+  heroLinkUrl: "",
   heroOpacity: 0.8,
   navigationLayout: "sidebar",
   navigationOpacity: null,
@@ -136,6 +138,7 @@ export async function loadCompanyBranding(force = false): Promise<void> {
         faviconUrl: "",
         headerImageUrl: "",
         heroImageUrl: "",
+        heroLinkUrl: "",
         heroOpacity: 0.8,
         navigationLayout: "sidebar",
         navigationOpacity: null,
@@ -236,6 +239,7 @@ export type VisualAssets = {
   favicon_url?: string;
   header_image_url?: string;
   hero_image_url?: string;
+  hero_link_url?: string;
   hero_opacity?: number;
   navigation?: {
     layout?: "sidebar" | "bottom";
@@ -335,6 +339,7 @@ export function sanitizePublicLandingAssets(value: unknown): VisualAssets {
     favicon_url: publicAssetUrl(assets.favicon_url),
     header_image_url: publicAssetUrl(assets.header_image_url),
     hero_image_url: publicAssetUrl(assets.hero_image_url),
+    hero_link_url: safeHeroLinkUrl(assets.hero_link_url),
     hero_opacity:
       typeof opacity === "number" && Number.isFinite(opacity) && opacity >= 0 && opacity <= 1
         ? opacity
@@ -378,6 +383,7 @@ function normalizeVisualAssets(assets?: VisualAssets | null) {
     faviconUrl: assets?.favicon_url?.trim() || "",
     headerImageUrl: assets?.header_image_url?.trim() || "",
     heroImageUrl: assets?.hero_image_url?.trim() || "",
+    heroLinkUrl: safeHeroLinkUrl(assets?.hero_link_url),
     heroOpacity: Number.isFinite(opacity) && opacity >= 0 && opacity <= 1 ? opacity : 0.8,
     navigationLayout: navigation.layout,
     navigationOpacity: navigation.opacity,
