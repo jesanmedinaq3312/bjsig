@@ -9,6 +9,7 @@ import { PublicHeader } from "@/components/public/PublicHeader";
 import rrhhOficina from "@/assets/landing-rrhh-oficina.jpg";
 import trabajadorTerreno from "@/assets/landing-trabajador-terreno.jpg";
 import prevencionImg from "@/assets/landing-prevencion.jpg";
+import heroAttendanceImg from "@/assets/hero-attendance.jpg";
 import { getPublicModulePath } from "@/lib/publicModules";
 import { loadPublicLandingBranding, useCompanyBranding } from "@/lib/logo";
 import {
@@ -270,6 +271,19 @@ export function PublicLanding({
               "linear-gradient(rgba(2,6,23,var(--brand-hero-opacity)),rgba(2,6,23,var(--brand-hero-opacity))),var(--brand-hero-image)",
           }}
         >
+          {!heroImageUrl && (
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+              <img
+                src={heroAttendanceImg}
+                alt=""
+                width={1920}
+                height={1088}
+                fetchPriority="high"
+                className="h-full w-full object-cover object-[72%_center] opacity-60 sm:opacity-70 lg:object-center lg:opacity-90"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/75 to-slate-950/95 lg:bg-gradient-to-r lg:from-slate-950 lg:via-slate-950/80 lg:to-slate-950/30" />
+            </div>
+          )}
           {heroImageUrl && heroLinkUrl && (
             <a
               href={heroLinkUrl}
