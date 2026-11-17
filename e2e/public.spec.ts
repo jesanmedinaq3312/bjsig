@@ -90,6 +90,17 @@ test("landing muestra accesos y formulario de demo sin envío automático", asyn
     }),
   ).toBeVisible();
   await expect(page.locator('a[href="/modulos"]').first()).toHaveAttribute("href", "/modulos");
+  await expect(page.locator('a[href="/#comparativa"]').first()).toHaveAttribute(
+    "href",
+    "/#comparativa",
+  );
+  await expect(
+    page.getByRole("heading", { name: /Compara por lo que tu operación necesita conectar/i }),
+  ).toBeVisible();
+  await expect(page.locator("#comparativa")).toContainText(
+    "No verificado en las páginas oficiales",
+  );
+  await expect(page.locator('#comparativa a[href^="https://"]')).toHaveCount(25);
   const whatsapp = page.getByRole("button", { name: /Solicitar demo por WhatsApp/i });
   await expect(whatsapp).toBeVisible();
   await expect(whatsapp).not.toHaveAttribute("href");
@@ -110,6 +121,7 @@ test("menú móvil permite abrir y cerrar navegación sin overflow horizontal", 
   await expect(page.getByRole("button", { name: "Abrir menú" })).toBeVisible();
   await page.getByRole("button", { name: "Abrir menú" }).click();
   await expect(page.getByRole("button", { name: "Cerrar menú" })).toBeVisible();
+  await expect(page.locator('#public-mobile-navigation a[href="/#comparativa"]')).toBeVisible();
   await expect(page.locator('#public-mobile-navigation a[href="/modulos"]')).toBeVisible();
   await expect(page.locator('#public-mobile-navigation a[href="/admin"]')).toBeVisible();
   await page.getByRole("button", { name: "Cerrar menú" }).click();

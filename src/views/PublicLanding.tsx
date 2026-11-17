@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, Check, ChevronRight, ShieldCheck } from "lucide-react";
 import { CookieConsent } from "@/components/CookieConsent";
 import { DashboardPreview } from "@/components/public/DashboardPreview";
+import { CompetitiveComparison } from "@/components/public/CompetitiveComparison";
 import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -465,6 +466,8 @@ export function PublicLanding({
             </div>
           </div>
         </section>
+
+        <CompetitiveComparison />
 
         <section
           id="modulos"

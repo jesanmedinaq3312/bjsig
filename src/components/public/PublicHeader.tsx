@@ -9,6 +9,7 @@ type PublicHeaderProps = {
 const navigation = [
   { href: "/#plataforma", label: "Plataforma" },
   { href: "/modulos", label: "Módulos" },
+  { href: "/#comparativa", label: "Comparar" },
   { href: "/#como-funciona", label: "Cómo funciona" },
   { href: "/#preguntas", label: "Preguntas" },
 ];
