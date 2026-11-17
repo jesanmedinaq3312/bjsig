@@ -2,6 +2,14 @@
 
 Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad para el estado del producto y las brechas regulatorias. No reemplaza el staging ni prueba despliegues.
 
+## Iteración 1 — cuentas de plataforma
+
+- [x] Corregida la autorización para que `developer` no administre otros developers/superadmins.
+- [x] Corregida la concesión de roles: sólo `superadmin` puede conceder `developer` o `superadmin`.
+- [x] Añadidas pruebas unitarias de allow/deny y scope tenant vacío en `supabase/functions/_shared/authz_test.ts`.
+- [ ] Ejecutar pruebas Deno/CI y validar efectos Auth + tablas de autorización en staging sintético.
+- **Estado:** en progreso; no cerrado hasta contar con evidencia ejecutable y staging.
+
 ## Proyección y cobranza
 
 - [x] La interfaz calcula y muestra métricas de cartera, próximos cobros y proyección base a 90 días a partir de datos de la aplicación.

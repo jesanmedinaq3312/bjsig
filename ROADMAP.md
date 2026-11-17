@@ -1,6 +1,20 @@
 # Roadmap y cierre de brechas — BJSIGAPP
 
-**Actualizado:** 9 de noviembre de 2026. **Ámbito:** inspección del código local y documentos versionados; no constituye una auditoría del estado remoto ni una opinión legal.
+**Actualizado:** 17 de noviembre de 2026. **Ámbito:** inspección del código local y documentos versionados; no constituye una auditoría del estado remoto ni una opinión legal.
+
+## Iteración activa — 1. Seguridad de cuentas de plataforma
+
+**Estado:** corrección local implementada, pendiente de ejecutar la suite Edge en un entorno con Deno/Bun y de validar en staging aislado. **Presupuesto operativo:** 300 tokens; esta iteración se mantuvo acotada al control de autorización de cuentas.
+
+- [x] Verificar el estado de `main`, historial reciente y consumidores de `canManageAccount`/`canGrantTenantRole`.
+- [x] Impedir que un `developer` administre cuentas de plataforma o conceda roles `developer`/`superadmin`.
+- [x] Rechazar scopes tenant vacíos y conservar la administración de tenants asignados.
+- [x] Añadir pruebas unitarias para developer, superadmin, elevación de privilegios y scope vacío.
+- [x] Eliminar la revalidación duplicada basada en `tenantIds.every(...)` durante el borrado; la decisión centralizada es la única puerta.
+- [ ] Ejecutar las pruebas nuevas de Deno y las comprobaciones CI; el checkout actual no tiene Deno ni dependencias Node instaladas.
+- [ ] Probar los efectos Auth/`allowed_emails`/`tenant_memberships` con identidades sintéticas en staging; no se ejecutó producción.
+
+**Evidencia de esta iteración:** `git diff --check` pasó. `npm run typecheck`, `npm run lint` y `npm test` no pudieron iniciar por dependencias ausentes (`vite/client`, `eslint`, `vitest`). No se declara cierre hasta completar esas ejecuciones y la validación de staging.
 
 > Se retiró el porcentaje global heredado de 78 %: no había una metodología vigente para calcularlo. Los estados anteriores por fase son registros históricos y no prueban por sí solos que una migración siga aplicada en Supabase.
 

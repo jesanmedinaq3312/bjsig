@@ -74,7 +74,7 @@ export function resolveTenant(a: Actor, requested: unknown): TenantDecision {
 }
 export function canGrantTenantRole(a: Actor, target: string): Decision {
   if (target === "developer" || target === "superadmin")
-    return isPlatform(a) ? allow : deny("PLATFORM_ROLE_REQUIRED");
+    return a.kind === "superadmin" ? allow : deny("SUPERADMIN_REQUIRED");
   if (!TENANT_ROLES.includes(target)) return deny("ROLE_NOT_ALLOWED");
   if (isPlatform(a)) return allow;
   if (target === "company_owner") return deny("PLATFORM_ROLE_REQUIRED");
@@ -89,7 +89,10 @@ export function canManageAccount(
   if (!isPlatform(a)) return deny("PLATFORM_ROLE_REQUIRED");
   if (targetEmail.trim().toLowerCase() === a.email) return deny("SELF_MODIFICATION_FORBIDDEN");
   if (target.isSuperadmin && a.kind !== "superadmin") return deny("SUPERADMIN_PROTECTED");
-  if (a.kind === "superadmin" || target.isPlatform) return allow;
+  if (target.isPlatform) {
+    return a.kind === "superadmin" ? allow : deny("PLATFORM_ACCOUNT_PROTECTED");
+  }
+  if (a.kind === "superadmin") return allow;
   if (target.tenantIds.length === 0) return deny("TENANT_ACCESS_DENIED");
   return target.tenantIds.every((t) => a.devTenantIds.includes(t))
     ? allow

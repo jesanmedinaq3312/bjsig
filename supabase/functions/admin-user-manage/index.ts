@@ -393,13 +393,8 @@ Deno.serve(async (req) => {
         return json({ success: true, message: "Contraseña actualizada." });
       }
       if (action === "delete_user") {
-        if (
-          actor.kind === "superadmin" ||
-          info.tenantIds.every((x) => actor.devTenantIds.includes(x))
-        ) {
-          const { error } = await svc.auth.admin.deleteUser(found.id);
-          if (error) throw error;
-        }
+        const { error } = await svc.auth.admin.deleteUser(found.id);
+        if (error) throw error;
         const deleteQuery = svc.from("allowed_emails").delete().eq("email", target);
         const scopedDeleteQuery =
           actor.kind === "superadmin"
