@@ -6,6 +6,7 @@ type Competitor = {
   category: string;
   focus: string;
   publicFeatures: string[];
+  chooseBjsigWhen: string;
   notIdentified: string;
 };
 
@@ -43,8 +44,10 @@ const competitors: Competitor[] = [
       "Remuneraciones y control de asistencia.",
       "SST documental, evidencias, entrega de EPP y charlas.",
     ],
+    chooseBjsigWhen:
+      "Tu operación necesita unir la ficha del trabajador y su jornada con EPP, incidentes, matrices IPER y cierre de acciones en terreno.",
     notIdentified:
-      "No encontramos descrito un flujo de registro y seguimiento de incidentes SST con IPER y acciones correctivas de terreno.",
+      "No identificamos ese flujo SST de incidentes e IPER con seguimiento de acciones. Buk sí publica documentación SST, EPP y charlas.",
   },
   {
     id: "talana",
@@ -55,8 +58,10 @@ const competitors: Competitor[] = [
       "Nómina, marcaciones y planificación de turnos.",
       "Portal del trabajador y capacitaciones con registros y trazabilidad.",
     ],
+    chooseBjsigWhen:
+      "Además de personas, turnos y capacitación, necesitas controlar entrega de EPP, incidentes y acciones preventivas por empresa.",
     notIdentified:
-      "No encontramos descritos control operativo de entrega de EPP ni gestión de incidentes SST e IPER como módulos de producto.",
+      "No encontramos control operativo de entregas EPP ni gestión de incidentes SST/IPER en sus páginas de producto revisadas.",
   },
   {
     id: "geovictoria",
@@ -68,8 +73,10 @@ const competitors: Competitor[] = [
       "Marcaciones por distintos medios, turnos y reportes de jornada.",
       "Permisos y vacaciones; integración de datos de asistencia con nómina.",
     ],
+    chooseBjsigWhen:
+      "No quieres quedarte solo en marcación y turnos: necesitas sumar RR. HH., EPP y seguimiento preventivo en la operación diaria.",
     notIdentified:
-      "No encontramos descritos módulos de EPP, registro de incidentes SST, matrices IPER o auditoría ISO.",
+      "No identificamos módulos públicos de EPP, incidentes SST, matrices IPER o auditoría ISO.",
   },
   {
     id: "factorial",
@@ -80,8 +87,10 @@ const competitors: Competitor[] = [
       "Nómina, control de asistencia y planificación de horarios.",
       "Portal con documentos y solicitudes de trabajadores.",
     ],
+    chooseBjsigWhen:
+      "Tu operación necesita que RR. HH. y gestión del tiempo también cubran SST, EPP, incidentes y matrices IPER por sucursal.",
     notIdentified:
-      "No encontramos descrito un flujo operativo SST para control de EPP, incidentes, matrices IPER y auditorías ISO.",
+      "No encontramos un flujo de prevención de terreno publicado en las páginas consultadas.",
   },
   {
     id: "rex-plus",
@@ -92,8 +101,10 @@ const competitors: Competitor[] = [
       "Gestión de personas y remuneraciones para varios RUT.",
       "Control de asistencia, portal y canal de denuncias Ley Karin.",
     ],
+    chooseBjsigWhen:
+      "Además de nómina y autoservicio, quieres conectar EPP, incidentes SST, IPER y seguimiento preventivo, diferenciándolos del canal de denuncias.",
     notIdentified:
-      "No encontramos descritos control de EPP, incidentes de seguridad laboral o matrices IPER. El canal Ley Karin es un flujo diferente.",
+      "No identificamos control de EPP ni incidentes SST/IPER. El canal Ley Karin publicado es un flujo diferente.",
   },
 ];
 
@@ -187,15 +198,15 @@ export function CompetitiveComparison() {
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                Diferencias en la oferta pública revisada
+                Comparación por caso de uso
               </p>
               <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
-                El diferencial está en la prevención operativa
+                ¿Por qué elegir BJSIGAPP frente a cada software?
               </h3>
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-600">
-              En vez de enviar al usuario a otras páginas, mostramos aquí los focos y las funciones
-              que no encontramos descritas públicamente para cada plataforma.
+              Cada tarjeta señala cuándo el foco de BJSIGAPP puede encajar mejor con una operación
+              que necesita prevención y gestión de terreno.
             </p>
           </div>
 
@@ -215,7 +226,7 @@ export function CompetitiveComparison() {
 
                 <div className="mt-4 border-t border-slate-100 pt-4">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-                    Foco visible
+                    Lo que comunica públicamente
                   </p>
                   <ul className="mt-2 space-y-2">
                     {competitor.publicFeatures.map((feature) => (
@@ -231,25 +242,32 @@ export function CompetitiveComparison() {
                   </ul>
                 </div>
 
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                  <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-amber-900">
-                    <CircleHelp size={14} aria-hidden="true" />
-                    No identificado en sus páginas
+                <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3.5">
+                  <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-blue-900">
+                    <Check size={14} aria-hidden="true" />
+                    BJSIGAPP es mejor opción si...
                   </p>
                   <p className="mt-1.5 text-xs leading-5 text-slate-700">
-                    {competitor.notIdentified}
+                    {competitor.chooseBjsigWhen}
                   </p>
                 </div>
+
+                <p className="mt-3 text-[11px] leading-5 text-slate-500">
+                  <span className="font-semibold text-slate-700">
+                    No identificado en la oferta pública revisada:
+                  </span>{" "}
+                  {competitor.notIdentified}
+                </p>
               </article>
             ))}
           </div>
         </div>
 
         <p className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-600 sm:text-sm">
-          Revisión de páginas oficiales de producto al 16 de noviembre de 2026. «No encontramos
-          descrito» indica solo el alcance de las páginas revisadas; no confirma que el proveedor no
-          tenga esa función en otro módulo, plan o configuración. Las capacidades de BJSIGAPP
-          también dependen de los módulos habilitados para cada organización.
+          Revisión de páginas oficiales de producto al 16 de noviembre de 2026. «No identificado»
+          describe solo las páginas consultadas; no confirma que el proveedor no tenga esa función
+          en otro módulo, plan o configuración. Las capacidades de BJSIGAPP también dependen de los
+          módulos habilitados para cada organización.
         </p>
       </div>
     </section>

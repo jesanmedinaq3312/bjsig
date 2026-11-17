@@ -98,6 +98,12 @@ test("landing muestra accesos y formulario de demo sin envío automático", asyn
     page.getByRole("heading", { name: /BJSIGAPP conecta RR\. HH\. con prevención y terreno/i }),
   ).toBeVisible();
   await expect(page.locator("#comparativa")).toContainText("BJSIGAPP sí tiene");
+  await expect(page.locator("#comparativa")).toContainText(
+    "¿Por qué elegir BJSIGAPP frente a cada software?",
+  );
+  await expect(
+    page.locator("#comparativa").getByText("BJSIGAPP es mejor opción si...", { exact: true }),
+  ).toHaveCount(5);
   await expect(page.locator('#comparativa a[href^="https://"]')).toHaveCount(0);
   await expect(page.locator('#comparativa a[href^="/modulos/"]')).toHaveCount(1);
   const whatsapp = page.getByRole("button", { name: /Solicitar demo por WhatsApp/i });

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CompetitiveComparison } from "./CompetitiveComparison";
 
 describe("CompetitiveComparison", () => {
-  it("destaca funciones propias de BJSIGAPP y diferencias concretas por plataforma", () => {
+  it("destaca funciones propias de BJSIGAPP y por qué elegirlo frente a cada software", () => {
     render(<CompetitiveComparison />);
 
     expect(
@@ -14,16 +14,23 @@ describe("CompetitiveComparison", () => {
     expect(screen.getByText("BJSIGAPP sí tiene")).toBeVisible();
     expect(screen.getByText(/EPP con trazabilidad/)).toBeInTheDocument();
     expect(screen.getByText(/Prevención operativa/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "¿Por qué elegir BJSIGAPP frente a cada software?",
+      }),
+    ).toBeInTheDocument();
 
     for (const platform of ["Buk", "Talana", "GeoVictoria", "Factorial", "Rex+"]) {
       expect(screen.getByRole("heading", { name: platform })).toBeInTheDocument();
     }
+    expect(screen.getAllByText("BJSIGAPP es mejor opción si...")).toHaveLength(5);
+    expect(screen.getByText(/Tu operación necesita unir la ficha del trabajador/)).toBeVisible();
     expect(
-      screen.getByText(
-        /No encontramos descrito un flujo de registro y seguimiento de incidentes SST/,
-      ),
+      screen.getByText(/No encontramos control operativo de entregas EPP/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/el canal Ley Karin es un flujo diferente/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/El canal Ley Karin publicado es un flujo diferente/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/no confirma que el proveedor no tenga esa función/i)).toBeVisible();
   });
 
