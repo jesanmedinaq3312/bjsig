@@ -27,6 +27,7 @@ import { ExpiryService } from "@/lib/expiry";
 import { ExpirationAlertService, type ExpirationAlert } from "@/lib/expirationAlerts";
 import { shiftRepo, workerRequestRepo, eppDeliveryRepo } from "@/lib/repositories";
 import { audit } from "@/lib/audit";
+import { getChileAttendanceTime } from "@/lib/chileAttendanceTime";
 import type { AppData } from "@/hooks/useAppData";
 import type { ViewKey } from "@/components/Layout";
 import type { ShiftCycle, AttendanceStatus, WorkerRequest } from "@/lib/types";
@@ -567,7 +568,9 @@ function WeeklyAttendanceWidget({
   onNavigate: (v: ViewKey) => void;
 }) {
   const { workers, shifts, qrScans } = data;
-  const today = new Date(); // eslint-disable-line react-hooks/exhaustive-deps -- reviewed dependency set; unstable callback recreation is intentional to avoid loops
+  const todayStr = getChileAttendanceTime(new Date()).scanDate;
+  const [year, month, dayOfMonth] = todayStr.split("-").map(Number);
+  const today = new Date(year, month - 1, dayOfMonth, 12);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
@@ -582,7 +585,8 @@ function WeeklyAttendanceWidget({
     });
   }, [today]);
 
-  const todayStr = today.toISOString().slice(0, 10);
+  const formatLocalDate = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
   const activeWorkers = useMemo(() => workers.filter((w) => w.status === "ACTIVO"), [workers]);
 
@@ -638,7 +642,7 @@ function WeeklyAttendanceWidget({
     let present = 0,
       total = 0;
     weekDays.forEach((d) => {
-      const ds = d.toISOString().slice(0, 10);
+      const ds = formatLocalDate(d);
       activeWorkers.forEach((w) => {
         total++;
         if (getAttForDay(w.rut, ds) === "Presente") present++;
@@ -710,7 +714,7 @@ function WeeklyAttendanceWidget({
         {/* Week strip */}
         <div className="grid grid-cols-7 gap-1.5">
           {weekDays.map((d) => {
-            const ds = d.toISOString().slice(0, 10);
+            const ds = formatLocalDate(d);
             const isToday = ds === todayStr;
             const dayPresent = activeWorkers.filter(
               (w) => getAttForDay(w.rut, ds) === "Presente",

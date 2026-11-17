@@ -1,25 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { syncQueuedScans } from "@/lib/offlineQueue";
 import { useToast } from "@/components/Toast";
-import { Wifi, WifiOff, RefreshCw, Upload, CloudOff, AlertTriangle } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Upload, CloudOff } from "lucide-react";
 
 export function OfflineBanner() {
   const { online, wasOffline, queuedCount, syncInProgress } = useOnlineStatus();
   const [syncing, setSyncing] = useState(false);
   const toast = useToast();
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { discarded: number };
-      toast.error(
-        "Escaneos descartados",
-        `${detail.discarded} escaneo(s) no pudieron sincronizarse tras varios intentos y fueron descartados. Revisa los registros de asistencia.`,
-      );
-    };
-    window.addEventListener("offline-queue:discarded", handler);
-    return () => window.removeEventListener("offline-queue:discarded", handler);
-  }, [toast]);
 
   if (online && !wasOffline && queuedCount === 0) return null;
 
@@ -28,14 +16,14 @@ export function OfflineBanner() {
     setSyncing(true);
     try {
       const result = await syncQueuedScans();
-      if (result.discarded > 0) {
-        toast.error(
-          "Escaneos descartados",
-          `${result.discarded} escaneo(s) no pudieron sincronizarse tras varios intentos y fueron descartados. Revisa los registros de asistencia para confirmar.`,
-        );
-      }
       if (result.synced > 0) {
         toast.success("Sincronización completa", `${result.synced} registro(s) sincronizado(s)`);
+      }
+      if (result.failed > 0) {
+        toast.warning(
+          "Sincronización pendiente",
+          `${result.failed} marca(s) siguen guardadas localmente; no se eliminarán hasta confirmar su recepción.`,
+        );
       }
     } finally {
       setSyncing(false);

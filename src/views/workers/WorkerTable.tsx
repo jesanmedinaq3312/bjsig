@@ -306,7 +306,13 @@ export function WorkerTable({
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2.5">
-                          <QuickAttButtons worker={w} todayAtt={todayAtt} onQuickAtt={onQuickAtt} />
+                          {canEditWorkers && (
+                            <QuickAttButtons
+                              worker={w}
+                              todayAtt={todayAtt}
+                              onQuickAtt={onQuickAtt}
+                            />
+                          )}
                           <div className="flex flex-wrap justify-end gap-2 shrink-0 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:flex [&>button]:items-center [&>button]:justify-center">
                             <button
                               onClick={() => onPreview(w)}
@@ -423,21 +429,22 @@ export function WorkerTable({
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex items-center justify-center gap-2">
-                            {QUICK_ATT.map((q) => {
-                              const Icon = q.icon;
-                              const isActive = todayAtt.get(w.rut) === q.value;
-                              return (
-                                <button
-                                  key={q.value}
-                                  onClick={() => onQuickAtt(w, q.value)}
-                                  title={q.title}
-                                  aria-label={`${q.title}: ${w.full_name}`}
-                                  className={`h-9 w-9 flex items-center justify-center rounded-md border text-xs font-bold transition-all ${isActive ? q.activeClass : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
-                                >
-                                  <Icon size={12} />
-                                </button>
-                              );
-                            })}
+                            {canEditWorkers &&
+                              QUICK_ATT.map((q) => {
+                                const Icon = q.icon;
+                                const isActive = todayAtt.get(w.rut) === q.value;
+                                return (
+                                  <button
+                                    key={q.value}
+                                    onClick={() => onQuickAtt(w, q.value)}
+                                    title={q.title}
+                                    aria-label={`${q.title}: ${w.full_name}`}
+                                    className={`h-9 w-9 flex items-center justify-center rounded-md border text-xs font-bold transition-all ${isActive ? q.activeClass : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
+                                  >
+                                    <Icon size={12} />
+                                  </button>
+                                );
+                              })}
                           </div>
                         </td>
                         <td className="px-3 py-2 text-right sticky right-0 bg-white z-10 border-l border-slate-100 group-hover:bg-slate-50">

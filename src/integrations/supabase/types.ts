@@ -2911,6 +2911,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          chain_sequence: number | null
           captured_scan_date: string | null
           captured_scan_time: string | null
           data: Json
@@ -2944,6 +2945,7 @@ export type Database = {
         Insert: {
           amount?: number
           created_at?: string
+          chain_sequence?: number | null
           captured_scan_date?: string | null
           captured_scan_time?: string | null
           data?: Json
@@ -2977,6 +2979,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          chain_sequence?: number | null
           captured_scan_date?: string | null
           captured_scan_time?: string | null
           data?: Json

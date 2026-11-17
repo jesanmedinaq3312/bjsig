@@ -8,6 +8,7 @@ import { getCompanyName } from "@/lib/logo";
 import { isOnline } from "@/hooks/useOnlineStatus";
 import { getChileAttendanceTime } from "@/lib/chileAttendanceTime";
 import { normalizeRut } from "@/lib/rut";
+import { escapeHtml } from "@/lib/escapeHtml";
 import type { Worker, QrScanType } from "@/lib/types";
 import type { AppData } from "@/hooks/useAppData";
 import { SCAN_COOLDOWN_MS, getScanTypeMeta } from "./constants";
@@ -21,19 +22,6 @@ const swalMixin = Swal.mixin({
   },
   buttonsStyling: false,
 });
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>'"]/g, (character) => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      "'": "&#39;",
-      '"': "&quot;",
-    };
-    return entities[character] ?? character;
-  });
-}
 
 interface ProcessScanDeps {
   workers: Worker[];

@@ -60,7 +60,7 @@ export function WorkersView({
   const { confirm } = useConfirm();
   const { runWithLoading } = useLoading();
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getChileAttendanceTime(new Date()).scanDate;
 
   const qrByWorker = useMemo(() => {
     const map = new Map<string, { type: string; time: string }[]>();

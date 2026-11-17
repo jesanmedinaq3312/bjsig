@@ -147,32 +147,23 @@ interface SyncResult {
   synced: number;
   failed: number;
   duplicates: number;
-  discarded: number;
 }
 
 let syncing = false;
 
 export async function syncQueuedScans(): Promise<SyncResult> {
-  if (syncing) return { synced: 0, failed: 0, duplicates: 0, discarded: 0 };
+  if (syncing) return { synced: 0, failed: 0, duplicates: 0 };
   syncing = true;
 
   try {
     const scans = await getQueuedScans();
-    if (scans.length === 0) return { synced: 0, failed: 0, duplicates: 0, discarded: 0 };
+    if (scans.length === 0) return { synced: 0, failed: 0, duplicates: 0 };
 
     let synced = 0;
     let failed = 0;
     let duplicates = 0;
-    let discarded = 0;
 
     for (const scan of scans) {
-      if (scan.retry_count >= 5) {
-        logger.warn(`[offline-queue] dropping scan ${scan.id} after 5 retries`);
-        await removeQueuedScan(scan.id);
-        discarded++;
-        continue;
-      }
-
       try {
         const { data, error } = await supabase
           .from("qr_scan_events")
@@ -200,6 +191,8 @@ export async function syncQueuedScans(): Promise<SyncResult> {
             await removeQueuedScan(scan.id);
             duplicates++;
           } else {
+            // A pending attendance mark is retained until it is confirmed by
+            // the server; transient and authorization failures must not erase it.
             await incrementRetry(scan.id);
             failed++;
           }
@@ -214,11 +207,7 @@ export async function syncQueuedScans(): Promise<SyncResult> {
       }
     }
 
-    if (discarded > 0) {
-      window.dispatchEvent(new CustomEvent("offline-queue:discarded", { detail: { discarded } }));
-    }
-
-    return { synced, failed, duplicates, discarded };
+    return { synced, failed, duplicates };
   } finally {
     syncing = false;
   }
