@@ -560,6 +560,10 @@ const ATT_RING: Record<AttendanceStatus, string> = {
   Descanso: "bg-slate-100 text-slate-600",
 };
 
+function formatAttendanceCalendarDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function WeeklyAttendanceWidget({
   data,
   onNavigate,
@@ -569,8 +573,10 @@ function WeeklyAttendanceWidget({
 }) {
   const { workers, shifts, qrScans } = data;
   const todayStr = getChileAttendanceTime(new Date()).scanDate;
-  const [year, month, dayOfMonth] = todayStr.split("-").map(Number);
-  const today = new Date(year, month - 1, dayOfMonth, 12);
+  const today = useMemo(() => {
+    const [year, month, dayOfMonth] = todayStr.split("-").map(Number);
+    return new Date(year, month - 1, dayOfMonth, 12);
+  }, [todayStr]);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
@@ -584,9 +590,6 @@ function WeeklyAttendanceWidget({
       return d;
     });
   }, [today]);
-
-  const formatLocalDate = (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
   const activeWorkers = useMemo(() => workers.filter((w) => w.status === "ACTIVO"), [workers]);
 
@@ -642,7 +645,7 @@ function WeeklyAttendanceWidget({
     let present = 0,
       total = 0;
     weekDays.forEach((d) => {
-      const ds = formatLocalDate(d);
+      const ds = formatAttendanceCalendarDate(d);
       activeWorkers.forEach((w) => {
         total++;
         if (getAttForDay(w.rut, ds) === "Presente") present++;
@@ -714,7 +717,7 @@ function WeeklyAttendanceWidget({
         {/* Week strip */}
         <div className="grid grid-cols-7 gap-1.5">
           {weekDays.map((d) => {
-            const ds = formatLocalDate(d);
+            const ds = formatAttendanceCalendarDate(d);
             const isToday = ds === todayStr;
             const dayPresent = activeWorkers.filter(
               (w) => getAttForDay(w.rut, ds) === "Presente",
