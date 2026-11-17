@@ -28,6 +28,8 @@ jobs:
         run: bun run lint
       - name: Unit tests
         run: bun run test
+      - name: Shared authorization tests
+        run: deno test supabase/functions/_shared/authz_test.ts
       - name: Worker Edge Function tests
         run: deno test --allow-env --allow-net supabase/functions/worker-auth/tests
       - name: Build
