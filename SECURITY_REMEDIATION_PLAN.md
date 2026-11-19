@@ -45,6 +45,6 @@ La regla de negocio indicada por el usuario se toma como requisito: **solo el De
 3. Confirmar dominios oficiales para onboarding/CORS y si el proxy de entrada controla las cabeceras IP.
 4. Acordar responsables, plazos y excepciones de retención, y validar GPS, dispositivo, canal Ley Karin y Ley 21.719 con asesoría legal.
 
-## Siguiente paso sugerido
+## Siguiente paso sugerido — Iteración 4
 
-Continuar la **Fase 0/2 con pruebas runtime aisladas**: obtener identidades sintéticas y, si se habilita, un staging separado para probar worker propio, roles tenant, developer asignado, superadmin y dos tenants. No aplicar otro SQL al proyecto compartido sin la aprobación específica del texto, impacto, verificación y rollback.
+Continuar la **Fase 0/2 con contrato de acceso e inventario remoto de sólo catálogo**: confirmar el significado de Dev Team-only, obtener identidades sintéticas y, si se habilita, un staging separado para probar worker propio, roles tenant, developer asignado, superadmin y dos tenants. No aplicar otro SQL ni desplegar Edge Functions al proyecto compartido sin mostrar el diff exacto, impacto, verificación y rollback y recibir aprobación específica.

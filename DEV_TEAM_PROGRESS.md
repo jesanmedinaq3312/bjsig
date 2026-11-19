@@ -46,6 +46,16 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [x] Actualizado el E2E de consentimiento y captura GPS; la suite pública completa pasa en móvil, tablet y desktop (42/42).
 - **Estado:** implementación, migración, corrección CI y regresiones E2E completadas; permanece pendiente únicamente la validación en staging separado.
 
+## Iteración 4 — autorización Dev Team, evidencia remota y pruebas multi-tenant
+
+- [ ] Confirmar el significado operativo de “Dev Team-only” para distinguir administración del portal de acceso de trabajadores finales.
+- [ ] Comparar catálogo remoto y fuentes locales de `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check`, sin leer datos de negocio.
+- [ ] Preparar matriz actor × ruta × operación × tenant para dos tenants sintéticos, incluyendo worker propio/ajeno, developer asignado y superadmin.
+- [ ] Preparar smoke tests RLS/RPC negativos y positivos para tenant, RUT, MFA, cambio de tenant y rate limits en un entorno aislado.
+- [ ] Dejar CI reproducible y E2E autenticado separado de secretos QA, con cleanup por IDs sintéticos.
+- [ ] Presentar cualquier SQL o despliegue Edge con diff exacto, impacto, verificación y rollback antes de solicitar aprobación.
+- **Estado:** iniciada; fase actual de definición e inventario. No hay cambios productivos de autorización aprobados para esta iteración.
+
 ## Validación y operación
 
 - [x] TypeScript, Vitest (**44**), pruebas Deno de `worker-auth` (**17**), ESLint y build se ejecutan localmente; ESLint conserva una advertencia Fast Refresh no bloqueante.

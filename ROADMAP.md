@@ -1,10 +1,23 @@
 # Roadmap y cierre de brechas — BJSIGAPP
 
-**Actualizado:** 17 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
+**Actualizado:** 19 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
-## Iteración activa — 3. Hero público configurable y enlace seguro
+## Iteración activa — 4. Autorización Dev Team, evidencia remota y pruebas multi-tenant
 
-**Estado:** implementación local completada y migración aplicada en `BJSIG`; catálogo y privilegios remotos verificados. No existe un proyecto staging separado en la cuenta. **Presupuesto operativo:** 300 tokens; la iteración se mantuvo acotada al hero público y su configuración Dev Team.
+**Estado:** iniciada. No se aplicarán migraciones ni cambios de acceso en `BJSIG` durante la fase de definición. No existe un proyecto staging separado; toda prueba autenticada deberá usar identidades y datos sintéticos en un entorno aislado antes de considerarse evidencia. **Presupuesto operativo:** 300 tokens.
+
+### Iteración 4 — objetivos y puertas de salida
+
+**Objetivo:** convertir la regla de acceso del portal trabajador en un contrato verificable, reconciliar el código local con las funciones/esquema remotos y preparar pruebas negativas/positivas de aislamiento tenant sin tocar datos de negocio.
+
+- [ ] **Contrato de producto:** confirmar con el responsable si “Dev Team-only” significa que sólo Dev Team puede administrar el portal o que ningún trabajador final puede iniciar sesión; documentar actores, rutas, operaciones y excepciones antes de cambiar `WorkerAuth`/`App.tsx`.
+- [ ] **Inventario remoto:** obtener sólo catálogo de funciones, versiones, grants, tablas, columnas `tenant_id` y políticas RLS; comparar `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check` con las fuentes locales y registrar diferencias.
+- [ ] **Matriz de autorización:** cubrir `developer` asignado, `superadmin`, operador/manager, worker propio, worker ajeno y usuario sin tenant en dos tenants sintéticos; separar acceso a login, datos propios, datos cruzados y operaciones administrativas.
+- [ ] **Pruebas aisladas:** preparar fixtures y smoke tests positivos/negativos para `attendance_summary`, RLS, cambio de tenant, RUT propio, MFA y rate limits; nunca usar `service_role` para probar RLS ni apuntar a producción.
+- [ ] **Barrera CI:** dejar un comando reproducible para typecheck, lint, unitarios, build y pruebas de autorización; separar E2E autenticado de los secretos QA y documentar cleanup por IDs sintéticos.
+- [ ] **Decisión de despliegue:** sólo después de completar el inventario, la matriz y las pruebas mostrar el SQL/Edge diff exacto, impacto, verificación y rollback para aprobación explícita. No desplegar por el mero hecho de cerrar esta iteración.
+
+**Criterio de cierre:** contrato de producto aprobado, inventario local/remoto con diferencias explicadas, matriz de acceso revisada, pruebas aisladas reproducibles y plan de despliegue/rollback presentado. La iteración no se marcará cerrada por tener sólo cambios de frontend o por una lectura superficial del catálogo.
 
 ### Iteración 1 — cuentas de plataforma
 
