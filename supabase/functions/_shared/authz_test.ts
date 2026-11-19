@@ -1,8 +1,4 @@
-import {
-  actorFrom,
-  canGrantTenantRole,
-  canManageAccount,
-} from "./authz.ts";
+import { actorFrom, canGrantTenantRole, canManageAccount } from "./authz.ts";
 
 const TENANT_ID = "tenant-a";
 

@@ -40,8 +40,10 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [x] Agregadas pruebas unitarias de sanitización y un smoke E2E responsive para 390, 768 y 1440 px.
 - [x] Aplicada en `BJSIG` la migración `public_landing_hero_link`, registrada remotamente como `20261117172816`.
 - [x] Verificados privilegios remotos: escritura sólo para `authenticated` (`anon=false`), lectura pública preservada (`anon=true`).
-- [ ] Ejecutar Vitest, typecheck, lint y E2E en un checkout con dependencias Node; el entorno actual no tiene `node_modules`.
-- **Estado:** implementación y migración completadas; verificación runtime pendiente por limitación del entorno y ausencia de staging separado.
+- [x] Corregido el formato Prettier de `supabase/functions/_shared/authz_test.ts`, que bloqueaba el job `checks` de CI.
+- [x] Verificados typecheck, lint, Vitest (68), build, auditoría Bun y pruebas Deno (18).
+- [x] El E2E específico del hero pasa en móvil, tablet y desktop (3/3); el E2E público completo queda con 33 pasadas y 9 fallos históricos de robots/GPS fuera del cambio.
+- **Estado:** implementación, migración y corrección CI completadas; permanecen pendientes las expectativas E2E heredadas y la validación en staging separado.
 
 ## Validación y operación
 

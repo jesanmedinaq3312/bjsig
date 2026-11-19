@@ -32,16 +32,18 @@
 
 ### Iteración 3 — hero público configurable
 
-**Estado:** completada en código y aplicada/verificada por catálogo en `BJSIG`; queda pendiente la validación E2E ejecutable porque este checkout no tiene dependencias Node instaladas. La migración remota quedó registrada como `20261117172816`.
+**Estado:** completada en código y aplicada/verificada por catálogo en `BJSIG`; la definición versionada local es `20261117183000_public_landing_hero_link.sql` y Supabase la registró mediante la aplicación directa como `20261117172816 / public_landing_hero_link`. La validación E2E aislada del hero ya pasa; quedan fallos históricos de robots/GPS fuera del cambio.
 
 - [x] Agregar `hero_link_url` al contrato seguro de `visual_assets`, aceptando sólo HTTPS, rutas internas o anclas locales.
 - [x] Mostrar el fondo del hero como enlace accesible detrás del H1, sin bloquear botones, navegación ni lectura del contenido.
 - [x] Exponer el enlace en el editor de Landing principal del panel Dev Team y conservar la previsualización responsive.
 - [x] Añadir regresión de sanitización y smoke E2E para 390, 768 y 1440 px, incluyendo ausencia de overflow horizontal.
 - [x] Aplicar `public_landing_hero_link` en `BJSIG`; la RPC de escritura conserva `SECURITY DEFINER`, `anon_execute=false` y `authenticated_execute=true`.
-- [ ] Ejecutar typecheck, Vitest, ESLint y E2E cuando se restauren las dependencias del checkout; actualmente `node_modules` no está instalado.
+- [x] Ejecutar typecheck, ESLint, Vitest (68), build, auditoría Bun y pruebas Deno (18) después de instalar las dependencias y runtimes.
+- [x] Ejecutar E2E aislado del hero en 390, 768 y 1440 px: 3/3 pasan.
+- [ ] Corregir las expectativas E2E históricas de robots y mensajes GPS; 33 pruebas pasan y 9 fallan fuera del alcance de este commit.
 
-**Evidencia de Iteración 3:** `update_public_landing_settings(jsonb)` remoto valida `hero_link_url`; la RPC de lectura mantiene `anon_execute=true` y `authenticated_execute=true`; no se modificaron filas operativas. La prueba runtime visual queda declarada pendiente por limitación del entorno.
+**Evidencia de Iteración 3:** `update_public_landing_settings(jsonb)` remoto valida `hero_link_url`; la RPC de lectura mantiene `anon_execute=true` y `authenticated_execute=true`; no se modificaron filas operativas. La prueba runtime del hero pasa de forma aislada en los tres viewports configurados.
 
 > Se retiró el porcentaje global heredado de 78 %: no había una metodología vigente para calcularlo. Los estados anteriores por fase son registros históricos y no prueban por sí solos que una migración siga aplicada en Supabase.
 
