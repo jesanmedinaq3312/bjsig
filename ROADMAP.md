@@ -12,7 +12,7 @@
 
 - [ ] **Contrato de producto:** confirmar con el responsable si “Dev Team-only” significa que sólo Dev Team puede administrar el portal o que ningún trabajador final puede iniciar sesión; documentar actores, rutas, operaciones y excepciones antes de cambiar `WorkerAuth`/`App.tsx`.
 - [ ] **Inventario remoto:** obtener sólo catálogo de funciones, versiones, grants, tablas, columnas `tenant_id` y políticas RLS; comparar `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check` con las fuentes locales y registrar diferencias.
-- [ ] **Matriz de autorización:** cubrir `developer` asignado, `superadmin`, operador/manager, worker propio, worker ajeno y usuario sin tenant en dos tenants sintéticos; separar acceso a login, datos propios, datos cruzados y operaciones administrativas.
+- [x] **Matriz de autorización:** documentar actores, rutas, operaciones, límites tenant/RUT y casos T01–T16 para dos tenants sintéticos en [`docs/ITERATION4_AUTHORIZATION_MATRIX.md`](docs/ITERATION4_AUTHORIZATION_MATRIX.md).
 - [ ] **Pruebas aisladas:** preparar fixtures y smoke tests positivos/negativos para `attendance_summary`, RLS, cambio de tenant, RUT propio, MFA y rate limits; nunca usar `service_role` para probar RLS ni apuntar a producción.
 - [ ] **Barrera CI:** dejar un comando reproducible para typecheck, lint, unitarios, build y pruebas de autorización; separar E2E autenticado de los secretos QA y documentar cleanup por IDs sintéticos.
 - [ ] **Decisión de despliegue:** sólo después de completar el inventario, la matriz y las pruebas mostrar el SQL/Edge diff exacto, impacto, verificación y rollback para aprobación explícita. No desplegar por el mero hecho de cerrar esta iteración.

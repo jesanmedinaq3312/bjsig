@@ -50,7 +50,7 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 
 - [ ] Confirmar el significado operativo de “Dev Team-only” para distinguir administración del portal de acceso de trabajadores finales.
 - [ ] Comparar catálogo remoto y fuentes locales de `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check`, sin leer datos de negocio.
-- [ ] Preparar matriz actor × ruta × operación × tenant para dos tenants sintéticos, incluyendo worker propio/ajeno, developer asignado y superadmin.
+- [x] Creada la matriz actor × ruta × operación × tenant para dos tenants sintéticos en [`docs/ITERATION4_AUTHORIZATION_MATRIX.md`](docs/ITERATION4_AUTHORIZATION_MATRIX.md), con casos T01–T16.
 - [ ] Preparar smoke tests RLS/RPC negativos y positivos para tenant, RUT, MFA, cambio de tenant y rate limits en un entorno aislado.
 - [ ] Dejar CI reproducible y E2E autenticado separado de secretos QA, con cleanup por IDs sintéticos.
 - [ ] Presentar cualquier SQL o despliegue Edge con diff exacto, impacto, verificación y rollback antes de solicitar aprobación.
