@@ -9,7 +9,7 @@ La vista previa de BJSIGAPP está activa y conectada localmente al proyecto Supa
 
 La Iteración 3 añadió el enlace configurable del fondo del hero público. El valor se valida en cliente y servidor: sólo admite HTTPS, rutas internas o anclas locales; la escritura sigue protegida por `is_platform_owner()` y no expone la RPC a `anon`. La migración fue aplicada al único proyecto `BJSIG` y no modificó datos operativos. La suite E2E pública completa pasa en los tres viewports configurados (42/42), incluyendo robots.txt y los flujos de consentimiento/captura GPS.
 
-La regla de negocio indicada por el usuario se toma como requisito: **solo el Dev Team está autorizado a acceder al portal de trabajadores**. La implementación actual parece permitir sesiones `worker` en ese portal; debe corregirse antes de considerar cerrado el riesgo. Cualquier migración o escritura sobre la base compartida queda fuera de este plan y requerirá revisión del SQL exacto, respaldo comprobable y aprobación expresa previa.
+La decisión de Iteración 4 resuelve la ambigüedad: **sólo el Dev Team administra, configura, soporta y previsualiza de forma cruzada el portal de trabajadores; el worker conserva únicamente su autoservicio propio, limitado por tenant activo y RUT normalizado**. La implementación local preparada en `20261119010000_iteration4_worker_portal_rls_rpc.sql` centraliza esa frontera con una función de autorización y políticas RLS restrictivas. La aplicación en la base compartida sigue fuera de este paso y requiere revisión del SQL exacto, catálogo remoto, pruebas sintéticas, rollback y aprobación expresa previa.
 
 ## Hallazgos que determinan el orden
 

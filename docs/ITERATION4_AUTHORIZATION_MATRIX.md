@@ -2,7 +2,7 @@
 
 **Fecha:** 19 de noviembre de 2026  
 **Proyecto:** BJSIGAPP  
-**Estado:** borrador operativo para revisión del contrato de producto; no demuestra por sí solo que el esquema remoto, RLS o Edge Functions estén desplegados de esta forma.
+**Estado:** contrato de producto resuelto y migración RLS/RPC local preparada; no demuestra por sí solo que el esquema remoto, RLS o Edge Functions estén desplegados de esta forma.
 
 ## 1. Alcance y precedencia
 
@@ -34,7 +34,7 @@ La UI sólo debe reflejar una decisión ya autorizada. Ocultar una ruta, deshabi
 | A5 | `company_owner` / `admin` | Tenant propio | Operación administrativa propia según permisos, plan y estado del tenant. Nunca plataforma. |
 | A6 | `human_resources` | Tenant propio | Recursos humanos y roles delegables según permisos; no roles de plataforma. |
 | A7 | `manager` / `prevencionista` / `operador` | Tenant propio | Sólo módulos y operaciones explícitamente permitidos. |
-| A8 | `worker` autenticado | Tenant propio + RUT propio | Portal y registros propios autorizados; nunca navegación administrativa ni datos de otro RUT/tenant. El alcance final del portal está sujeto a la decisión Dev Team-only. |
+| A8 | `worker` autenticado | Tenant propio + RUT propio | Portal y registros propios autorizados; nunca navegación administrativa ni datos de otro RUT/tenant. |
 | A9 | Usuario autenticado de tenant B intentando tenant A | Tenant distinto al propio | Siempre denegado, aunque conozca UUID, slug, RUT o ID de fila. |
 
 ## 3. Reglas transversales obligatorias
@@ -61,10 +61,10 @@ La UI sólo debe reflejar una decisión ya autorizada. Ocultar una ruta, deshabi
 | `/admin` | Ver formulario de acceso | P | P | P | P | P | P | Aún no resuelto |
 | `/admin` | Autenticar y entrar al panel | D | D | P/C | C | D | D | Tenant propio/asignado; MFA según política |
 | `/trabajador`, `/portal-trabajador`, `/:slug` | Ver formulario de trabajador | P | P | P | P | Q | P | Slug sólo identifica superficie, no autoriza datos |
-| `/trabajador`, `/portal-trabajador`, `/:slug` | Autenticar worker | D si no hay sesión; login público controlado | D | Q | D | Q | D | Tenant resuelto server-side y RUT propio |
+| `/trabajador`, `/portal-trabajador`, `/:slug` | Autenticar worker | D si no hay sesión; login público controlado | D | Q | D | P sólo alcance propio | D | Tenant resuelto server-side y RUT propio |
 | Cualquier ruta no reconocida | Resolver navegación | P sólo si contenido público | D para datos privados | C | C | D | D | Nunca confiar en fallback de ruta |
 
-**Decisión pendiente crítica:** el requisito recibido “sólo Dev Team está autorizado a acceder al portal de trabajadores” contradice el contrato actual, que define `worker` con portal propio. Hasta que se confirme si significa *administrar* el portal o *iniciar sesión como trabajador*, las celdas A8 y el login de `/trabajador` son **Q**, no evidencia de autorización.
+**Decisión resuelta:** “Dev Team-only” significa administración, configuración, soporte y previsualización cruzada del portal; no elimina el autoservicio del trabajador. El worker conserva sólo su portal propio y su RUT dentro del tenant activo. La regla está codificada localmente en `20261119010000_iteration4_worker_portal_rls_rpc.sql`; la aplicación remota y su comportamiento runtime siguen pendientes.
 
 ### 4.2 Panel administrativo por tenant
 
@@ -132,7 +132,7 @@ Usar dos tenants aislados, `TENANT_A` y `TENANT_B`, con trabajadores `RUT_A1` y 
 | T11 | Rol empresarial A | A | Conceder `developer` o `superadmin` | D `SUPERADMIN_REQUIRED` |
 | T12 | `developer_A` | A | Conceder `developer` o `superadmin` | D `SUPERADMIN_REQUIRED` |
 | T13 | AAL1 | A | Escribir actividad/RPC que exige MFA | D `MFA_REQUIRED` |
-| T14 | A8 worker | A | Login propio y acceso al portal | Q hasta decidir Dev Team-only; luego convertir en P/D y probar |
+| T14 | A8 worker | A | Login propio y acceso al portal | P sólo para su propio RUT/tenant; D para navegación administrativa, otro RUT o tenant B |
 | T15 | Cualquier actor | A | Enviar `tenant_id=B` desde cliente | D salvo superadmin/developer con asignación B comprobada server-side |
 | T16 | A0 | Ninguno | Probar enumeración de correo/RUT | Respuesta indistinguible y rate limit; nunca confirmar existencia |
 
@@ -146,4 +146,4 @@ Usar dos tenants aislados, `TENANT_A` y `TENANT_B`, con trabajadores `RUT_A1` y 
 6. Confirmación de que ninguna prueba usó `service_role` para evaluar RLS ni leyó datos de negocio reales.
 7. Si se propone SQL o despliegue: diff exacto, impacto, verificación, rollback y aprobación explícita antes de ejecutar.
 
-**Estado de cierre:** abierto. Esta matriz define el trabajo de Iteración 4; no declara autorización remota ni cierre de la brecha Dev Team-only.
+**Estado de cierre:** abierto por falta de catálogo/runtime remoto. El contrato Dev Team-only ya está resuelto y la migración local está preparada; no declara que esas políticas estén aplicadas en Supabase.

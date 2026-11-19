@@ -25,6 +25,12 @@ Una ausencia de clave no habilita nada. El dashboard sólo queda disponible como
 
 La clave histórica `can_view_<módulo>` se normaliza a una clave interna de ruta (`workers`, `extendedfinance`, `eppwarehouse`, etc.). También se normalizan alias históricos como `finance`, `compliance`, `iper` y nombres con guion bajo.
 
+## Decisión de Iteración 4: significado de Dev Team-only
+
+“Dev Team-only” significa **administración, configuración, soporte y previsualización cruzada del portal de trabajadores**, no la eliminación del autoservicio laboral. `superadmin` y `developer` con tenant asignado pueden operar dentro del alcance autorizado; los roles operativos de una empresa sólo acceden a su tenant y permisos. Un `worker` conserva el portal propio, pero sólo puede leer/escribir el alcance permitido para su tenant activo y su RUT normalizado. Ningún worker obtiene navegación administrativa, datos de otro RUT o cambio de tenant.
+
+La decisión queda implementada localmente como contrato SQL en `supabase/migrations/20261119010000_iteration4_worker_portal_rls_rpc.sql`, mediante `worker_portal_access_allowed` y el wrapper `authorize_worker_portal`, más políticas RLS restrictivas. La migración aún no se considera desplegada: requiere comparación de catálogo, pruebas sintéticas y aprobación específica antes de aplicarse en Supabase.
+
 ## Persistencia transaccional de planes
 
 `apply_saas_plan(tenant_id, plan_id, reason)` sólo admite un rol de plataforma, valida que el tenant esté activo y que el plan exista y esté activo. Actualiza `saas_tenant_subscriptions` y `tenant_settings` en una única transacción y devuelve la configuración efectiva resultante.
