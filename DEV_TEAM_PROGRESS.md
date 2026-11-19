@@ -57,6 +57,15 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [ ] Presentar cualquier SQL o despliegue Edge con diff exacto, impacto, verificación y rollback antes de solicitar aprobación.
 - **Estado:** iniciada; fase actual de definición e inventario. No hay cambios productivos de autorización aprobados para esta iteración.
 
+## Iteración 5 — planificada: staging y despliegue controlado
+
+- [ ] Habilitar un entorno aislado o base descartable con restauración comprobada, secretos QA separados y fixtures sintéticos.
+- [ ] Reconciliar catálogo remoto, esquema local y versiones de Edge Functions sin leer datos de negocio.
+- [ ] Ejecutar T01–T16 con dos tenants, verificar RLS/RPC, MFA, rate limits, cambio de tenant y cleanup.
+- [ ] Aplicar y revertir la migración de Iteración 4 sólo en staging, con evidencia de catálogo, logs y regresiones.
+- [ ] Separar E2E autenticado del CI público y publicar reporte por commit.
+- **Estado:** planificada; no inicia hasta que Iteración 4 tenga inventario, pruebas aisladas y plan de despliegue aprobado.
+
 ## Validación y operación
 
 - [x] TypeScript, Vitest (**44**), pruebas Deno de `worker-auth` (**17**), ESLint y build se ejecutan localmente; ESLint conserva una advertencia Fast Refresh no bloqueante.

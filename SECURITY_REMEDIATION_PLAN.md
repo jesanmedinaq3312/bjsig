@@ -48,3 +48,5 @@ La decisión de Iteración 4 resuelve la ambigüedad: **sólo el Dev Team admini
 ## Siguiente paso sugerido — Iteración 4
 
 Continuar la **Fase 0/2 con contrato de acceso e inventario remoto de sólo catálogo**: confirmar el significado de Dev Team-only, obtener identidades sintéticas y, si se habilita, un staging separado para probar worker propio, roles tenant, developer asignado, superadmin y dos tenants. No aplicar otro SQL ni desplegar Edge Functions al proyecto compartido sin mostrar el diff exacto, impacto, verificación y rollback y recibir aprobación específica.
+
+La **Iteración 5** queda planificada como etapa posterior: staging o base descartable, dump sólo de esquema, fixtures de dos tenants, ejecución de T01–T16, aplicación y rollback de la migración RLS/RPC en aislamiento, reconciliación de Edge Functions y evidencia de CI/E2E autenticado. No se considerará una autorización para modificar producción ni para afirmar cumplimiento legal.

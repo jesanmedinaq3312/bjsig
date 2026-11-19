@@ -20,6 +20,20 @@
 
 **Criterio de cierre:** contrato de producto aprobado, inventario local/remoto con diferencias explicadas, matriz de acceso revisada, pruebas aisladas reproducibles y plan de despliegue/rollback presentado. La iteración no se marcará cerrada por tener sólo cambios de frontend o por una lectura superficial del catálogo.
 
+## Iteración 5 — planificada: staging, validación runtime y despliegue controlado
+
+**Estado:** planificada, no activa. Depende del cierre verificable de Iteración 4. Su propósito será convertir el hardening local en evidencia runtime reproducible, primero en un entorno aislado y sólo después mediante un despliegue controlado. El detalle está en [`docs/ITERATION5_PLAN.md`](docs/ITERATION5_PLAN.md).
+
+- [ ] Disponer de staging/base descartable, restauración comprobada, secretos QA separados y datos sintéticos.
+- [ ] Obtener dump sólo de esquema y reconciliar funciones, grants, tablas, columnas `tenant_id`, índices, políticas RLS y versiones Edge.
+- [ ] Crear fixtures idempotentes para `TENANT_A`/`TENANT_B`, roles Dev Team, roles tenant y workers A1/B1, con cleanup por IDs.
+- [ ] Ejecutar T01–T16 de la matriz, incluyendo `attendance_summary`, `authorize_worker_portal`, cambio de tenant, RUT ajeno, MFA y rate limits.
+- [ ] Aplicar la migración RLS/RPC de Iteración 4 sólo en staging; verificar catálogo posterior, regresiones, logs y rendimiento básico.
+- [ ] Probar rollback/restauración y documentar evidencia sin datos reales.
+- [ ] Separar E2E autenticado del CI público y publicar un reporte de autorización por commit.
+
+**Puerta de salida:** resultados esperados positivos/negativos, RLS probado con sesiones reales de prueba (no `service_role`), aplicación y rollback reproducibles, Edge Functions reconciliadas y checklist de producción presentado. Staging verde no equivale a aprobación de producción.
+
 ### Iteración 1 — cuentas de plataforma
 
 **Estado:** corrección local implementada; la ejecución de Deno/CI y los efectos Auth/allowlist/memberships con identidades sintéticas siguen pendientes.
