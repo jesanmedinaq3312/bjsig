@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin-saas
+Disallow: /trabajador
+Disallow: /portal-trabajador
+Disallow: /*/admin
+Disallow: /*/admin/

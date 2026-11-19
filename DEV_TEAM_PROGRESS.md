@@ -42,8 +42,9 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [x] Verificados privilegios remotos: escritura sólo para `authenticated` (`anon=false`), lectura pública preservada (`anon=true`).
 - [x] Corregido el formato Prettier de `supabase/functions/_shared/authz_test.ts`, que bloqueaba el job `checks` de CI.
 - [x] Verificados typecheck, lint, Vitest (68), build, auditoría Bun y pruebas Deno (18).
-- [x] El E2E específico del hero pasa en móvil, tablet y desktop (3/3); el E2E público completo queda con 33 pasadas y 9 fallos históricos de robots/GPS fuera del cambio.
-- **Estado:** implementación, migración y corrección CI completadas; permanecen pendientes las expectativas E2E heredadas y la validación en staging separado.
+- [x] Corregido `public/robots.txt` estático para conservar los bloqueos de rutas privadas y administrativas.
+- [x] Actualizado el E2E de consentimiento y captura GPS; la suite pública completa pasa en móvil, tablet y desktop (42/42).
+- **Estado:** implementación, migración, corrección CI y regresiones E2E completadas; permanece pendiente únicamente la validación en staging separado.
 
 ## Validación y operación
 

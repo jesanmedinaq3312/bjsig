@@ -217,8 +217,10 @@ test("el acceso administrativo bloquea correo y contraseña si el GPS está dene
   await expect(page.getByPlaceholder("prevencionista@correo.cl")).toBeDisabled();
   await expect(page.getByPlaceholder("••••••••")).toBeDisabled();
   await expect(page.getByRole("button", { name: "Ingresar al Sistema" })).toBeDisabled();
-  await expect(page.getByText(/No pudimos acceder al GPS/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Reintentar activación GPS" })).toBeEnabled();
+  await page.getByRole("checkbox").check();
+  await expect(page.getByRole("button", { name: "Compartir ubicación" })).toBeVisible();
+  await page.getByRole("button", { name: "Compartir ubicación" }).click();
+  await expect(page.getByText(/No se obtuvo una ubicación reciente/i)).toBeVisible();
 });
 
 test("el portal trabajador habilita el RUT sólo después de activar el GPS", async ({ page }) => {
@@ -245,14 +247,32 @@ test("el portal trabajador habilita el RUT sólo después de activar el GPS", as
   await page.goto("/trabajador");
   const rut = page.getByPlaceholder("12.345.678-9");
   await expect(rut).toBeDisabled();
-  await expect(page.getByText(/los campos seguirán bloqueados/i)).toBeVisible();
+  await page.getByRole("checkbox").check();
+  await expect(page.getByRole("button", { name: "Compartir ubicación" })).toBeVisible();
+  await page.getByRole("button", { name: "Compartir ubicación" }).click();
+  await expect(page.getByText(/No se obtuvo una ubicación reciente/i)).toBeVisible();
 
-  await page.evaluate(() => localStorage.setItem("__qa_gps_allowed", "1"));
-  await page.getByRole("button", { name: "Reintentar activación GPS" }).click();
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        getCurrentPosition: (
+          success: (position: {
+            coords: { latitude: number; longitude: number; accuracy: number };
+            timestamp: number;
+          }) => void,
+        ) => {
+          success({
+            coords: { latitude: -33.45, longitude: -70.66, accuracy: 15 },
+            timestamp: Date.now(),
+          });
+        },
+      },
+    });
+  });
+  await page.getByRole("button", { name: "Compartir ubicación" }).click();
+  await expect(page.getByText("Ubicación lista")).toBeVisible();
   await expect(rut).toBeEnabled();
-  await expect(
-    page.getByText(/GPS activo\. Los campos de acceso están habilitados/i),
-  ).toBeVisible();
 });
 
 test("cada acceso conserva el branding de su empresa y no desborda en móvil", async ({ page }) => {
