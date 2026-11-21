@@ -1,6 +1,6 @@
 # Roadmap y cierre de brechas — BJSIGAPP
 
-**Actualizado:** 19 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
+**Actualizado:** 21 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
 ## Iteración activa — 4. Autorización Dev Team, evidencia remota y pruebas multi-tenant
 
@@ -11,7 +11,7 @@
 **Objetivo:** convertir la regla de acceso del portal trabajador en un contrato verificable, reconciliar el código local con las funciones/esquema remotos y preparar pruebas negativas/positivas de aislamiento tenant sin tocar datos de negocio.
 
 - [x] **Contrato de producto:** resolver “Dev Team-only” como administración, configuración, soporte y previsualización cruzada exclusiva del Dev Team; el worker conserva sólo su portal/RUT propio dentro del tenant activo. Documentado en [`docs/authorization-contract.md`](docs/authorization-contract.md).
-- [ ] **Inventario remoto:** obtener sólo catálogo de funciones, versiones, grants, tablas, columnas `tenant_id` y políticas RLS; comparar `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check` con las fuentes locales y registrar diferencias.
+- [x] **Inventario remoto:** obtener sólo catálogo de funciones, versiones, grants, tablas, columnas `tenant_id` y políticas RLS; comparar `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check` con las fuentes locales y registrar diferencias en [`docs/ITERATION5_REMOTE_CATALOG_INVENTORY.md`](docs/ITERATION5_REMOTE_CATALOG_INVENTORY.md). La migración de Iteración 4 no aparece aplicada y las funciones remotas permanecen sin cambios.
 - [x] **Matriz de autorización:** documentar actores, rutas, operaciones, límites tenant/RUT y casos T01–T16 para dos tenants sintéticos en [`docs/ITERATION4_AUTHORIZATION_MATRIX.md`](docs/ITERATION4_AUTHORIZATION_MATRIX.md).
 - [x] **Implementación local:** preparar `worker_portal_access_allowed`, `authorize_worker_portal` y políticas RLS restrictivas para solicitudes, QR y reportes/rectificaciones de asistencia.
 - [ ] **Pruebas aisladas:** preparar fixtures y smoke tests positivos/negativos para `attendance_summary`, RLS, cambio de tenant, RUT propio, MFA y rate limits; nunca usar `service_role` para probar RLS ni apuntar a producción.
