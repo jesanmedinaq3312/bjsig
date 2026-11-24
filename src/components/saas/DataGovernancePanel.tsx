@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
   Archive,
@@ -17,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { Button, EmptyState, Input, Modal, Select, Spinner, Textarea } from "@/components/ui";
+import { fetchSaasTenantDataCatalog } from "@/lib/saasDataCatalog.functions";
 import { supabase } from "@/lib/supabase";
 
 export interface GovernanceTenant {
@@ -278,6 +280,7 @@ function tone(value: string) {
 }
 
 export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }) {
+  const loadTenantCatalog = useServerFn(fetchSaasTenantDataCatalog);
   const [tab, setTab] = useState<Tab>("summary");
   const [tenantId, setTenantId] = useState("all");
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -609,7 +612,14 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
         .order("created_at", { ascending: false })
         .limit(1000),
       supabase.rpc("verify_saas_log_isolation"),
-      supabase.rpc("fetch_saas_tenant_data_catalog", { _tenant_id: null }),
+      loadTenantCatalog({ data: { tenantId: null } })
+        .then((data) => ({ data, error: null as { code?: string; message?: string } | null }))
+        .catch((error: unknown) => ({
+          data: null,
+          error: {
+            message: error instanceof Error ? error.message : "error desconocido",
+          },
+        })),
       supabase.rpc("fetch_saas_tenant_ip_history", { _tenant_id: null }).limit(1000),
     ]);
     type ResultWithError = { error?: { code?: string; message?: string } | null };
@@ -650,7 +660,7 @@ export function DataGovernancePanel({ tenants }: { tenants: GovernanceTenant[] }
       }>,
     );
     setLoading(false);
-  }, []);
+  }, [loadTenantCatalog]);
 
   useEffect(() => {
     void load();

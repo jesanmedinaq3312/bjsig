@@ -2910,10 +2910,10 @@ export type Database = {
       qr_scan_events: {
         Row: {
           amount: number
-          created_at: string
-          chain_sequence: number | null
           captured_scan_date: string | null
           captured_scan_time: string | null
+          chain_sequence: number | null
+          created_at: string
           data: Json
           date: string | null
           device_id: string | null
@@ -2944,10 +2944,10 @@ export type Database = {
         }
         Insert: {
           amount?: number
-          created_at?: string
-          chain_sequence?: number | null
           captured_scan_date?: string | null
           captured_scan_time?: string | null
+          chain_sequence?: number | null
+          created_at?: string
           data?: Json
           date?: string | null
           device_id?: string | null
@@ -2978,10 +2978,10 @@ export type Database = {
         }
         Update: {
           amount?: number
-          created_at?: string
-          chain_sequence?: number | null
           captured_scan_date?: string | null
           captured_scan_time?: string | null
+          chain_sequence?: number | null
+          created_at?: string
           data?: Json
           date?: string | null
           device_id?: string | null
@@ -6079,9 +6079,15 @@ export type Database = {
           change_log: Database["public"]["Tables"]["shift_change_logs"]["Row"]
         }[]
       }
+      attendance_actor_can_delete: { Args: never; Returns: boolean }
+      attendance_actor_can_write: { Args: never; Returns: boolean }
       attendance_summary: {
         Args: { _end: string; _rut: string; _start: string; _tenant: string }
         Returns: Json
+      }
+      attendance_summary_authorized: {
+        Args: { _rut: string; _tenant: string }
+        Returns: boolean
       }
       attendance_time_tolerance_ms: { Args: never; Returns: number }
       attest_gps_session: {

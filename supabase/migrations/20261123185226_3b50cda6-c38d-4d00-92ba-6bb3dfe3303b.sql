@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.enforce_gps_session_access() TO anon;

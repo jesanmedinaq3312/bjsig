@@ -3,7 +3,7 @@ import { getCorsHeaders } from "../../_shared/auth.ts";
 import { checkGpsSessionAccess } from "../../_shared/gps-gate.ts";
 import { jsonResponse } from "../_shared/worker-auth-utils.ts";
 import { handleCheckRut } from "./handlers/check_rut.ts";
-import { handleCheckAccount } from "./handlers/check_account.ts";
+import { handleCheckAccount, type AuthenticatedWorkerUser } from "./handlers/check_account.ts";
 import { handleSetInitialPassword } from "./handlers/set_password.ts";
 import { handleChangePassword } from "./handlers/change_password.ts";
 import { handleRequestReset } from "./handlers/reset.ts";
@@ -35,7 +35,8 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const action = body?.action as string;
 
-    if (action === "change_password") {
+    let authenticatedUser: AuthenticatedWorkerUser | null = null;
+    if (action === "change_password" || action === "check_account") {
       const authHeader = req.headers.get("Authorization") ?? "";
       if (!authHeader.startsWith("Bearer ")) {
         return jsonResponse(corsHeaders, { error: "Sesión requerida." }, 401);
@@ -44,9 +45,15 @@ Deno.serve(async (req: Request) => {
         global: { headers: { Authorization: authHeader } },
       });
       const { data: userData, error: userError } = await userClient.auth.getUser();
-      if (userError || !userData.user) {
+      if (userError || !userData.user || userData.user.is_anonymous || !userData.user.email) {
         return jsonResponse(corsHeaders, { error: "Sesión inválida." }, 401);
       }
+      authenticatedUser = {
+        id: userData.user.id,
+        email: userData.user.email,
+        created_at: userData.user.created_at ?? null,
+        is_anonymous: userData.user.is_anonymous ?? false,
+      };
       const gpsAccess = await checkGpsSessionAccess(userClient);
       if (!gpsAccess.allowed) {
         return jsonResponse(
@@ -61,7 +68,7 @@ Deno.serve(async (req: Request) => {
       case "check_rut":
         return await handleCheckRut(svc, req, body, corsHeaders);
       case "check_account":
-        return await handleCheckAccount(svc, req, body, corsHeaders);
+        return await handleCheckAccount(svc, req, body, corsHeaders, authenticatedUser);
       case "record_login_failure":
         return await handleRecordLoginFailure(svc, req, body, corsHeaders);
       case "set_initial_password":

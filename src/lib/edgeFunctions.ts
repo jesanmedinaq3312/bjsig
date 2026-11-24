@@ -33,6 +33,8 @@ export interface EdgeFunctionResult<T> {
   data: T | null;
   error: string | null;
   errorCode?: "MFA_REQUIRED";
+  status?: number;
+  retryAfter?: string | null;
 }
 
 export interface EdgeFunctionOptions {
@@ -86,13 +88,22 @@ async function parseError(res: Response): Promise<EdgeFunctionResult<never>> {
     // response body wasn't parseable
   }
 
-  const failure = (error: string): EdgeFunctionResult<never> => ({ data: null, error });
+  const failure = (error: string): EdgeFunctionResult<never> => ({
+    data: null,
+    error,
+    status: res.status,
+  });
   if (res.status === 401) {
     return failure("Tu sesión ha expirado. Inicia sesión nuevamente.");
   }
   if (res.status === 403) {
     if (serverMsg === "MFA_REQUIRED") {
-      return { data: null, error: MFA_REQUIRED_MESSAGE, errorCode: "MFA_REQUIRED" };
+      return {
+        data: null,
+        error: MFA_REQUIRED_MESSAGE,
+        errorCode: "MFA_REQUIRED",
+        status: res.status,
+      };
     }
     return failure("No tienes permisos para realizar esta acción.");
   }
@@ -102,10 +113,14 @@ async function parseError(res: Response): Promise<EdgeFunctionResult<never>> {
     );
   }
   if (res.status === 429) {
-    return failure(
-      serverMsg ||
+    return {
+      data: null,
+      error:
+        serverMsg ||
         "Se alcanzó el límite temporal de solicitudes. Espera un momento antes de reintentar.",
-    );
+      status: res.status,
+      retryAfter: res.headers.get("Retry-After"),
+    };
   }
   const message = serverMsg || `La operación no pudo completarse (error ${res.status}).`;
   return failure(

@@ -6,6 +6,12 @@ import { clientInfo } from "../_shared/worker-auth-utils.ts";
 const EMAIL = "worker.qa@example.test";
 const RUT = "12345678-5";
 const NOW = new Date().toISOString();
+const AUTH_USER = {
+  id: "synthetic-auth-user",
+  email: EMAIL,
+  created_at: NOW,
+  is_anonymous: false,
+};
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -18,17 +24,21 @@ function equal(actual: unknown, expected: unknown, message: string): void {
 }
 
 function makeHarness(
-  options: { rateAllowed?: boolean; workerRut?: string; authUserExists?: boolean } = {},
+  options: {
+    rateAllowed?: boolean;
+    workerRut?: string;
+    mustChangePassword?: boolean;
+  } = {},
 ) {
   const state = {
     attempts: [] as Array<Record<string, unknown>>,
     auditRows: [] as Array<Record<string, unknown>>,
+    queriedEmails: [] as string[],
     allowed: {
       role: "worker",
       active: true,
       worker_rut: options.workerRut ?? RUT,
-      must_change_password: false,
-      ad_synced: false,
+      must_change_password: options.mustChangePassword ?? false,
       tenant_id: "00000000-0000-0000-0000-000000000001",
     },
   };
@@ -37,7 +47,8 @@ function makeHarness(
       return {
         select() {
           return {
-            ilike() {
+            ilike(_col: string, value: string) {
+              if (table === "allowed_emails") state.queriedEmails.push(value);
               return {
                 maybeSingle: async () => ({
                   data: { ...state.allowed },
@@ -67,21 +78,9 @@ function makeHarness(
     },
     auth: {
       admin: {
-        listUsers: async () => ({
-          data: {
-            users:
-              options.authUserExists === false
-                ? []
-                : [
-                    {
-                      id: "synthetic-auth-user",
-                      email: EMAIL,
-                      created_at: NOW,
-                    },
-                  ],
-          },
-          error: null,
-        }),
+        listUsers: async () => {
+          throw new Error("listUsers must not be called by check_account");
+        },
       },
     },
   };
@@ -119,19 +118,49 @@ Deno.test("clientInfo trusts cf-connecting-ip and ignores a spoofed forwarded ch
   equal(untrusted.ip, null, "untrusted forwarding headers must be ignored");
 });
 
-Deno.test("check_account validates the RUT server-side and never returns it", async () => {
+Deno.test("check_account rejects unauthenticated and anonymous callers", async () => {
   const harness = makeHarness();
-  const response = await handleCheckAccount(
+  const unauthRes = await handleCheckAccount(
     harness.svc,
     request(),
     { email: EMAIL, rut: "12.345.678-5" },
     {},
+    null,
+  );
+  equal(unauthRes.status, 401, "unauthenticated status");
+  equal(harness.state.queriedEmails.length, 0, "must not query allowed_emails unauthenticated");
+
+  const anonRes = await handleCheckAccount(
+    harness.svc,
+    request(),
+    { email: EMAIL, rut: "12.345.678-5" },
+    {},
+    { ...AUTH_USER, is_anonymous: true },
+  );
+  equal(anonRes.status, 401, "anonymous status");
+  equal(harness.state.queriedEmails.length, 0, "must not query allowed_emails for anonymous");
+});
+
+Deno.test("check_account validates the RUT server-side using only session email", async () => {
+  const harness = makeHarness();
+  const response = await handleCheckAccount(
+    harness.svc,
+    request(),
+    { email: "other.worker@example.test", rut: "12.345.678-5" },
+    {},
+    AUTH_USER,
   );
   const body = await response.text();
 
   equal(response.status, 200, "status");
   assert(body.includes('"exists":true'), "matching email and RUT should proceed");
   assert(!body.includes(RUT), "full RUT must not be returned");
+  assert(!body.includes("ad_synced"), "internal ad_synced field must not be returned");
+  equal(
+    harness.state.queriedEmails[0],
+    EMAIL,
+    "must query authenticated session email, not body.email",
+  );
   equal(harness.state.attempts.length, 0, "precheck must not be recorded as successful login");
   assert(!JSON.stringify(harness.state.auditRows).includes(RUT), "audit must not store full RUT");
 });
@@ -145,6 +174,7 @@ Deno.test(
       request(),
       { email: EMAIL, rut: "11111111-1" },
       {},
+      AUTH_USER,
     );
     const body = (await response.json()) as Record<string, unknown>;
 
@@ -209,23 +239,25 @@ Deno.test("record_login_failure rejects when the shared rate limit is exhausted"
 });
 
 Deno.test(
-  "check_account returns the same public body when a matching worker has no Auth identity",
+  "check_account rejects expired temporary password using authenticated user created_at",
   async () => {
-    const harness = makeHarness({ authUserExists: false });
+    const harness = makeHarness({ mustChangePassword: true });
+    const expiredCreatedAt = new Date(Date.now() - 80 * 60 * 60 * 1000).toISOString();
     const response = await handleCheckAccount(
       harness.svc,
       request(),
-      { email: EMAIL, rut: RUT },
+      { rut: RUT },
       {},
+      { ...AUTH_USER, created_at: expiredCreatedAt },
     );
 
     equal(response.status, 200, "status");
     equal(
       await response.text(),
       '{"exists":false,"is_worker":false}',
-      "no-Auth response must be generic",
+      "expired temporary password response must be generic",
     );
-    equal(harness.state.attempts.length, 1, "missing Auth identity counts as failed preflight");
+    equal(harness.state.attempts.length, 1, "expired temporary password counts as failed attempt");
     equal(harness.state.attempts[0].success, false, "attempt result");
   },
 );

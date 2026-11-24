@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { callEdgeFunction } from "@/lib/edgeFunctions";
+import { RateLimitError } from "@/lib/rateLimit";
 import { audit, syncQueuedAuditLogs, initAuditAutoSync } from "@/lib/audit";
 import {
   clearGpsCache,
@@ -450,7 +451,7 @@ export function useAuth() {
       email: string,
       password: string,
       tenantSlug?: string | null,
-      options: { allowWorkerPortal?: boolean; gpsPosition?: GpsPosition } = {},
+      options: { allowWorkerPortal?: boolean; gpsPosition?: GpsPosition; workerRut?: string } = {},
     ) => {
       authOperationRef.current = true;
       const { data, error } = await supabase.auth
@@ -476,6 +477,37 @@ export function useAuth() {
         authOperationRef.current = false;
         throw gpsError;
       }
+      if (options.workerRut) {
+        const {
+          data: workerCheck,
+          error: workerCheckError,
+          status: workerCheckStatus,
+          retryAfter,
+        } = await callEdgeFunction<{
+          exists: boolean;
+          is_worker: boolean;
+          active: boolean;
+          must_change_password?: boolean;
+          has_auth_user?: boolean;
+        }>("worker-auth", {
+          action: "check_account",
+          rut: options.workerRut,
+        });
+        if (workerCheckStatus === 429) {
+          await supabase.auth.signOut().catch(() => {});
+          authOperationRef.current = false;
+          throw new RateLimitError(
+            workerCheckError ?? "Demasiados intentos fallidos. Intenta nuevamente más tarde.",
+            retryAfter ?? null,
+          );
+        }
+        if (workerCheckError || !workerCheck?.exists || !workerCheck.active) {
+          await supabase.auth.signOut().catch(() => {});
+          authOperationRef.current = false;
+          throw new Error("Credenciales inválidas");
+        }
+        setMustChangePassword(workerCheck.must_change_password === true);
+      }
       authOperationRef.current = false;
       const [workerResult, adminResult, roleResult, accountResult, activeTenantResult] =
         await Promise.all([
@@ -484,17 +516,17 @@ export function useAuth() {
           supabase.rpc("current_user_role"),
           supabase
             .from("allowed_emails")
-            .select("permissions")
+            .select("must_change_password, permissions")
             .eq("email", email.toLowerCase().trim())
             .maybeSingle(),
           supabase.rpc("current_tenant_id"),
         ]);
+      const accountRow = accountResult.data as Record<string, unknown> | null;
+      if (typeof accountRow?.must_change_password === "boolean") {
+        setMustChangePassword(accountRow.must_change_password);
+      }
       let resolvedRole = (roleResult.data as string) ?? "guest";
-      let permissions =
-        ((accountResult.data as Record<string, unknown> | null)?.permissions as Record<
-          string,
-          boolean
-        >) ?? {};
+      let permissions = (accountRow?.permissions as Record<string, boolean>) ?? {};
       let tenantId = typeof activeTenantResult.data === "string" ? activeTenantResult.data : null;
       const { data: tenantsData } = await supabase.rpc("my_tenants");
       const tenantRows = Array.isArray(tenantsData)

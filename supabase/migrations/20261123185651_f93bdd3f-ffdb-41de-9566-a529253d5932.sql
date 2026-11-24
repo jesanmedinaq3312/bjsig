@@ -1,0 +1,1 @@
+ALTER FUNCTION public.enforce_gps_session_access() SECURITY INVOKER;

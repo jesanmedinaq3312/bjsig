@@ -6,13 +6,7 @@ import { CompanyLogo } from "@/components/CompanyLogo";
 import { normalizeRut, isValidRut } from "@/lib/rut";
 import { friendlyError } from "@/lib/networkError";
 import { RateLimitError } from "@/lib/rateLimit";
-import {
-  callWorkerAuth,
-  validatePassword,
-  type Mode,
-  type RutCheck,
-  type AccountCheck,
-} from "./worker-auth/api";
+import { callWorkerAuth, validatePassword, type Mode, type RutCheck } from "./worker-auth/api";
 import { audit } from "@/lib/audit";
 import { LOGIN_DISCLAIMER } from "@/lib/legal";
 import { RutForm } from "./worker-auth/RutForm";
@@ -49,7 +43,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
   const [busy, setBusy] = useState(false);
   const [retryAt, setRetryAt] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [, setAccountInfo] = useState<AccountCheck | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
   const [adultConfirmed, setAdultConfirmed] = useState(false);
 
@@ -162,41 +155,6 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
         setError(gpsError ?? "Comparte tu ubicación GPS antes de ingresar.");
         return;
       }
-      const check = (await callWorkerAuth("check_account", {
-        email,
-        rut: normalizeRut(rutInput),
-      })) as AccountCheck;
-      setAccountInfo(check);
-
-      if (!check.exists) {
-        setError("No existe una cuenta con este correo. Contacta al administrador.");
-        await audit({
-          action: "worker.signin_failed",
-          entity: "auth",
-          entity_label: email,
-          details: { reason: "account_not_found" },
-        });
-        setBusy(false);
-        return;
-      }
-      if (!check.active) {
-        setError(check.error ?? "Tu cuenta está bloqueada. Contacta al administrador.");
-        setBusy(false);
-        return;
-      }
-      if (check.must_change_password) {
-        if (check.has_auth_user === false) {
-          setError(
-            "Tu cuenta aún no ha sido activada. Contacta al administrador para que cree tu acceso al portal.",
-          );
-          setBusy(false);
-          return;
-        }
-        setMode("first_password");
-        setBusy(false);
-        return;
-      }
-
       if (!isFreshGpsCapture(capture)) capture = await captureGps();
       if (!capture) {
         setError(gpsError ?? "Vuelve a capturar tu ubicación GPS para continuar.");
@@ -205,6 +163,7 @@ export function WorkerAuthScreen({ tenantSlug = null }: { tenantSlug?: string | 
       await signInWithPasswordThenOtp(email, password, workerPortalSlug, {
         allowWorkerPortal: true,
         gpsPosition: capture,
+        workerRut: normalizeRut(rutInput),
       });
     } catch (err) {
       if (err instanceof RateLimitError) {

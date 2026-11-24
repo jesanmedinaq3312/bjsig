@@ -19,12 +19,18 @@ function fmt(n: number): string {
   return n.toFixed(2).replace(".", ",");
 }
 
-function escapeCsv(val: string | number | null | undefined): string {
-  const s = String(val ?? "");
-  if (s.includes(";") || s.includes('"') || s.includes("\n")) {
-    return `"${s.replace(/"/g, '""')}"`;
+export function escapeCsv(val: string | number | null | undefined): string {
+  const raw = String(val ?? "");
+  const neutralized = /^[=+\-@\t\r]/.test(raw) || /^[\t\r ]+[=+\-@]/.test(raw) ? `'${raw}` : raw;
+  if (
+    neutralized.includes(";") ||
+    neutralized.includes('"') ||
+    neutralized.includes("\n") ||
+    neutralized.includes("\r")
+  ) {
+    return `"${neutralized.replace(/"/g, '""')}"`;
   }
-  return s;
+  return neutralized;
 }
 
 export function exportInvoiceSiiCsv({

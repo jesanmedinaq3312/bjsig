@@ -2,7 +2,6 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import {
   checkRateLimit,
   clientInfo,
-  findAuthUserByEmail,
   getPasswordExpiryHours,
   jsonResponse,
   logAction,
@@ -15,19 +14,32 @@ import {
 
 const NO_MATCH = { exists: false, is_worker: false };
 
+export interface AuthenticatedWorkerUser {
+  id: string;
+  email?: string | null;
+  created_at?: string | null;
+  is_anonymous?: boolean;
+}
+
 export async function handleCheckAccount(
   svc: SupabaseClient,
   req: Request,
   body: Record<string, unknown>,
   corsHeaders: Record<string, string>,
+  authenticatedUser: AuthenticatedWorkerUser | null = null,
 ): Promise<Response> {
-  const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
+  if (!authenticatedUser || authenticatedUser.is_anonymous || !authenticatedUser.email) {
+    return jsonResponse(corsHeaders, { error: "Sesión requerida." }, 401);
+  }
+
+  // Always derive the lookup identity from the verified session, never body.email.
+  const email = authenticatedUser.email.toLowerCase().trim();
   const rut = typeof body?.rut === "string" ? normalizeRut(body.rut) : "";
   if (!email || email.length > 254 || !/^[^\s@%_]+@[^\s@%_]+\.[^\s@%_]+$/.test(email) || !rut) {
     return jsonResponse(
       corsHeaders,
       {
-        error: "Correo y RUT son obligatorios.",
+        error: "RUT es obligatorio.",
       },
       400,
     );
@@ -67,7 +79,7 @@ export async function handleCheckAccount(
 
   const { data: allowed, error: allowErr } = await svc
     .from("allowed_emails")
-    .select("role, active, worker_rut, must_change_password, ad_synced, tenant_id")
+    .select("role, active, worker_rut, must_change_password, tenant_id")
     .ilike("email", email)
     .maybeSingle();
   if (allowErr) throw allowErr;
@@ -91,23 +103,9 @@ export async function handleCheckAccount(
     return jsonResponse(corsHeaders, NO_MATCH);
   }
 
-  const authUser = await findAuthUserByEmail(svc, email);
-  if (!authUser) {
-    await recordLoginAttempt(svc, rateLimitKey, ip, false, allowed.tenant_id);
-    await logAction(svc, req, {
-      email,
-      action: "worker.check_account_no_auth_user",
-      entity: "auth",
-      entity_label: email,
-      details: { result: "no_auth_user" },
-      tenantId: allowed.tenant_id,
-    });
-    return jsonResponse(corsHeaders, NO_MATCH);
-  }
-
-  if (allowed.must_change_password && authUser.created_at) {
+  if (allowed.must_change_password && authenticatedUser.created_at) {
     const expiryHours = await getPasswordExpiryHours(svc);
-    const elapsed = Date.now() - new Date(authUser.created_at).getTime();
+    const elapsed = Date.now() - new Date(authenticatedUser.created_at).getTime();
     if (elapsed > expiryHours * 60 * 60 * 1000) {
       await recordLoginAttempt(svc, rateLimitKey, ip, false, allowed.tenant_id);
       await logAction(svc, req, {
@@ -141,7 +139,6 @@ export async function handleCheckAccount(
     is_worker: true,
     active: true,
     must_change_password: allowed.must_change_password ?? false,
-    ad_synced: allowed.ad_synced ?? false,
     has_auth_user: true,
   });
 }
