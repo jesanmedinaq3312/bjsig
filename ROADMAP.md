@@ -6,7 +6,7 @@
 - [x] Aviso compacto sin superposición sobre el contenido móvil.
 - [x] Vista demostrativa sin recortes en 320 px y barra superior en una línea a 1024 px.
 - [x] Repetir verificaciones finales: ocho tamaños, fotos, controles, 79 pruebas y lint.
-- [ ] Subir los ajustes a GitHub main.
+- [x] Subir los ajustes a GitHub main.
 
 **Actualizado:** 21 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 

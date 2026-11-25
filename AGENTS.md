@@ -13,6 +13,7 @@
 
 - Serve bundled landing photos with small/full WebP srcSet candidates; this reduces mobile downloads without changing configurable remote assets.
 - Place the homepage privacy notice in document flow below the header on small screens and as a compact desktop overlay; this prevents it from covering mobile content.
+- Keep semantic linting on the generated preview auth broker but leave its formatting to the generator; platform regeneration otherwise repeatedly breaks CI.
 
 - Application diagnostics use the shared logger and its bounded sanitizer, with child scopes for subsystem context; this keeps browser/Worker logs searchable without emitting raw credentials or request payloads.
 
