@@ -11,6 +11,9 @@
 
 <!-- LOVABLE:END -->
 
+- Serve bundled landing photos with small/full WebP srcSet candidates; this reduces mobile downloads without changing configurable remote assets.
+- Place the homepage privacy notice in document flow below the header on small screens and as a compact desktop overlay; this prevents it from covering mobile content.
+
 - Application diagnostics use the shared logger and its bounded sanitizer, with child scopes for subsystem context; this keeps browser/Worker logs searchable without emitting raw credentials or request payloads.
 
 - Preserve HTTP 429 retry metadata with the shared rate-limit error so worker authentication can pause submissions without weakening server-side protection.

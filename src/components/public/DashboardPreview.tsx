@@ -252,7 +252,7 @@ export function DashboardPreview() {
   useLayoutEffect(() => {
     const reduced =
       typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.matchMedia("(prefers-reduced-motion: reduce), (max-width: 639px)").matches;
     if (reduced) {
       setOpening(false);
       return;
@@ -263,6 +263,13 @@ export function DashboardPreview() {
   useEffect(() => {
     const lid = lidRef.current;
     if (!lid) return;
+    if (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce), (max-width: 639px)").matches
+    ) {
+      lid.style.removeProperty("transform");
+      return;
+    }
     let raf = 0;
     const apply = () => {
       const wrap = previewWrapRef.current;
@@ -298,10 +305,10 @@ export function DashboardPreview() {
         className={`landing-device-frame landing-device-frame--laptop${opening ? " landing-laptop-opening" : ""}`}
       >
         <div className="landing-preview" ref={lidRef}>
-          <div className="landing-laptop-viewport grid min-h-[360px] grid-cols-1 bg-slate-100 sm:grid-cols-[150px_1fr]">
+          <div className="landing-laptop-viewport grid grid-cols-1 bg-slate-100 sm:min-h-[340px] sm:grid-cols-[132px_1fr]">
             <nav
               aria-label="Vistas del panel ilustrativo"
-              className="hidden border-r border-slate-200 bg-slate-50 p-3 sm:block"
+              className="hidden border-r border-slate-200 bg-slate-50 p-2.5 sm:block"
             >
               <p className="px-2 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
                 Áreas
@@ -325,8 +332,8 @@ export function DashboardPreview() {
               </p>
             </nav>
 
-            <div className="min-w-0 p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="min-w-0 p-3 sm:p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="truncate text-xs font-semibold text-slate-600">
                   Empresa de ejemplo · Todas las sucursales
                 </p>
@@ -334,7 +341,7 @@ export function DashboardPreview() {
               </div>
               <nav
                 aria-label="Secciones del panel ilustrativo"
-                className="mb-4 flex gap-1 overflow-x-auto pb-1 sm:hidden"
+                className="mb-3 flex gap-1 overflow-x-auto pb-1 sm:hidden"
               >
                 {views.map(({ label }, index) => (
                   <button
@@ -342,7 +349,7 @@ export function DashboardPreview() {
                     type="button"
                     aria-pressed={activeIndex === index}
                     onClick={() => setActiveIndex(index)}
-                    className={`min-h-10 shrink-0 rounded-lg px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${activeIndex === index ? "bg-blue-100 text-blue-800" : "text-slate-600 hover:bg-white"}`}
+                    className={`min-h-9 shrink-0 rounded-lg px-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${activeIndex === index ? "bg-blue-100 text-blue-800" : "text-slate-600 hover:bg-white"}`}
                   >
                     {label}
                   </button>
@@ -350,14 +357,14 @@ export function DashboardPreview() {
               </nav>
 
               <section
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+                className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
                 aria-live="polite"
               >
-                <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 sm:h-9 sm:w-9 sm:rounded-xl">
                     <ActiveIcon size={18} aria-hidden="true" />
                   </span>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h2 className="text-sm font-bold text-slate-900 sm:text-base">
                       {activeView.title}
                     </h2>
@@ -366,16 +373,16 @@ export function DashboardPreview() {
                     </p>
                   </div>
                 </div>
-                <dl className="mt-4 grid grid-cols-3 gap-2">
+                <dl className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-4 sm:gap-2">
                   {activeView.stats.map((stat) => (
                     <div
                       key={stat.label}
-                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2"
+                      className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-2.5 sm:py-2"
                     >
-                      <dt className="text-[10px] font-medium leading-3 text-slate-500">
+                      <dt className="text-[10px] font-medium leading-3.5 text-slate-500">
                         {stat.label}
                       </dt>
-                      <dd className="mt-1 text-base font-bold leading-5 text-slate-900">
+                      <dd className="mt-0.5 text-sm font-bold leading-5 text-slate-900 sm:mt-1 sm:text-base">
                         {stat.value}
                       </dd>
                     </div>

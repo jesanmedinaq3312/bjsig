@@ -23,13 +23,13 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
       className="public-header sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 bg-cover bg-center text-white backdrop-blur-sm"
       style={{ backgroundImage: "var(--brand-header-image)" }}
     >
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-6 xl:gap-4 xl:px-8">
         <a
           href="/"
           aria-label="BJSIGAPP, página de inicio"
-          className="inline-flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
-          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-white">
             {iconUrls.brand ? (
               <img src={iconUrls.brand} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -39,34 +39,37 @@ export function PublicHeader({ active = "home" }: PublicHeaderProps) {
           <span className="text-base font-bold tracking-tight sm:text-lg">BJSIGAPP</span>
         </a>
 
-        <nav aria-label="Navegación principal" className="hidden items-center gap-6 lg:flex">
+        <nav
+          aria-label="Navegación principal"
+          className="hidden items-center gap-3 lg:flex xl:gap-6"
+        >
           {navigation.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className={`inline-flex min-h-11 items-center rounded-md px-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${active === "home" ? "text-white/75 hover:text-white" : "text-white/65 hover:text-white"}`}
+              className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-md px-1 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 xl:text-sm ${active === "home" ? "text-white/75 hover:text-white" : "text-white/65 hover:text-white"}`}
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden shrink-0 items-center gap-1.5 lg:flex xl:gap-2">
           <a
             href="/trabajador"
-            className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl px-2.5 text-[13px] font-semibold text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 xl:px-3 xl:text-sm"
           >
             Colaborador
           </a>
           <a
             href="/admin"
-            className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-3 text-sm font-semibold text-white/85 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border border-white/15 px-2.5 text-[13px] font-semibold text-white/85 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 xl:px-3 xl:text-sm"
           >
             Acceso empresa
           </a>
           <a
             href="/#contacto"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-blue-700 px-3 text-[13px] font-bold text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 xl:gap-2 xl:px-4 xl:text-sm"
           >
             Solicitar demo <ArrowRight size={15} aria-hidden="true" />
           </a>

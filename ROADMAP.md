@@ -1,5 +1,13 @@
 # Roadmap y cierre de brechas — BJSIGAPP
 
+## Ajustes de pantalla y compresión — noviembre 2026
+
+- [x] Fotos WebP con variantes pequeñas y grandes.
+- [x] Aviso compacto sin superposición sobre el contenido móvil.
+- [x] Vista demostrativa sin recortes en 320 px y barra superior en una línea a 1024 px.
+- [x] Repetir verificaciones finales: ocho tamaños, fotos, controles, 79 pruebas y lint.
+- [ ] Subir los ajustes a GitHub main.
+
 **Actualizado:** 21 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
 ## Iteración activa — 4. Autorización Dev Team, evidencia remota y pruebas multi-tenant

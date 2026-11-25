@@ -6,10 +6,14 @@ import { CompetitiveComparison } from "@/components/public/CompetitiveComparison
 import { ModuleExplorer } from "@/components/public/ModuleExplorer";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import rrhhOficina from "@/assets/landing-rrhh-oficina.jpg";
-import trabajadorTerreno from "@/assets/landing-trabajador-terreno.jpg";
-import prevencionImg from "@/assets/landing-prevencion.jpg";
-import heroAttendanceImg from "@/assets/hero-attendance.jpg";
+import rrhhOficina from "@/assets/landing-rrhh-oficina.webp";
+import rrhhOficinaSm from "@/assets/landing-rrhh-oficina-sm.webp";
+import trabajadorTerreno from "@/assets/landing-trabajador-terreno.webp";
+import trabajadorTerrenoSm from "@/assets/landing-trabajador-terreno-sm.webp";
+import prevencionImg from "@/assets/landing-prevencion.webp";
+import prevencionImgSm from "@/assets/landing-prevencion-sm.webp";
+import heroAttendanceImg from "@/assets/hero-attendance.webp";
+import heroAttendanceSmImg from "@/assets/hero-attendance-sm.webp";
 import { getPublicModulePath } from "@/lib/publicModules";
 import { loadPublicLandingBranding, useCompanyBranding } from "@/lib/logo";
 import {
@@ -263,6 +267,7 @@ export function PublicLanding({
         Saltar al contenido
       </a>
       <PublicHeader />
+      <CookieConsent inlineMobile />
       <main id="contenido">
         <section
           className="public-hero relative overflow-hidden bg-slate-950 bg-cover bg-center px-4 pb-16 pt-14 text-white sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24"
@@ -275,9 +280,12 @@ export function PublicLanding({
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
               <img
                 src={heroAttendanceImg}
+                srcSet={`${heroAttendanceSmImg} 800w, ${heroAttendanceImg} 1920w`}
+                sizes="100vw"
                 alt=""
                 width={1920}
                 height={1088}
+                decoding="async"
                 fetchPriority="high"
                 className="h-full w-full object-cover object-[72%_center] opacity-60 sm:opacity-70 lg:object-center lg:opacity-90"
               />
@@ -392,10 +400,13 @@ export function PublicLanding({
               <figure className="mt-8 overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
                 <img
                   src={rrhhOficina}
+                  srcSet={`${rrhhOficinaSm} 640w, ${rrhhOficina} 1280w`}
+                  sizes="(max-width: 1023px) calc(100vw - 2rem), 520px"
                   alt="Equipo de RR. HH. revisando turnos y dotación en un computador"
                   width={1280}
                   height={960}
                   loading="lazy"
+                  decoding="async"
                   className="aspect-[4/3] w-full object-cover"
                 />
                 <figcaption className="bg-white px-4 py-3 text-xs text-slate-500">
@@ -467,10 +478,13 @@ export function PublicLanding({
               </a>
               <img
                 src={prevencionImg}
+                srcSet={`${prevencionImgSm} 640w, ${prevencionImg} 1280w`}
+                sizes="(max-width: 1023px) calc(100vw - 2rem), 520px"
                 alt="Encargada de prevención realizando charla de seguridad con su equipo"
                 width={1280}
                 height={960}
                 loading="lazy"
+                decoding="async"
                 className="mt-8 aspect-[16/10] w-full max-w-xl rounded-2xl border border-white/10 object-cover"
               />
             </div>
@@ -532,10 +546,13 @@ export function PublicLanding({
               </a>
               <img
                 src={trabajadorTerreno}
+                srcSet={`${trabajadorTerrenoSm} 640w, ${trabajadorTerreno} 1280w`}
+                sizes="(max-width: 1023px) calc(100vw - 2rem), 660px"
                 alt="Trabajador en faena registrando su asistencia desde el celular"
                 width={1280}
                 height={960}
                 loading="lazy"
+                decoding="async"
                 className="mt-8 aspect-[16/9] w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
               />
             </div>
@@ -636,7 +653,6 @@ export function PublicLanding({
         </section>
       </main>
       <PublicFooter />
-      <CookieConsent />
       <SoftwareStructuredData />
     </div>
   );
