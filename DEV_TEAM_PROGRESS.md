@@ -1,6 +1,6 @@
 # Seguimiento breve — panel Dev Team
 
-Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad para el estado del producto y las brechas regulatorias. No reemplaza el staging ni prueba despliegues.
+Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad para el estado del producto y las brechas regulatorias. No hay staging separado: los cambios remotos sólo pueden verificarse en el único proyecto asociado a `main`, y este documento no prueba despliegues.
 
 ## Iteración 1 — cuentas de plataforma
 
@@ -90,5 +90,8 @@ Los cambios están preparados en la rama `fix/iteration4-preview-shift-read-boun
 - [x] Turnstile/CAPTCHA retirado del código local; el signup público permanece deshabilitado.
 - [ ] Confirmar el ajuste de CAPTCHA en el dashboard, comparar y revisar la versión remota de `worker-auth`, y completar login con un worker sintético antes de habilitar el portal.
 - [x] En la rama local `feat/attendance-rectification-worker-flow`, el portal consulta propuestas append-only por tenant y RUT, permite registrar aceptación/rechazo mediante la RPC existente y añade las propuestas a la exportación personal; los campos consultados se limitan a lo necesario para presentarlas y responderlas.
-- [ ] El flujo implementado es propuesta administrativa → respuesta del trabajador; falta el flujo objetivo del roadmap (solicitud del trabajador → revisión/consentimiento del supervisor), además de validar la tabla/RPC con identidades sintéticas en staging.
-- **Estado de esta rama:** cambios locales, aún no fusionados ni desplegados; typecheck, lint, Vitest (81), build, auditorías Bun y E2E público (42) pasaron; pruebas Deno no ejecutadas localmente porque Deno no está instalado.
+- [x] Agregada localmente `20261128030000_attendance_rectifications_integrity_hardening.sql`: CHECK para RUT no vacío, trigger de coherencia `scan_event_id`/tenant/RUT, inmutabilidad de todos los campos de propuesta y RPC con autorización null-safe.
+- [x] Añadido el preflight de sólo lectura [`docs/ATTENDANCE_RECTIFICATION_DB_PREFLIGHT.sql`](docs/ATTENDANCE_RECTIFICATION_DB_PREFLIGHT.sql) para inspeccionar definición, propietario, `search_path`, grants, restricciones, políticas y triggers.
+- [ ] El flujo implementado es propuesta administrativa → respuesta del trabajador; falta el flujo objetivo del roadmap (solicitud del trabajador → revisión/consentimiento del supervisor).
+- [ ] Verificar la definición real y los privilegios de `current_tenant_id()` y `current_worker_rut()` en el único proyecto Supabase de `main`, reconciliar migraciones y ejecutar pruebas controladas antes de desplegar. No hay staging; el conector MCP aún devuelve lista vacía y deniega el acceso SQL/catálogo.
+- **Estado de esta rama:** cambios locales, aún no fusionados ni desplegados. Typecheck, lint, Vitest (81), build, auditorías Bun y E2E público (42) pasaron antes de añadir el SQL; la migración y el preflight pasan el parser SQL de PostgreSQL, y los dos bloques `DO` y tres funciones pasan `parse_plpgsql`. No se han ejecutado contra una base. Deno no está instalado localmente; CI previo del PR incluyó sus pruebas.
