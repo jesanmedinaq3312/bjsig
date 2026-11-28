@@ -464,7 +464,7 @@ export function App() {
               </div>
             }
           >
-            <WorkerPortal workerRut={previewWorkerRut} previewEmail={previewEmail} />
+            <WorkerPortal workerRut={previewWorkerRut} previewEmail={previewEmail} isPreview />
           </Suspense>
         </WorkerLayout>
       </TenantProvider>

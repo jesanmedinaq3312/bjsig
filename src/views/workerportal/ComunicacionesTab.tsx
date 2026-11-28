@@ -61,9 +61,11 @@ function resolveCategory(c: { category: string | null }): string {
 export function ComunicacionesTab({
   data,
   workerRut,
+  isPreview = false,
 }: {
   data: WorkerPortalData;
   workerRut: string;
+  isPreview?: boolean;
 }) {
   const toast = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -85,6 +87,7 @@ export function ComunicacionesTab({
   const unackedCount = data.circulars.filter((c) => c.ack_required && !localAcked.has(c.id)).length;
 
   async function acknowledge(circularId: string) {
+    if (isPreview) return;
     setBusyId(circularId);
     try {
       await circularAckRepo.ackCircular(circularId, workerRut);
@@ -199,7 +202,7 @@ export function ComunicacionesTab({
                             {new Date(circular.published_at).toLocaleDateString("es-CL")}
                           </p>
                         </div>
-                        {circular.ack_required && !acked && (
+                        {!isPreview && circular.ack_required && !acked && (
                           <Button
                             size="sm"
                             variant="success"

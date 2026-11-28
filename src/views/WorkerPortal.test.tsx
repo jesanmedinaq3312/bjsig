@@ -110,4 +110,33 @@ describe("WorkerPortal profile loading", () => {
 
     expect(await screen.findByText(/Cargo no informado · Sin departamento/)).toBeVisible();
   });
+
+  it("keeps a preview read-only even when the preview email is empty", () => {
+    vi.mocked(useWorkerData).mockReturnValue({
+      data: {
+        ...missingProfileData,
+        profile: {
+          rut: "12345678-9",
+          full_name: "Trabajador de prueba",
+          position: "Operador",
+          department_id: null,
+          department_name: null,
+          photo_url: null,
+          phone: null,
+          email: null,
+          hire_date: null,
+          contract_type: null,
+          birth_date: null,
+        },
+      },
+      loading: false,
+      error: null,
+      createRequest: vi.fn(),
+    } as never);
+
+    render(<WorkerPortal workerRut="12345678-9" previewEmail="" />);
+
+    expect(screen.getByRole("status")).toHaveTextContent(/solo lectura/i);
+    expect(screen.queryByRole("button", { name: /nueva solicitud/i })).not.toBeInTheDocument();
+  });
 });

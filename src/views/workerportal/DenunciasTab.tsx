@@ -28,7 +28,13 @@ const CATEGORY_OPTIONS: { value: HarassmentCategory; label: string; desc: string
   },
 ];
 
-export function DenunciasTab({ workerRut }: { workerRut: string }) {
+export function DenunciasTab({
+  workerRut,
+  isPreview = false,
+}: {
+  workerRut: string;
+  isPreview?: boolean;
+}) {
   const toast = useToast();
   const [category, setCategory] = useState<HarassmentCategory>("acoso_laboral");
   const [description, setDescription] = useState("");
@@ -39,6 +45,7 @@ export function DenunciasTab({ workerRut }: { workerRut: string }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (isPreview) return;
     if (!description.trim()) {
       toast.error("Campo obligatorio", "Debes describir los hechos de la denuncia.");
       return;
@@ -65,6 +72,22 @@ export function DenunciasTab({ workerRut }: { workerRut: string }) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (isPreview) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-start gap-3">
+          <Lock size={18} className="mt-0.5 shrink-0 text-slate-500" />
+          <div>
+            <h3 className="text-base font-semibold text-slate-800">Vista previa de denuncias</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              El envío de denuncias está deshabilitado durante la previsualización.
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
   }
 
   if (submitted) {

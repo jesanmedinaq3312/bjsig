@@ -52,10 +52,22 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 - [x] Comparado el catálogo remoto y las fuentes recuperadas de `worker-auth`, `worker-gdpr`, `harassment-report-submit` y `honeytoken-check`, sin leer datos de negocio; evidencia en [`docs/ITERATION5_REMOTE_CATALOG_INVENTORY.md`](docs/ITERATION5_REMOTE_CATALOG_INVENTORY.md).
 - [x] Creada la matriz actor × ruta × operación × tenant para dos tenants sintéticos en [`docs/ITERATION4_AUTHORIZATION_MATRIX.md`](docs/ITERATION4_AUTHORIZATION_MATRIX.md), con casos T01–T16.
 - [x] Preparada localmente la migración `20261119010000_iteration4_worker_portal_rls_rpc.sql` con RPC `authorize_worker_portal` y políticas RLS restrictivas; no aplicada en Supabase.
+- [x] Preparada localmente la migración `20261127210000_iteration4_shift_assignment_worker_read.sql`: una policy RLS restrictiva limita las lecturas del rol `worker` a su RUT normalizado dentro del tenant actual; no aplicada en Supabase.
+- [x] El preview del portal recibe `isPreview` explícito y deshabilita nuevas solicitudes, envío de denuncias y confirmación de comunicaciones; incluye guards de handlers y regresiones para email vacío.
+- [x] Verificación local del avance: `tsc --noEmit`, `eslint .`, Vitest (**25 archivos / 82 tests**), Prettier en TS/TSX editados, `vite build` y `bun audit --production` (**523 paquetes, sin vulnerabilidades en este checkout**).
 - [ ] Preparar smoke tests RLS/RPC negativos y positivos para tenant, RUT, MFA, cambio de tenant y rate limits en un entorno aislado.
 - [ ] Dejar CI reproducible y E2E autenticado separado de secretos QA, con cleanup por IDs sintéticos.
 - [ ] Presentar cualquier SQL o despliegue Edge con diff exacto, impacto, verificación y rollback antes de solicitar aprobación.
-- **Estado:** iniciada; fase actual de definición e inventario. No hay cambios productivos de autorización aprobados para esta iteración.
+- **Estado:** abierta; remediaciones locales y verificación estática/componente avanzadas. La policy nueva y los cambios UI no se han desplegado; no hay staging confirmado ni pruebas runtime RLS/RPC.
+
+### Checks de PR abiertos — revisión 27 de noviembre de 2026
+
+- [ ] **PR #4:** `bun audit --production` detecta **GHSA-fc5q-39xc-vjpf** en `picomatch` (`<=4.0.7`) transitivo por Vite/Vitest/TanStack. El audit del checkout local actual pasa; regenerar/actualizar el lockfile de la rama del PR contra la base vigente y volver a ejecutar CI.
+- [ ] **PR #5:** falla el typecheck en `DataGovernancePanel` (parámetro implícito `any`), el calendario (`ClassNames.table`), los tipos de Recharts (`payload`/`label`) y la API TanStack Server Function (`inputValidator`). Aislar incompatibilidades de dependencias y adaptar tipos antes de integrar.
+- [ ] **PR #6:** ESLint aborta con TypeScript `7.0.2` porque `typescript-eslint 8.74.0` declara no soportar TS 7.0. Mantener TS en una versión admitida o posponer el major bump hasta compatibilidad del parser.
+- [ ] **PR #1:** el check principal previo pasó, pero la rama figuraba behind/estado de base incierto; los jobs autenticados/E2E y catálogo RLS omitidos no cuentan como aprobados.
+
+Los cambios están preparados en la rama `fix/iteration4-preview-shift-read-boundary`; no se ha publicado la rama ni se ha aplicado la migración en Supabase. La rama `main` exige revisión por PR.
 
 ## Iteración 5 — planificada: staging y despliegue controlado
 
