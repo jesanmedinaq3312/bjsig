@@ -46,14 +46,16 @@ const DenunciasTab = lazy(() =>
 export function WorkerPortal({
   workerRut,
   previewEmail,
+  isPreview: isPreviewProp,
 }: {
   workerRut: string;
   previewEmail?: string;
+  isPreview?: boolean;
 }) {
   const { data, loading, error, createRequest } = useWorkerData(workerRut);
   const { session } = useAuth();
   const workerEmail = previewEmail ?? session?.user?.email ?? "";
-  const isPreview = !!previewEmail;
+  const isPreview = isPreviewProp ?? previewEmail !== undefined;
   const [activeTab, setActiveTab] = useState<PortalTab>("resumen");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqForm, setReqForm] = useState({
@@ -142,6 +144,7 @@ export function WorkerPortal({
 
   async function submitRequest(e: React.FormEvent) {
     e.preventDefault();
+    if (isPreview) return;
     if (!reqForm.subject.trim() || !reqForm.message.trim()) {
       setReqError("Asunto y mensaje son obligatorios.");
       return;
@@ -170,6 +173,15 @@ export function WorkerPortal({
 
   return (
     <div className="space-y-6 animate-view-enter">
+      {isPreview && (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+        >
+          Vista previa de solo lectura. Las solicitudes, denuncias y confirmaciones están
+          deshabilitadas.
+        </div>
+      )}
       <WelcomeHero profile={p} fullName={fullName} />
 
       <MotivationalBanner workerRut={workerRut} />
@@ -195,14 +207,16 @@ export function WorkerPortal({
               <Mail size={11} /> {p?.email ?? workerEmail}
             </p>
           </div>
-          <Button
-            onClick={() => setShowRequestModal(true)}
-            variant="primary"
-            size="md"
-            className="w-full md:w-auto md:shrink-0"
-          >
-            <Send size={15} /> Nueva Solicitud
-          </Button>
+          {!isPreview && (
+            <Button
+              onClick={() => setShowRequestModal(true)}
+              variant="primary"
+              size="md"
+              className="w-full md:w-auto md:shrink-0"
+            >
+              <Send size={15} /> Nueva Solicitud
+            </Button>
+          )}
         </div>
       </Card>
 
@@ -282,12 +296,14 @@ export function WorkerPortal({
         {activeTab === "rrhh" && <RrhhTab data={data} />}
         {activeTab === "seguridad" && <SeguridadTab data={data} />}
         {activeTab === "solicitudes" && <SolicitudesTab data={data} />}
-        {activeTab === "comunicaciones" && <ComunicacionesTab data={data} workerRut={workerRut} />}
-        {activeTab === "denuncias" && <DenunciasTab workerRut={workerRut} />}
+        {activeTab === "comunicaciones" && (
+          <ComunicacionesTab data={data} workerRut={workerRut} isPreview={isPreview} />
+        )}
+        {activeTab === "denuncias" && <DenunciasTab workerRut={workerRut} isPreview={isPreview} />}
       </Suspense>
 
       <Modal
-        open={showRequestModal}
+        open={showRequestModal && !isPreview}
         onClose={() => setShowRequestModal(false)}
         title="Nueva Solicitud"
       >

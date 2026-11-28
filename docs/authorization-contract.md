@@ -53,6 +53,8 @@ La UI provisiona la identidad Auth mediante `admin-user-manage`. La suspensión 
 
 Las tablas `shift_definitions`, `shift_assignments` y `shift_change_logs` están aisladas por `current_tenant_id()`. Las escrituras de definiciones y asignaciones requieren un rol autorizado mediante `shift_actor_can_write`; el historial sólo se puede leer desde el tenant actual y se genera por RPC. `apply_shift_assignment` valida trabajador activo, definición activa, duración, fechas, intercambio y unicidad de asignación activa. `deactivate_shift_assignment` registra la desactivación en la misma transacción.
 
+La migración local `20261127210000_iteration4_shift_assignment_worker_read.sql` añade una policy `RESTRICTIVE` de `SELECT` para que el rol `worker` sólo lea asignaciones de su propio RUT normalizado dentro del tenant actual; los roles no-worker conservan el alcance tenant-scoped de las políticas existentes. Sigue pendiente de pruebas RLS positivas/negativas con identidades sintéticas en staging y no está desplegada.
+
 La integridad se refuerza con la FK compuesto `(tenant_id, shift_definition_id)`, constraints de fechas/duración/días, una única asignación activa por trabajador y los índices tenant-fecha-historial.
 
 ## Branding e identidad visual
