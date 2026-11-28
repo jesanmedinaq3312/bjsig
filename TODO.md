@@ -13,3 +13,11 @@
 - [x] Explicar por cada competidor cuándo BJSIGAPP es mejor opción según necesidades concretas de terreno, prevención y gestión multiempresa, sin afirmar superioridad universal.
 - [x] Expresar las funciones de competidores que no se identificaron como no verificadas en sus páginas públicas consultadas, sin afirmar su inexistencia absoluta.
 - [x] Mantener navegación accesible y presentación adaptable a móvil; validar diagnóstico de TypeScript, pruebas y build.
+
+## Revisión de commits recientes (17 de noviembre de 2026)
+- [x] Restablecer políticas permisivas tenant-scoped para leer y escribir `daily_shifts`, conservando como capa restrictiva la autorización y evitando que workers lean registros de otros RUT.
+- [x] Alinear la visibilidad de lectura con permisos efectivos de edición para que roles personalizados autorizados también puedan actualizar filas.
+- [x] Restaurar el contrato validado de `hero_images` sin perder la nueva opción `hero_link_url` ni reescribir migraciones ya publicadas.
+- [x] Incorporar a CI las pruebas Deno de autorización compartida que faltaban.
+- [x] Validar las migraciones con PostgreSQL embebido y pasar typecheck, lint, 68 pruebas unitarias y build.
+- [ ] Confirmar los checks del PR y ejecutar las migraciones en una base Supabase de staging autorizada; el proyecto remoto no está disponible en el conector de esta sesión.

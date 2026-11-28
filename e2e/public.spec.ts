@@ -148,6 +148,28 @@ test("hero responsive conserva el H1 y enlaza su imagen de fondo", async ({ page
   }
 });
 
+test("hero de reserva puede enlazarse sin imagen personalizada", async ({ page }) => {
+  await page.route("**/rest/v1/rpc/fetch_public_landing_settings", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        hero_image_url: "",
+        hero_link_url: "/modulos",
+        hero_opacity: 0.72,
+      }),
+    });
+  });
+
+  await page.goto("/");
+  const hero = page.locator(".public-hero");
+  await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
+  const heroLink = hero.getByTestId("hero-background-link");
+  await expect(heroLink).toHaveAttribute("href", "/modulos");
+  await heroLink.click({ position: { x: 8, y: 8 } });
+  await expect(page).toHaveURL(/\/modulos$/);
+});
+
 test("menú móvil permite abrir y cerrar navegación sin overflow horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
