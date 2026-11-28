@@ -37,6 +37,27 @@ jobs:
       - name: Dependency audit (all advisories)
         run: bun audit --audit-level=moderate
 
+  public-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      # Public smoke tests must never contact the configured Supabase project.
+      VITE_SUPABASE_URL: http://127.0.0.1:54321
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      VITE_PUBLIC_SITE_URL: http://127.0.0.1:4173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Run public E2E tests against local app
+        run: bun run test:e2e:public
+
   tenant-e2e:
     # Enable only after configuring isolated staging users and URL/key.
     if: ${{ vars.MULTITENANT_E2E_ENABLED == 'true' }}
