@@ -69,7 +69,8 @@ Este tablero complementa [`ROADMAP.md`](ROADMAP.md), que es la fuente de verdad 
 ## Validación y operación
 
 - [x] TypeScript, Vitest (**44**), pruebas Deno de `worker-auth` (**17**), ESLint y build se ejecutan localmente; ESLint conserva una advertencia Fast Refresh no bloqueante.
-- [ ] Ejecutar E2E público y autenticado con cuentas sintéticas; documentar errores de servicios externos sin usar credenciales reales.
+- [x] Añadido job `public-e2e` a CI con URL Supabase local ficticia; ejecución local Playwright pública: **42/42 aprobadas** (28-11-2026), sin credenciales ni acceso al proyecto Supabase.
+- [ ] Ejecutar E2E autenticado con cuentas sintéticas y staging aislado; documentar errores de servicios externos sin usar credenciales reales.
 - [ ] Mantener decisiones pendientes de despliegue, migraciones y seguridad en [`SECURITY_DEPLOYMENT_CHECKLIST.md`](SECURITY_DEPLOYMENT_CHECKLIST.md).
 
 ## Portal de trabajador

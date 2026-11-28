@@ -2,7 +2,7 @@
 
 BJSIGAPP es una plataforma SaaS multiempresa para gestión de personas, operaciones, asistencia, prevención y procesos internos. Este README orienta a quienes mantengan el repositorio; el estado del despliegue debe verificarse por separado.
 
-**Revisión del repositorio:** 28 de noviembre de 2026 (rama `main`, commit `cc75641`). Esta fecha describe el checkout revisado, no un despliegue. El código y las migraciones locales no implican que todo esté desplegado en Supabase o en el hosting. No se debe inferir cumplimiento legal integral a partir de la presencia de una pantalla, una tabla o una migración.
+**Revisión del repositorio:** 28 de noviembre de 2026. Esta fecha describe el checkout revisado, no un despliegue. El código y las migraciones locales no implican que todo esté desplegado en Supabase o en el hosting. No se debe inferir cumplimiento legal integral a partir de la presencia de una pantalla, una tabla o una migración.
 
 ## Estado actual
 
@@ -90,7 +90,7 @@ docs/                       # auditorías, línea base, QA y decisiones
 
 ## Verificación local
 
-El workflow [`CI`](.github/workflows/ci.yml) define typecheck, ESLint, Vitest, tests Deno de `worker-auth`, build y dos auditorías Bun. La revisión del código aquí no ejecutó esos jobs ni instala dependencias; consulta el estado del workflow para la evidencia más reciente por commit. E2E público y autenticado son scripts separados, y el job multi-tenant autenticado sólo corre con staging sintético habilitado. No se completó en esta revisión un E2E autenticado ni una validación runtime RLS multi-tenant. Las pruebas automatizadas no sustituyen la verificación de despliegue o la revisión legal.
+El workflow [`CI`](.github/workflows/ci.yml) define typecheck, ESLint, Vitest, tests Deno de `worker-auth`, build, dos auditorías Bun y un job E2E público aislado. En esta revisión local, Playwright aprobó **42/42 pruebas públicas** (28 de noviembre de 2026) con una URL Supabase local ficticia; no se usaron credenciales ni se accedió al proyecto Supabase. Esto no equivale a que el workflow de GitHub ya haya corrido sobre este cambio. El job multi-tenant autenticado sólo corre con staging sintético habilitado. No se completó un E2E autenticado ni una validación runtime RLS multi-tenant. Las pruebas automatizadas no sustituyen la verificación de despliegue o la revisión legal.
 
 `bun.lock` es el lockfile del proyecto; se recomienda Bun para instalar dependencias. Los scripts disponibles en `package.json` (la CI usa además Deno y `bun audit`) son:
 
