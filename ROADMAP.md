@@ -8,7 +8,7 @@
 - [x] Repetir verificaciones finales: ocho tamaños, fotos, controles, 79 pruebas y lint.
 - [x] Publicar el avance en la rama del PR #7 hacia `main`; pendiente de revisión y fusión.
 
-**Actualizado:** 27 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
+**Actualizado:** 28 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones históricas de catálogo del único proyecto Supabase asociado a `main` (`BJSIG`); el conector actual no permite confirmar el estado remoto. No constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
 ## Iteración activa — 4. Autorización Dev Team, evidencia remota y pruebas multi-tenant
 
@@ -133,6 +133,8 @@ Ejecuta esas pruebas sólo en una base local desechable o staging aislado, nunca
 4. Validar si la política real del producto permite autoservicio de trabajador. La matriz de autorización debe preservar RLS y a la vez ser coherente con el portal de trabajador que ofrece BJSIGAPP.
 
 ### P1 — Completar la asistencia del adjunto
+
+**Estado de regularización en código local:** existe una tabla con propuesta administrativa y respuesta del trabajador; la interfaz del portal ahora expone esa respuesta. Se agregó una migración posterior de hardening que impide RUT vacío, exige coherencia entre `scan_event_id`, tenant y RUT, fortalece la inmutabilidad y hace null-safe la autorización del RPC. Esa migración no está aplicada. El proyecto de trabajo disponible es `main`; no hay staging, y el acceso MCP actual no permite comprobar el catálogo ni las funciones auxiliares. La dirección funcional solicitada aquí sigue siendo distinta (trabajador inicia, supervisor revisa y consiente). No marcar este entregable como completo hasta resolver esas diferencias y verificar permisos en el único proyecto con identidades de prueba controladas.
 
 1. Diseñar la tabla/flujo de solicitudes de regularización append-only: solicitud del trabajador, evidencia/motivo, revisión y consentimiento del supervisor; conservar marca original y registrar resultado.
 2. Enviar comprobante por cada entrada, salida y colación con fecha/hora Chile, tipo, ubicación/precisión reportada e IP si corresponde; definir proveedor, errores, reintentos, privacidad y trazabilidad.

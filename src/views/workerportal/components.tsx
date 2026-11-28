@@ -102,6 +102,7 @@ export function GdprDataSection({
         },
         attendance: data.shifts,
         qr_scans: data.qr_scans,
+        attendance_rectifications: data.rectifications,
         trainings: data.trainings,
         training_attendance: data.attendance,
         payroll_items: data.payroll_items,
