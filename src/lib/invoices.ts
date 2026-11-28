@@ -1,8 +1,10 @@
 import { supabase } from "./supabase";
+import { fetchActiveTenantId } from "./tenant";
 
 const INVOICE_BUCKET = "treasury-invoices";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg"];
+const ALLOWED_EXTENSIONS = ["pdf", "png", "jpg", "jpeg"];
 
 export function validateInvoiceFile(file: File): string | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -11,19 +13,26 @@ export function validateInvoiceFile(file: File): string | null {
   if (file.size > MAX_FILE_SIZE) {
     return "El archivo no puede pesar mas de 5 MB.";
   }
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+  if (!ALLOWED_EXTENSIONS.includes(extension)) {
+    return "La extensión del archivo no coincide con los formatos permitidos.";
+  }
   return null;
 }
 
-export function getInvoicePath(txId: string, file: File): string {
+export function getInvoicePath(tenantId: string, txId: string, file: File): string {
   const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
-  return `invoices/${txId}.${ext}`;
+  return `${tenantId}/invoices/${txId}.${ext}`;
 }
 
 export async function uploadInvoiceFile(file: File, txId: string): Promise<string> {
   const validationError = validateInvoiceFile(file);
   if (validationError) throw new Error(validationError);
 
-  const path = getInvoicePath(txId, file);
+  const tenantId = await fetchActiveTenantId();
+  if (!tenantId) throw new Error("No se pudo determinar el tenant activo.");
+
+  const path = getInvoicePath(tenantId, txId, file);
   const { error } = await supabase.storage.from(INVOICE_BUCKET).upload(path, file, {
     cacheControl: "3600",
     contentType: file.type,
