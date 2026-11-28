@@ -13,7 +13,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -47,7 +47,7 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
       VITE_PUBLIC_SITE_URL: http://127.0.0.1:4173
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -74,7 +74,7 @@ jobs:
       E2E_DEVELOPER_PASSWORD: ${{ secrets.E2E_DEVELOPER_PASSWORD }}
       E2E_DEVELOPER_TENANTS_JSON: ${{ secrets.E2E_DEVELOPER_TENANTS_JSON }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -91,7 +91,7 @@ jobs:
     if: ${{ vars.SUPABASE_RLS_AUDIT_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Assert RLS on every public table with tenant_id
