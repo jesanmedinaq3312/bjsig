@@ -6,9 +6,9 @@
 - [x] Aviso compacto sin superposición sobre el contenido móvil.
 - [x] Vista demostrativa sin recortes en 320 px y barra superior en una línea a 1024 px.
 - [x] Repetir verificaciones finales: ocho tamaños, fotos, controles, 79 pruebas y lint.
-- [x] Subir los ajustes a GitHub main.
+- [x] Publicar el avance en la rama del PR #7 hacia `main`; pendiente de revisión y fusión.
 
-**Actualizado:** 21 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
+**Actualizado:** 27 de noviembre de 2026. **Ámbito:** código local, migraciones versionadas y verificaciones de catálogo del único proyecto Supabase disponible (`BJSIG`); no constituye una auditoría legal ni una validación completa con identidades sintéticas.
 
 ## Iteración activa — 4. Autorización Dev Team, evidencia remota y pruebas multi-tenant
 
@@ -27,6 +27,22 @@
 - [ ] **Decisión de despliegue:** sólo después de completar el inventario, la matriz y las pruebas mostrar el SQL/Edge diff exacto, impacto, verificación y rollback para aprobación explícita. No desplegar por el mero hecho de cerrar esta iteración.
 
 **Criterio de cierre:** contrato de producto aprobado, inventario local/remoto con diferencias explicadas, matriz de acceso revisada, pruebas aisladas reproducibles y plan de despliegue/rollback presentado. La iteración no se marcará cerrada por tener sólo cambios de frontend o por una lectura superficial del catálogo.
+
+### Avance actual — 27 de noviembre de 2026
+
+**Estado del cambio:** el avance está en el [PR #7](https://github.com/jesanmedinaq3312/bjsig/pull/7), rama `fix/iteration4-preview-shift-read-boundary`; el commit inicial de implementación es `ebea7d9`. El `checks` de ese commit pasó; `tenant-e2e` y `tenant-rls-catalog` aparecieron `SKIPPED`. Esta actualización documental volverá a disparar CI. El PR continúa abierto y no forma parte de `main` hasta que obtenga la revisión requerida y se fusione.
+
+**Alcance incluido:** (1) migración aditiva, todavía local al PR, que limita la lectura de `shift_assignments` del rol `worker` a su propio RUT normalizado en el tenant actual, preservando el alcance tenant-scoped existente de roles no-worker; (2) preview del portal en modo de sólo lectura para solicitudes, denuncias y confirmaciones de comunicaciones, con el modo explícito aunque el correo esté vacío; (3) pruebas de regresión y documentación del contrato y del seguimiento de Iteración 4.
+
+**Verificación disponible:** localmente pasaron `tsc --noEmit`, `eslint .`, Vitest (25 archivos/82 pruebas), Prettier para TS/TSX editados, `vite build` y `bun audit --production` (523 paquetes, sin vulnerabilidades en este checkout). Estas pruebas no ejecutan RLS contra Postgres, no cubren las identidades de staging y no sustituyen los jobs omitidos.
+
+**Fuera de alcance / no validado:** la migración no está aplicada a Supabase; no se confirmó staging; siguen pendientes RPC de plataforma y el ciclo seguro de provisión superadmin; el RUT/correo del preview continúa en parámetros URL. La Iteración 4 permanece abierta y no autoriza por sí sola despliegue ni publicación a producción.
+
+**Próximos pasos:**
+1. Completar revisión del PR #7 y fusionarlo sólo tras la aprobación requerida; no se hará bypass de la protección de `main`.
+2. Antes de aplicar la migración, disponer de staging aislado y probar con sesiones sintéticas: trabajador ve su asignación, no ve la de otro trabajador ni las de otro tenant; rol operativo conserva su alcance esperado; comprobar rollback.
+3. Configurar y ejecutar los jobs E2E autenticado y catálogo/RLS contra staging, con secretos QA separados y sin usar `service_role` como actor de RLS.
+4. Abordar en cambios separados el scope de RPC/plataforma y la eliminación de PII de la query del preview; registrar impacto y pruebas antes de solicitar revisión.
 
 ## Iteración 5 — planificada: staging, validación runtime y despliegue controlado
 
@@ -51,7 +67,7 @@
 - [x] Rechazar scopes tenant vacíos y conservar la administración de tenants asignados.
 - [x] Añadir pruebas unitarias para developer, superadmin, elevación de privilegios y scope vacío.
 - [x] Eliminar la revalidación duplicada basada en `tenantIds.every(...)` durante el borrado; la decisión centralizada es la única puerta.
-- [ ] Ejecutar las pruebas nuevas de Deno y las comprobaciones CI; el checkout actual no tiene Deno ni dependencias Node instaladas.
+- [ ] Ejecutar las pruebas nuevas de Deno; Deno no está disponible en este checkout. Dependencias Bun se instalaron desde el lockfile y permitieron ejecutar la validación TypeScript/React documentada arriba.
 - [ ] Probar los efectos Auth/`allowed_emails`/`tenant_memberships` con identidades sintéticas; no hay staging separado disponible.
 
 ### Iteración 2 — evidencia y criterios
@@ -86,7 +102,7 @@
 ## Estado comprobable de esta revisión
 
 - **Código local:** el producto contiene módulos de SaaS, personas, portal de trabajador, turnos, asistencia QR, nómina, Ley Karin, incidentes/CPHS, Gobierno de Datos y registros de auditoría.
-- **Validación local histórica:** TypeScript pasó; Vitest pasó con 44 pruebas y `worker-auth` con 17 pruebas Deno; build Vite/Nitro pasó; ESLint terminó sin errores y con una advertencia de Fast Refresh en `QrCardGenerator.tsx`. En Iteración 3 no se pudo repetir esta batería porque el checkout actual no tiene `node_modules`.
+- **Validación local histórica y reciente:** anteriormente TypeScript pasó, Vitest tuvo 44 pruebas y `worker-auth` 17 pruebas Deno; build Vite/Nitro pasó. En esta revisión local se volvió a ejecutar typecheck, ESLint, Vitest (25 archivos/82 pruebas), build y `bun audit --production`; las pruebas Deno siguen pendientes por falta de runtime Deno.
 - **Supabase/hosting:** inspección read-only: `worker-auth` remoto observado en v49 no exige tokens Turnstile; `/auth/v1/settings` no mostró un indicador público de CAPTCHA. No se desplegó ni modificó el proyecto y el ajuste CAPTCHA del dashboard sigue sin confirmar. Una migración en el checkout no equivale a una migración aplicada.
 - **Asistencia/GPS:** el código usa fecha laboral `America/Santiago`, instante UTC, captura GPS reciente al procesar QR y ya no ofrece sobrescritura en la interfaz. La migración append-only `20261109070000_qr_attendance_marks_immutable.sql` está versionada, pero su aplicación está pendiente de staging.
 - **Portal de trabajador:** existe en el código y forma parte del flujo de producto. Por instrucción del cliente se retiró Turnstile/CAPTCHA de los fuentes locales; signup público continúa cerrado. La versión remota v49 no contiene la barrera Turnstile, pero difiere de la fuente local y no se desplegó. El CAPTCHA de Supabase Auth y el smoke test de ingreso con worker sintético siguen pendientes. No asumir que el portal sea “Dev Team-only”.
