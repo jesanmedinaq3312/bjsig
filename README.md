@@ -2,7 +2,7 @@
 
 BJSIGAPP es una plataforma SaaS multiempresa para gestión de personas, operaciones, asistencia, prevención y procesos internos. Este README orienta a quienes mantengan el repositorio; el estado del despliegue debe verificarse por separado.
 
-**Revisión del repositorio:** 9 de noviembre de 2026. El checkout contiene código y migraciones locales; no implica que todo esté desplegado en Supabase o en el hosting. No se debe inferir cumplimiento legal integral a partir de la presencia de una pantalla, una tabla o una migración.
+**Revisión del repositorio:** 28 de noviembre de 2026 (rama `main`, commit `cc75641`). Esta fecha describe el checkout revisado, no un despliegue. El código y las migraciones locales no implican que todo esté desplegado en Supabase o en el hosting. No se debe inferir cumplimiento legal integral a partir de la presencia de una pantalla, una tabla o una migración.
 
 ## Estado actual
 
@@ -19,6 +19,13 @@ La aplicación usa React 19, TypeScript, Vite/TanStack Start y Supabase. El repo
 - Branding tenant-scoped, avisos por empresa y recibos de lectura para circulares.
 
 Estas capacidades no equivalen automáticamente a los formatos, plazos, firmas, avisos o controles legales requeridos por cada cliente.
+
+### Cambios recientes en `main`
+
+- Endurecimiento local de autenticación de trabajadores, RPC públicas, catálogo tenant y exportaciones CSV; los cambios del código no prueban por sí solos que las Edge Functions o migraciones estén desplegadas.
+- Landing optimizada para móvil/tablet, con imágenes WebP adaptativas, aviso de privacidad compacto, vista de demostración y navegación responsive. Las cifras y datos de demostración deben identificarse como ilustrativos.
+- CI configurado para Bun y Deno: typecheck, lint, Vitest, pruebas de `worker-auth`, build y auditorías de dependencias. Las pruebas E2E autenticadas y la auditoría de RLS requieren variables y un entorno de staging aislado; no se ejecutan automáticamente sin habilitación.
+- Dependabot está configurado para dependencias Bun.
 
 ### Estado reciente de asistencia y GPS
 
@@ -83,9 +90,9 @@ docs/                       # auditorías, línea base, QA y decisiones
 
 ## Verificación local
 
-En esta revisión se validaron TypeScript, la suite de Vitest (**44 pruebas aprobadas**), pruebas Deno de `worker-auth` (**17 aprobadas**), build Vite/Nitro y Prettier de los archivos tocados. ESLint no tuvo errores; el análisis completo mostró una advertencia de Fast Refresh en `src/components/QrCardGenerator.tsx`. No se completó todavía un E2E autenticado; estas pruebas no sustituyen la verificación del login con una cuenta worker sintética.
+El workflow [`CI`](.github/workflows/ci.yml) define typecheck, ESLint, Vitest, tests Deno de `worker-auth`, build y dos auditorías Bun. La revisión del código aquí no ejecutó esos jobs ni instala dependencias; consulta el estado del workflow para la evidencia más reciente por commit. E2E público y autenticado son scripts separados, y el job multi-tenant autenticado sólo corre con staging sintético habilitado. No se completó en esta revisión un E2E autenticado ni una validación runtime RLS multi-tenant. Las pruebas automatizadas no sustituyen la verificación de despliegue o la revisión legal.
 
-`bun.lock` es el lockfile del proyecto; se recomienda Bun para instalar dependencias. Los scripts disponibles están en `package.json`:
+`bun.lock` es el lockfile del proyecto; se recomienda Bun para instalar dependencias. Los scripts disponibles en `package.json` (la CI usa además Deno y `bun audit`) son:
 
 ```bash
 bun install
