@@ -44,6 +44,12 @@
 3. Configurar y ejecutar los jobs E2E autenticado y catálogo/RLS contra staging, con secretos QA separados y sin usar `service_role` como actor de RLS.
 4. Abordar en cambios separados el scope de RPC/plataforma y la eliminación de PII de la query del preview; registrar impacto y pruebas antes de solicitar revisión.
 
+### Instrucción directa para el próximo agente
+
+Continúa desde el [PR #7](https://github.com/jesanmedinaq3312/bjsig/pull/7): primero confirma su commit cabeza, estado de revisión y CI; no repitas los cambios ni las validaciones locales ya enumeradas arriba. La siguiente tarea prioritaria es diagnosticar por qué `tenant-e2e` y `tenant-rls-catalog` se omiten y dejar pruebas de autorización reproducibles para `supabase/migrations/20261127210000_iteration4_shift_assignment_worker_read.sql`. Valida con identidades y datos sintéticos que un `worker` lea su asignación, no la de otro trabajador del mismo tenant ni la de otro tenant, y que el rol operativo conserve su alcance tenant-scoped.
+
+Ejecuta esas pruebas sólo en una base local desechable o staging aislado, nunca en producción. No uses `service_role` como actor de RLS, no agregues/cambies secretos, no apliques la migración a Supabase remoto y no declares la puerta cerrada si los jobs siguen omitidos. Si falta base aislada, runtime o credenciales QA, documenta el prerrequisito exacto y detente antes de cualquier operación remota; pide únicamente lo que falte. Al terminar, registra evidencia real en el roadmap y en `DEV_TEAM_PROGRESS.md`, publica el trabajo en la rama del PR #7 y deja `main` y la fusión sujetos a la revisión obligatoria.
+
 ## Iteración 5 — planificada: staging, validación runtime y despliegue controlado
 
 **Estado:** planificada, no activa. Depende del cierre verificable de Iteración 4. Su propósito será convertir el hardening local en evidencia runtime reproducible, primero en un entorno aislado y sólo después mediante un despliegue controlado. El detalle está en [`docs/ITERATION5_PLAN.md`](docs/ITERATION5_PLAN.md).
