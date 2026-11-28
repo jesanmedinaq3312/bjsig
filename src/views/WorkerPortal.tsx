@@ -52,7 +52,8 @@ export function WorkerPortal({
   previewEmail?: string;
   isPreview?: boolean;
 }) {
-  const { data, loading, error, createRequest } = useWorkerData(workerRut);
+  const { data, loading, error, createRequest, respondToAttendanceRectification } =
+    useWorkerData(workerRut);
   const { session } = useAuth();
   const workerEmail = previewEmail ?? session?.user?.email ?? "";
   const isPreview = isPreviewProp ?? previewEmail !== undefined;
@@ -292,7 +293,13 @@ export function WorkerPortal({
             qrRef={qrRef}
           />
         )}
-        {activeTab === "asistencia" && <AsistenciaTab data={data} />}
+        {activeTab === "asistencia" && (
+          <AsistenciaTab
+            data={data}
+            isPreview={isPreview}
+            onRespondRectification={respondToAttendanceRectification}
+          />
+        )}
         {activeTab === "rrhh" && <RrhhTab data={data} />}
         {activeTab === "seguridad" && <SeguridadTab data={data} />}
         {activeTab === "solicitudes" && <SolicitudesTab data={data} />}

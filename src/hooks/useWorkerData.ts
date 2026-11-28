@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { workerRequestRepo } from "@/lib/repositories";
 import { useTenantOptional } from "@/components/TenantProvider";
+import type { Database } from "@/integrations/supabase/types";
 import type {
   WorkerRequest,
   WorkerRequestCategory,
@@ -24,6 +25,19 @@ import type {
   Circular,
   CircularAcknowledgment,
 } from "@/lib/types";
+
+type AttendanceRectification = Pick<
+  Database["public"]["Tables"]["attendance_rectifications"]["Row"],
+  | "id"
+  | "scan_event_id"
+  | "proposed_scan_type"
+  | "proposed_at"
+  | "reason"
+  | "status"
+  | "worker_response_at"
+  | "worker_comment"
+  | "created_at"
+>;
 
 export interface WorkerPortalData {
   profile: {
@@ -56,6 +70,8 @@ export interface WorkerPortalData {
   requests: WorkerRequest[];
   shift_definitions: ShiftDefinition[];
   circulars: (Circular & { acked?: boolean })[];
+  rectifications: AttendanceRectification[];
+  rectificationsError: string | null;
 }
 
 const STALE_TIME = 60_000;
@@ -134,6 +150,25 @@ export function useWorkerData(workerRut: string | null) {
         .limit(200);
       if (error) throw new Error(error.message);
       return (data ?? []) as QrScanEvent[];
+    },
+    enabled,
+    staleTime: STALE_TIME,
+  });
+
+  const rectificationsQuery = useQuery({
+    queryKey: ["worker_attendance_rectifications", tenantId, workerRut],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance_rectifications")
+        .select(
+          "id, scan_event_id, proposed_scan_type, proposed_at, reason, status, worker_response_at, worker_comment, created_at",
+        )
+        .eq("tenant_id", tenantId!)
+        .eq("worker_rut", workerRut!)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as AttendanceRectification[];
     },
     enabled,
     staleTime: STALE_TIME,
@@ -434,6 +469,9 @@ export function useWorkerData(workerRut: string | null) {
         profile: profileQuery.data ?? null,
         shifts: shiftsQuery.data ?? [],
         qr_scans: qrScansQuery.data ?? [],
+        rectifications: rectificationsQuery.data ?? [],
+        rectificationsError:
+          rectificationsQuery.error instanceof Error ? rectificationsQuery.error.message : null,
         trainings: trainingsQuery.data ?? [],
         attendance: attendanceQuery.data ?? [],
         payroll_items: payrollItemsQuery.data ?? [],
@@ -457,6 +495,9 @@ export function useWorkerData(workerRut: string | null) {
     await queryClient.invalidateQueries({ queryKey: ["worker_profile", tenantId, workerRut] });
     await queryClient.invalidateQueries({ queryKey: ["worker_shifts", tenantId, workerRut] });
     await queryClient.invalidateQueries({ queryKey: ["worker_qr_scans", tenantId, workerRut] });
+    await queryClient.invalidateQueries({
+      queryKey: ["worker_attendance_rectifications", tenantId, workerRut],
+    });
     await queryClient.invalidateQueries({ queryKey: ["worker_trainings", tenantId, workerRut] });
     await queryClient.invalidateQueries({ queryKey: ["worker_attendance", tenantId, workerRut] });
     await queryClient.invalidateQueries({
@@ -512,11 +553,35 @@ export function useWorkerData(workerRut: string | null) {
     [queryClient, tenantId, workerRut],
   );
 
+  const respondToAttendanceRectification = useCallback(
+    async (id: string, accept: boolean, comment: string): Promise<{ error: string | null }> => {
+      try {
+        const { error } = await supabase.rpc("respond_attendance_rectification", {
+          _id: id,
+          _accept: accept,
+          _comment: comment.trim() || null,
+          _ip: null,
+        });
+        if (error) throw error;
+        await queryClient.invalidateQueries({
+          queryKey: ["worker_attendance_rectifications", tenantId, workerRut],
+        });
+        return { error: null };
+      } catch (e) {
+        return {
+          error: e instanceof Error ? e.message : "No se pudo registrar tu respuesta.",
+        };
+      }
+    },
+    [queryClient, tenantId, workerRut],
+  );
+
   return {
     data,
     loading,
     error: error instanceof Error ? error.message : null,
     reload,
     createRequest,
+    respondToAttendanceRectification,
   };
 }

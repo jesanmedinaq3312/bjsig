@@ -89,3 +89,6 @@ Los cambios están preparados en la rama `fix/iteration4-preview-shift-read-boun
 
 - [x] Turnstile/CAPTCHA retirado del código local; el signup público permanece deshabilitado.
 - [ ] Confirmar el ajuste de CAPTCHA en el dashboard, comparar y revisar la versión remota de `worker-auth`, y completar login con un worker sintético antes de habilitar el portal.
+- [x] En la rama local `feat/attendance-rectification-worker-flow`, el portal consulta propuestas append-only por tenant y RUT, permite registrar aceptación/rechazo mediante la RPC existente y añade las propuestas a la exportación personal; los campos consultados se limitan a lo necesario para presentarlas y responderlas.
+- [ ] El flujo implementado es propuesta administrativa → respuesta del trabajador; falta el flujo objetivo del roadmap (solicitud del trabajador → revisión/consentimiento del supervisor), además de validar la tabla/RPC con identidades sintéticas en staging.
+- **Estado de esta rama:** cambios locales, aún no fusionados ni desplegados; typecheck, lint, Vitest (81), build, auditorías Bun y E2E público (42) pasaron; pruebas Deno no ejecutadas localmente porque Deno no está instalado.

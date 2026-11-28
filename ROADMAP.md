@@ -134,6 +134,8 @@ Ejecuta esas pruebas sólo en una base local desechable o staging aislado, nunca
 
 ### P1 — Completar la asistencia del adjunto
 
+**Estado de regularización en código local:** existe una tabla append-only con propuesta administrativa y respuesta del trabajador; la interfaz del portal ahora expone esa respuesta. La dirección funcional solicitada en este roadmap es distinta (trabajador inicia, supervisor revisa y consiente). No marcar este entregable como completo hasta ajustar esquema/RPC/UI y validar permisos en staging. La migración local no prueba que la tabla o RPC estén desplegadas.
+
 1. Diseñar la tabla/flujo de solicitudes de regularización append-only: solicitud del trabajador, evidencia/motivo, revisión y consentimiento del supervisor; conservar marca original y registrar resultado.
 2. Enviar comprobante por cada entrada, salida y colación con fecha/hora Chile, tipo, ubicación/precisión reportada e IP si corresponde; definir proveedor, errores, reintentos, privacidad y trazabilidad.
 3. Preparar vista de fiscalización sólo lectura y reporte semanal/mensual con confirmación del trabajador y desglose ordinario/extraordinario.
